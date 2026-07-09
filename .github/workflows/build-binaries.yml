@@ -1,0 +1,319 @@
+name: Build multi-platform binaries
+
+'on':
+  push:
+    branches: [ master, main ]
+    tags: [ 'v*', 'nightly-*' ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional release tag/name to publish assets to, e.g. nightly or v1.1.1-custom'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-binaries-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-22.04-x86_64
+            runner: ubuntu-22.04
+          - name: ubuntu-24.04-x86_64
+            runner: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            cmake \
+            gzip \
+            libftdi1-2 \
+            libftdi1-dev \
+            libhidapi-dev \
+            libhidapi-hidraw0 \
+            libhidapi-libusb0 \
+            libudev-dev \
+            pkg-config \
+            tree \
+            zlib1g-dev
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DENABLE_OPTIM=ON
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Smoke test
+        run: |
+          ./build/openFPGALoader --version
+          ./build/openFPGALoader --help >/dev/null
+          ./build/openFPGALoader --list-boards >/dev/null
+          ./build/openFPGALoader --list-cables >/dev/null
+
+      - name: Install into staging directory
+        run: |
+          cmake --install build --prefix "$PWD/pkg/usr/local"
+          mkdir -p "$PWD/pkg/usr/local/share/licenses/openFPGALoader"
+          cp LICENSE "$PWD/pkg/usr/local/share/licenses/openFPGALoader/LICENSE"
+          install -Dm644 99-openfpgaloader.rules "$PWD/pkg/etc/udev/rules.d/99-openfpgaloader.rules"
+          install -Dm644 70-openfpgaloader.rules "$PWD/pkg/etc/udev/rules.d/70-openfpgaloader.rules"
+          tree pkg
+
+      - name: Create archive
+        run: |
+          name="openFPGALoader-${{ matrix.name }}"
+          tar -C pkg -czf "${name}.tar.gz" .
+          sha256sum "${name}.tar.gz" > "${name}.tar.gz.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openFPGALoader-${{ matrix.name }}
+          path: |
+            openFPGALoader-${{ matrix.name }}.tar.gz
+            openFPGALoader-${{ matrix.name }}.tar.gz.sha256
+
+  macos:
+    name: macOS universal-ish ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ macos-13, macos-14 ]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install cmake pkg-config libftdi libusb hidapi zlib gzip
+
+      - name: Configure
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr/local \
+            -DENABLE_UDEV=OFF \
+            -DENABLE_LIBGPIOD=OFF \
+            -DENABLE_OPTIM=ON
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Smoke test
+        run: |
+          ./build/openFPGALoader --version
+          ./build/openFPGALoader --help >/dev/null
+          ./build/openFPGALoader --list-boards >/dev/null
+          ./build/openFPGALoader --list-cables >/dev/null
+
+      - name: Install into staging directory
+        run: |
+          cmake --install build --prefix "$PWD/pkg/usr/local"
+          mkdir -p "$PWD/pkg/usr/local/share/licenses/openFPGALoader"
+          cp LICENSE "$PWD/pkg/usr/local/share/licenses/openFPGALoader/LICENSE"
+
+      - name: Create archive
+        run: |
+          arch="$(uname -m)"
+          name="openFPGALoader-${{ matrix.runner }}-${arch}"
+          tar -C pkg -czf "${name}.tar.gz" .
+          shasum -a 256 "${name}.tar.gz" > "${name}.tar.gz.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openFPGALoader-${{ matrix.runner }}
+          path: |
+            openFPGALoader-${{ matrix.runner }}-*.tar.gz
+            openFPGALoader-${{ matrix.runner }}-*.tar.gz.sha256
+
+  windows-msys2:
+    name: Windows MSYS2 ${{ matrix.sys }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sys: UCRT64
+            env: ucrt-x86_64
+          - sys: MINGW64
+            env: x86_64
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.sys }}
+          update: true
+          install: >-
+            git
+            base-devel
+            mingw-w64-${{ matrix.env }}-gcc
+            mingw-w64-${{ matrix.env }}-cmake
+            mingw-w64-${{ matrix.env }}-ninja
+            mingw-w64-${{ matrix.env }}-pkgconf
+            mingw-w64-${{ matrix.env }}-libftdi
+            mingw-w64-${{ matrix.env }}-libusb
+            mingw-w64-${{ matrix.env }}-hidapi
+            mingw-w64-${{ matrix.env }}-zlib
+            zip
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/opt/openFPGALoader \
+            -DENABLE_OPTIM=ON \
+            -DENABLE_UDEV=OFF \
+            -DENABLE_LIBGPIOD=OFF
+
+      - name: Build
+        run: cmake --build build --parallel 2
+
+      - name: Smoke test
+        run: |
+          ./build/openFPGALoader.exe --version
+          ./build/openFPGALoader.exe --help >/dev/null
+          ./build/openFPGALoader.exe --list-boards >/dev/null
+          ./build/openFPGALoader.exe --list-cables >/dev/null
+
+      - name: Install into staging directory
+        run: |
+          cmake --install build --prefix "$PWD/pkg"
+          mkdir -p "$PWD/pkg/share/licenses/openFPGALoader"
+          cp LICENSE "$PWD/pkg/share/licenses/openFPGALoader/LICENSE"
+          # Copy runtime DLLs for a portable zip. Ignore missing DLLs because fully static builds need none.
+          ldd "$PWD/pkg/bin/openFPGALoader.exe" | awk '/\/mingw/ {print $3}' | while read -r dll; do cp -n "$dll" "$PWD/pkg/bin/" || true; done
+          find pkg -maxdepth 3 -type f -print
+
+      - name: Create zip
+        run: |
+          name="openFPGALoader-windows-${{ matrix.sys }}-x86_64"
+          (cd pkg && zip -r "../${name}.zip" .)
+          sha256sum "${name}.zip" > "${name}.zip.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openFPGALoader-windows-${{ matrix.sys }}-x86_64
+          path: |
+            openFPGALoader-windows-${{ matrix.sys }}-x86_64.zip
+            openFPGALoader-windows-${{ matrix.sys }}-x86_64.zip.sha256
+
+  windows-cross:
+    name: Windows cross-compile from Ubuntu
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            ca-certificates \
+            clang \
+            cmake \
+            lld \
+            mingw-w64 \
+            libz-mingw-w64-dev \
+            ninja-build \
+            p7zip-full \
+            pkg-config
+
+      - name: Configure
+        run: |
+          cmake -S . -B build-win64 -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchain-x86_64-w64-mingw32.cmake \
+            -DWINDOWS_CROSSCOMPILE=ON \
+            -DCROSS_COMPILE_DEPS=ON \
+            -DENABLE_CMSISDAP=OFF \
+            -DENABLE_LIBGPIOD=OFF \
+            -DENABLE_UDEV=OFF \
+            -DBUILD_STATIC=ON
+
+      - name: Build
+        run: cmake --build build-win64 --parallel 2
+
+      - name: Package
+        run: |
+          mkdir -p pkg/bin pkg/share/openFPGALoader pkg/share/licenses/openFPGALoader
+          cp build-win64/openFPGALoader.exe pkg/bin/
+          cp LICENSE pkg/share/licenses/openFPGALoader/LICENSE
+          find spiOverJtag bpiOverJtag -type f \( -name '*.gz' -o -name '*.bit' -o -name '*.rbf' \) -exec cp {} pkg/share/openFPGALoader/ \;
+          name="openFPGALoader-windows-cross-x86_64"
+          (cd pkg && 7z a "../${name}.zip" .)
+          sha256sum "${name}.zip" > "${name}.zip.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openFPGALoader-windows-cross-x86_64
+          path: |
+            openFPGALoader-windows-cross-x86_64.zip
+            openFPGALoader-windows-cross-x86_64.zip.sha256
+
+  release:
+    name: Publish GitHub release
+    needs: [ linux, macos, windows-msys2, windows-cross ]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.event.inputs.release_tag != '')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Select release tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.release_tag }}" ]; then
+            echo "value=${{ github.event.inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: ${{ steps.tag.outputs.value }}
+          prerelease: ${{ !startsWith(steps.tag.outputs.value, 'v') }}
+          files: dist/*

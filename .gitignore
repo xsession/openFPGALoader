@@ -48,3 +48,6 @@ build/
 
 # VSCode local settings directory
 /.vscode/
+build-docker-windows/
+
+dist/

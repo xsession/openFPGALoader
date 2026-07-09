@@ -1,0 +1,24 @@
+services:
+  windows-cross:
+    build:
+      context: .
+      dockerfile: docker/cross/windows/alpine.Dockerfile
+      args:
+        ALPINE_VERSION: edge
+        TARGET_TRIPLE: x86_64-w64-mingw32
+    image: openfpgaloader-windows-cross:alpine
+    pull_policy: build
+    working_dir: /src
+    volumes:
+      - .:/src
+      - ./dist/docker-windows:/out
+      - openfpgaloader-cross-cache:/root/.cache
+    environment:
+      BUILD_DIR: /src/build-docker-windows
+      PREFIX_DIR: /src/dist/docker-windows/install
+      PACKAGE_DIR: /out
+      CMAKE_BUILD_TYPE: Release
+      CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF"
+
+volumes:
+  openfpgaloader-cross-cache:
