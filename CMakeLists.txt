@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # set the project name
-project(openFPGALoader VERSION "1.1.1" LANGUAGES CXX)
+project(openFPGALoader VERSION "1.1.2" LANGUAGES CXX)
 add_definitions(-DVERSION=\"v${PROJECT_VERSION}\")
 
 #if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
@@ -181,8 +181,24 @@ if (BUILD_STATIC)
 endif()
 
 include(GNUInstallDirs)
-# By default: DATA_DIR="/usr/local/share"
-add_definitions(-DDATA_DIR=\"${CMAKE_INSTALL_FULL_DATAROOTDIR}\")
+
+# By default DATA_DIR is the absolute install share directory.
+# For portable Windows packages produced by cross-compilation, an absolute
+# Linux/Docker build path such as /src/dist/... is unusable at runtime.
+#
+# In that case store a path relative to the installed executable:
+#
+#   install/bin/openFPGALoader.exe
+#   install/share/openFPGALoader/...
+#
+option(OPENFPGALOADER_PORTABLE_WINDOWS_DATADIR
+       "Use a data directory relative to the Windows executable" OFF)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND OPENFPGALOADER_PORTABLE_WINDOWS_DATADIR)
+  add_definitions(-DDATA_DIR=\"../share\")
+else()
+  add_definitions(-DDATA_DIR=\"${CMAKE_INSTALL_FULL_DATAROOTDIR}\")
+endif()
 
 add_definitions(-DISE_DIR=\"${ISE_PATH}\")
 add_definitions(-DVIVADO_DIR=\"${VIVADO_PATH}\")
