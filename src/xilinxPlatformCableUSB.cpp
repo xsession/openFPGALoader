@@ -3,6 +3,11 @@
  * Copyright (C) 2022-2026 Gwenhael Goavec-Merou <gwenhael.goavec-merou@trabucayre.com>
  */
 
+#include "pathHelper.hpp"
+
+#include <cstdlib>
+#include <fstream>
+
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
@@ -43,6 +48,71 @@
 #define TDI_IDX       (1 << TDI_OFFSET)
 #define TMS_IDX       (1 << TMS_OFFSET)
 
+namespace {
+
+bool fileExists(const std::string &path)
+{
+    std::ifstream f(path, std::ios::binary);
+    return f.good();
+}
+
+std::string firmwareLeafForPid(uint16_t pid)
+{
+    return (pid == 0x0d) ? "xusb_emb.hex" : "xusb_xp2.hex";
+}
+
+std::string findPackagedFirmware(uint16_t pid)
+{
+    const std::string candidate = PathHelper::absolutePath(
+        std::string(DATA_DIR) + "/openFPGALoader/" + firmwareLeafForPid(pid)
+    );
+
+    if (fileExists(candidate)) {
+        return candidate;
+    }
+
+    return {};
+}
+
+std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path)
+{
+    if (!firmware_path.empty()) {
+        return PathHelper::absolutePath(firmware_path);
+    }
+
+    const char *env = std::getenv("OPENFPGALOADER_XUSB_FIRMWARE");
+    if (env != nullptr && env[0] != '\0') {
+        const std::string envPath = PathHelper::absolutePath(env);
+        if (fileExists(envPath)) {
+            return envPath;
+        }
+    }
+
+    const std::string packaged = findPackagedFirmware(pid);
+    if (!packaged.empty()) {
+        return packaged;
+    }
+
+    std::string firmware_file;
+
+    if (strlen(VIVADO_DIR) > 0) {
+        firmware_file = VIVADO_DIR "/data/xicom/";
+    } else if (strlen(ISE_DIR) > 0) {
+        firmware_file = ISE_DIR "/ISE_DS/ISE/bin/lin64/";
+    } else {
+        printError("missing FX2 firmware");
+        printError("use --probe-firmware with something");
+        printError("or set OPENFPGALOADER_XUSB_FIRMWARE=C:/path/to/xusb_emb.hex");
+        printError("or place xusb_emb.hex in share/openFPGALoader beside the portable package");
+        throw std::runtime_error("xilinxPlatformCableUSB: missing firmware");
+    }
+
+    firmware_file += firmwareLeafForPid(pid);
+    return firmware_file;
+}
+
+} // namespace
+
 XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	const uint16_t pid,
 	uint32_t clkHz,
@@ -51,35 +121,37 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		_curr_tms(0), _curr_tdi(0), _buffer_size(4096),
 		_buffer_bit_size((_buffer_size / 2 * 4) - 1)
 {
-	std::string firmware_file;
+	// std::string firmware_file;
 	/* firmare path must be known:
 	 * 1/ provided by user
 	 * 2/ from Vivado install directory
 	 * 3/ from ISE install directory
 	 */
-	if (firmware_path.empty() && strlen(ISE_DIR) == 0 && strlen(VIVADO_DIR) == 0) {
-		printError("missing FX2 firmware");
-		printError("use --probe-firmware with something");
-		printError("like /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64/xusb_xp2.hex for ISE");
-		printError("or   /opt/Xilinx/Vivado/VERSION/data/xicom/xusb_xp2.hex for Vivado");
-		printError("Or use -DISE_DIR=/opt/Xilinx/14.7 / -DVIVADO_DIR=/opt/Xilinx/Vivado/VERSION at build time");
-		throw std::runtime_error("xilinxPlatformCableUSB: missing firmware");
-	}
 
-	/* Extract firmware according to possibilities */
-	if (!firmware_path.empty())
-		firmware_file = firmware_path;
-	else if (strlen(VIVADO_DIR) > 0)
-		firmware_file = VIVADO_DIR "/data/xicom/";
-	else if (strlen(ISE_DIR) > 0)
-		firmware_file = ISE_DIR "/ISE_DS/ISE/bin/lin64/";
+	std::string firmware_file = findXusbFirmwareFile(pid, firmware_path);
+	// if (firmware_path.empty() && strlen(ISE_DIR) == 0 && strlen(VIVADO_DIR) == 0) {
+	// 	printError("missing FX2 firmware");
+	// 	printError("use --probe-firmware with something");
+	// 	printError("like /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64/xusb_xp2.hex for ISE");
+	// 	printError("or   /opt/Xilinx/Vivado/VERSION/data/xicom/xusb_xp2.hex for Vivado");
+	// 	printError("Or use -DISE_DIR=/opt/Xilinx/14.7 / -DVIVADO_DIR=/opt/Xilinx/Vivado/VERSION at build time");
+	// 	throw std::runtime_error("xilinxPlatformCableUSB: missing firmware");
+	// }
 
-	if (firmware_path.empty()) {
-		if (pid == 0x0d)
-			firmware_file += "xusb_emb.hex";
-		else
-			firmware_file += "xusb_xp2.hex";
-	}
+	// /* Extract firmware according to possibilities */
+	// if (!firmware_path.empty())
+	// 	firmware_file = firmware_path;
+	// else if (strlen(VIVADO_DIR) > 0)
+	// 	firmware_file = VIVADO_DIR "/data/xicom/";
+	// else if (strlen(ISE_DIR) > 0)
+	// 	firmware_file = ISE_DIR "/ISE_DS/ISE/bin/lin64/";
+
+	// if (firmware_path.empty()) {
+	// 	if (pid == 0x0d)
+	// 		firmware_file += "xusb_emb.hex";
+	// 	else
+	// 		firmware_file += "xusb_xp2.hex";
+	// }
 	printInfo("firmware_file : " + firmware_file);
 
 	try {

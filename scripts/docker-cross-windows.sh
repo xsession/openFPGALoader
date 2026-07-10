@@ -12,7 +12,8 @@ TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE:-/opt/toolchain-mingw64.cmake}"
 CMAKE_EXTRA_ARGS="${CMAKE_EXTRA_ARGS:-}"
 
 # openFPGALoader is a command-line tool. Force the Windows PE subsystem to
-# console/CUI so stdout/stderr are visible in cmd.exe and PowerShell.
+# console/CUI so stdout/stderr are visible in cmd.exe and PowerShell. This also
+# protects us if an upstream CMake change accidentally marks the target WIN32.
 WINDOWS_CONSOLE_LINK_FLAGS="${WINDOWS_CONSOLE_LINK_FLAGS:--static -static-libgcc -static-libstdc++ -Wl,--subsystem,console}"
 
 if [[ "${1:-}" == "--clean" ]]; then
@@ -29,9 +30,9 @@ pkg-config --exists libftdi1
 pkg-config --exists libusb-1.0
 pkg-config --exists hidapi
 
-# zlib's current CMake install may name the static Windows library libzs.a,
-# but openFPGALoader/zlib discovery may ask the linker for -lz. Ensure libz.a
-# exists before configuring openFPGALoader.
+# zlib's current CMake install names the static Windows library libzs.a, but
+# pkg-config/CMake may still ask the final linker for -lz. Ensure the expected
+# static archive name exists before configuring openFPGALoader.
 if [[ -f "${CROSS_PREFIX}/lib/libzs.a" && ! -f "${CROSS_PREFIX}/lib/libz.a" ]]; then
   cp "${CROSS_PREFIX}/lib/libzs.a" "${CROSS_PREFIX}/lib/libz.a"
   "${TARGET_TRIPLE}-ranlib" "${CROSS_PREFIX}/lib/libz.a" || true
@@ -59,6 +60,20 @@ cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G Ninja \
 cmake --build "${BUILD_DIR}" --parallel "$(nproc)"
 cmake --install "${BUILD_DIR}"
 
+# Copy Xilinx Platform Cable USB FX2 firmware into the portable package when
+# the Docker image was built with xilinx-xusb mirrored into CROSS_PREFIX.
+mkdir -p "${PREFIX_DIR}/share/openFPGALoader"
+
+if compgen -G "${CROSS_PREFIX}/share/openFPGALoader/*.hex" >/dev/null; then
+  cp -f "${CROSS_PREFIX}/share/openFPGALoader/"*.hex \
+    "${PREFIX_DIR}/share/openFPGALoader/"
+fi
+
+if [[ ! -f "${PREFIX_DIR}/share/openFPGALoader/xusb_emb.hex" ]]; then
+  echo "WARNING: xusb_emb.hex is not installed." >&2
+  echo "         xilinxPlatformCableUsb_alt may fail unless OPENFPGALOADER_XUSB_FIRMWARE is set." >&2
+fi
+
 EXE="${PREFIX_DIR}/bin/openFPGALoader.exe"
 
 if [[ ! -f "${EXE}" ]]; then
@@ -80,6 +95,10 @@ if command -v "${TARGET_TRIPLE}-objdump" >/dev/null 2>&1; then
   fi
 fi
 
+# Copy every non-system DLL imported by the EXE. A Windows CLI can look like it
+# produces no output when it exits before main() because a runtime DLL is missing.
+# Static linking is requested above, but this keeps the package robust if a future
+# dependency switches back to a DLL import library.
 copy_dll_if_found() {
   local dll="$1"
   local found=""

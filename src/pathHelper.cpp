@@ -78,6 +78,7 @@ std::string PathHelper::absolutePath(std::string input_path)
          * Resource paths such as:
          *
          *   ../share/openFPGALoader/spiOverJtag_xc7a35tfgg484.bit.gz
+         *   ../share/openFPGALoader/xusb_emb.hex
          *
          * must be resolved relative to openFPGALoader.exe, not relative to the
          * shell working directory and not through MSYS2/cygpath.

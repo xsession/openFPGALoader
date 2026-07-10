@@ -185,7 +185,6 @@ include(GNUInstallDirs)
 # By default DATA_DIR is the absolute install share directory.
 # For portable Windows packages produced by cross-compilation, an absolute
 # Linux/Docker build path such as /src/dist/... is unusable at runtime.
-#
 # In that case store a path relative to the installed executable:
 #
 #   install/bin/openFPGALoader.exe
