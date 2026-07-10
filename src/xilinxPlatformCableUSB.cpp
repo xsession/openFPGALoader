@@ -12,8 +12,10 @@
 #include <cstring>
 #include <unistd.h>
 
+#include <chrono>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "display.hpp"
@@ -30,8 +32,8 @@
 #define XPCU_CMD_RETURN_CONSTANT  0x40
 #define XPCU_CMD_GET_VERSION      0x50
 #define XPCU_CMD_GPIO_TRANSFER    0xA6
-#define XPCU_EP_JTAG_OUT          0x02
-#define XPCU_EP_JTAG_IN           0x86
+#define XPCU_EP_JTAG_OUT_DEFAULT  0x02
+#define XPCU_EP_JTAG_IN_DEFAULT   0x86
 #define XPCU_STATUS_CONNECTED     0x40
 #define XPCU_SPEED_CLASS_ENABLE   0x10
 #define XPCU_VERSION_CPLD         0x01
@@ -49,6 +51,9 @@
 #define TMS_IDX       (1 << TMS_OFFSET)
 
 namespace {
+
+uint8_t xpcu_ep_jtag_out = XPCU_EP_JTAG_OUT_DEFAULT;
+uint8_t xpcu_ep_jtag_in = XPCU_EP_JTAG_IN_DEFAULT;
 
 bool fileExists(const std::string &path)
 {
@@ -111,6 +116,190 @@ std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path)
     return firmware_file;
 }
 
+bool parseEndpointEnv(const char *name, uint8_t &endpoint)
+{
+	const char *value = std::getenv(name);
+	if (value == nullptr || value[0] == '\0')
+		return false;
+
+	char *end = nullptr;
+	const unsigned long parsed = std::strtoul(value, &end, 0);
+	if (end == value || *end != '\0' || parsed > 0xff) {
+		printWarn(std::string("ignoring invalid ") + name + "=" + value);
+		return false;
+	}
+
+	endpoint = static_cast<uint8_t>(parsed);
+	return true;
+}
+
+std::string endpointToHex(uint8_t endpoint)
+{
+	char buf[8];
+	snprintf(buf, sizeof(buf), "0x%02x", endpoint);
+	return std::string(buf);
+}
+
+unsigned int xpcuRetryAttempts()
+{
+	const char *value = std::getenv("OPENFPGALOADER_XPCU_CTRL_RETRIES");
+	if (value == nullptr || value[0] == '\0')
+		return 8;
+
+	char *end = nullptr;
+	const unsigned long parsed = std::strtoul(value, &end, 0);
+	if (end == value || *end != '\0' || parsed < 1 || parsed > 200)
+		return 8;
+
+	return static_cast<unsigned int>(parsed);
+}
+
+unsigned int xpcuRetryDelayMs()
+{
+	const char *value = std::getenv("OPENFPGALOADER_XPCU_CTRL_RETRY_DELAY_MS");
+	if (value == nullptr || value[0] == '\0')
+		return 150;
+
+	char *end = nullptr;
+	const unsigned long parsed = std::strtoul(value, &end, 0);
+	if (end == value || *end != '\0' || parsed < 10 || parsed > 5000)
+		return 150;
+
+	return static_cast<unsigned int>(parsed);
+}
+
+
+bool xpcuBoolEnv(const char *name)
+{
+	const char *value = std::getenv(name);
+	return value != nullptr && value[0] != '\0' && std::string(value) != "0";
+}
+
+bool xpcuSkipGpioTransferCtrl()
+{
+	return xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL");
+}
+
+void xpcuRecoverUsbPipes(FX2_ll *fx2)
+{
+	fx2->clear_halt(xpcu_ep_jtag_out);
+	fx2->clear_halt(xpcu_ep_jtag_in);
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+bool xpcuGpioTransferCtrl(FX2_ll *fx2, uint16_t bit_count)
+{
+	if (xpcuSkipGpioTransferCtrl()) {
+		static bool warned = false;
+		if (!warned) {
+			printWarn("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL is set: skipping XPCU GPIO transfer control command");
+			printWarn("this is experimental and intended only for Windows/libusbK XPCU debugging");
+			warned = true;
+		}
+		return true;
+	}
+
+	if (xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_GPIO_TRANSFER, nullptr, 0,
+			bit_count, "GPIO transfer")) {
+		return true;
+	}
+
+	printWarn("XPCU GPIO transfer control failed; clearing bulk endpoint halts and retrying once");
+	xpcuRecoverUsbPipes(fx2);
+	if (xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_GPIO_TRANSFER, nullptr, 0,
+			bit_count, "GPIO transfer after clear-halt")) {
+		return true;
+	}
+
+	printError("XPCU GPIO transfer control is not accepted by the reloaded cable");
+	printError("try: set OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL=1 for one diagnostic run");
+	printError("also verify the post-firmware 03fd:0008 interface driver with Zadig");
+	return false;
+}
+
+bool xpcuReadCtrlRetry(FX2_ll *fx2, uint8_t request, uint16_t value,
+		uint8_t *buf, uint16_t len, uint16_t index, const char *what)
+{
+	const unsigned int attempts = xpcuRetryAttempts();
+	const unsigned int delay_ms = xpcuRetryDelayMs();
+
+	for (unsigned int attempt = 1; attempt <= attempts; attempt++) {
+		if (fx2->read_ctrl(request, value, buf, len, index))
+			return true;
+
+		if (attempt != attempts)
+			std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+	}
+
+	printError(std::string("XPCU control read failed after retries: ") + what);
+	return false;
+}
+
+bool xpcuWriteCtrlRetry(FX2_ll *fx2, uint8_t request, uint16_t value,
+		uint8_t *buf, uint16_t len, uint16_t index, const char *what)
+{
+	const unsigned int attempts = xpcuRetryAttempts();
+	const unsigned int delay_ms = xpcuRetryDelayMs();
+
+	for (unsigned int attempt = 1; attempt <= attempts; attempt++) {
+		if (fx2->write_ctrl(request, value, buf, len, index))
+			return true;
+
+		if (attempt != attempts)
+			std::this_thread::sleep_for(std::chrono::milliseconds(delay_ms));
+	}
+
+	printError(std::string("XPCU control write failed after retries: ") + what);
+	return false;
+}
+
+void waitForXpcuControlReady(FX2_ll *fx2)
+{
+	uint8_t buf[2] = {0, 0};
+	if (!xpcuReadCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_RETURN_CONSTANT,
+			buf, 2, 0, "initial constant/readiness probe")) {
+		throw std::runtime_error("Xilinx Platform Cable USB did not become control-ready after reload");
+	}
+}
+
+void configureXpcuUsbInterface(FX2_ll *fx2)
+{
+	uint8_t env_out_ep = XPCU_EP_JTAG_OUT_DEFAULT;
+	uint8_t env_in_ep = XPCU_EP_JTAG_IN_DEFAULT;
+	const bool out_from_env = parseEndpointEnv("OPENFPGALOADER_XPCU_OUT_EP", env_out_ep);
+	const bool in_from_env = parseEndpointEnv("OPENFPGALOADER_XPCU_IN_EP", env_in_ep);
+
+	if (out_from_env || in_from_env) {
+		xpcu_ep_jtag_out = env_out_ep;
+		xpcu_ep_jtag_in = env_in_ep;
+		printWarn("using Xilinx Platform Cable USB endpoint override: OUT=" +
+				endpointToHex(xpcu_ep_jtag_out) + " IN=" +
+				endpointToHex(xpcu_ep_jtag_in));
+		return;
+	}
+
+	const char *skip_alt = std::getenv("OPENFPGALOADER_XPCU_SKIP_ALT_SETTING");
+	if (skip_alt != nullptr && skip_alt[0] != '\0' && std::string(skip_alt) != "0") {
+		printWarn("skipping Xilinx Platform Cable USB alternate setting selection");
+		return;
+	}
+
+	uint8_t out_ep = XPCU_EP_JTAG_OUT_DEFAULT;
+	uint8_t in_ep = XPCU_EP_JTAG_IN_DEFAULT;
+	if (fx2->select_bulk_endpoints(0, out_ep, in_ep, 1)) {
+		xpcu_ep_jtag_out = out_ep;
+		xpcu_ep_jtag_in = in_ep;
+		printInfo("XPCU bulk endpoints: OUT=" + endpointToHex(xpcu_ep_jtag_out) +
+				" IN=" + endpointToHex(xpcu_ep_jtag_in));
+		return;
+	}
+
+	printWarn("unable to select a descriptor-discovered bulk endpoint pair");
+	printWarn("falling back to Xilinx Platform Cable USB default endpoints 0x02/0x86");
+	xpcu_ep_jtag_out = XPCU_EP_JTAG_OUT_DEFAULT;
+	xpcu_ep_jtag_in = XPCU_EP_JTAG_IN_DEFAULT;
+}
+
 } // namespace
 
 XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
@@ -162,18 +351,22 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		throw std::runtime_error("lowlevel init failed");
 	}
 
-	fx2->set_interface_alt_setting(0, 1);
+	configureXpcuUsbInterface(fx2.get());
+	waitForXpcuControlReady(fx2.get());
 
 	displayCableVersion();
 
 	/* Write GPIO bit */
-	fx2->write_ctrl(XPCU_BREQUEST, 0x030, nullptr, 0, (1 << 3));
+	if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, 0x030, nullptr, 0,
+			(1 << 3), "GPIO setup"))
+		throw std::runtime_error("Unable to setup GPIO bit");
 
 	if (!enableDevice(true))
 		throw std::runtime_error("Unable to enable device");
 
 	uint8_t buf[1];
-	if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_STATUS, buf, 1))
+	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_STATUS, buf, 1,
+			0, "status"))
 		throw std::runtime_error("Unable to read status.");
 
 	char mess[64];
@@ -203,8 +396,8 @@ int XilinxPlatformCableUSB::setClkFreq(uint32_t clkHz)
 			break;
 		}
 	}
-	if (!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_SET_SPEED, nullptr, 0,
-				speed | XPCU_SPEED_CLASS_ENABLE)) {
+	if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_SET_SPEED, nullptr, 0,
+				speed | XPCU_SPEED_CLASS_ENABLE, "set speed")) {
 		printError("setClkFreq: failed to set speed");
 		return -1;
 	}
@@ -351,14 +544,19 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 	xfer_tx += ((_nb_bit & 0x03) != 0) ? 2 : 0;
 
 	/* count is 0-indexed per protocol spec */
-	if (!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_TRANSFER, nullptr, 0,
-				_nb_bit - 1)) {
+	if (!xpcuGpioTransferCtrl(fx2.get(), _nb_bit - 1)) {
 		printError("Fails to write GPIO transfer control message");
+		_nb_bit = 0;
+		_nb_tdo_bit = 0;
 		return -1;
 	}
 
-	if (fx2->write(XPCU_EP_JTAG_OUT, _in_buf.get(), xfer_tx) != (int)xfer_tx)
+	if (fx2->write(xpcu_ep_jtag_out, _in_buf.get(), xfer_tx) != (int)xfer_tx) {
+		xpcuRecoverUsbPipes(fx2.get());
+		printError("XPCU bulk OUT transfer failed on endpoint " + endpointToHex(xpcu_ep_jtag_out));
+		printError("try Zadig WinUSB/libusbK for the post-firmware 03fd:0008 interface, or test OPENFPGALOADER_XPCU_OUT_EP / OPENFPGALOADER_XPCU_IN_EP");
 		return -1;
+	}
 
 	if (rx) {
 		if (_nb_tdo_bit != _nb_bit) {
@@ -368,8 +566,12 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 
 		uint32_t xfer_rx = rxBufSize(_nb_tdo_bit);
 		std::vector<uint8_t> rx_buf(xfer_rx);
-		if (fx2->read(XPCU_EP_JTAG_IN, rx_buf.data(), xfer_rx) != (int)xfer_rx)
+		if (fx2->read(xpcu_ep_jtag_in, rx_buf.data(), xfer_rx) != (int)xfer_rx) {
+			xpcuRecoverUsbPipes(fx2.get());
+			printError("XPCU bulk IN transfer failed on endpoint " + endpointToHex(xpcu_ep_jtag_in));
+			printError("try Zadig WinUSB/libusbK for the post-firmware 03fd:0008 interface, or test OPENFPGALOADER_XPCU_OUT_EP / OPENFPGALOADER_XPCU_IN_EP");
 			return -1;
+		}
 
 		/* Decode shift-register encoded TDO bits into rx.
 		 * Each group of up to 32 bits occupies a 16 or 32-bit little-endian
@@ -412,8 +614,9 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 
 bool XilinxPlatformCableUSB::enableDevice(bool enable)
 {
-	if (!fx2->write_ctrl(XPCU_BREQUEST,
-				(enable ? XPCU_CMD_ENABLE : XPCU_CMD_DISABLE), nullptr, 0)) {
+	if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST,
+				(enable ? XPCU_CMD_ENABLE : XPCU_CMD_DISABLE), nullptr, 0,
+				0, enable ? "enable device" : "disable device")) {
 		char mess[64];
 		snprintf(mess, sizeof(mess), "Unable to %s device",
 				(enable ? "enable" : "disable"));
@@ -427,26 +630,28 @@ void XilinxPlatformCableUSB::displayCableVersion()
 {
 	uint8_t buf[2];
 
-	if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_RETURN_CONSTANT, buf, 2))
+	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_RETURN_CONSTANT,
+			buf, 2, 0, "constant"))
 		throw std::runtime_error("Unable to read constant.");
 	const uint16_t const0 = ((uint16_t)buf[0] << 8) | buf[1];
 
-	if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_GET_VERSION, buf, 2))
+	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
+			buf, 2, 0, "firmware version"))
 		throw std::runtime_error("Unable to read firmware version.");
 	const uint16_t fx2_firmware = ((uint16_t)buf[0] << 8) | buf[1];
 
-	if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_GET_VERSION, buf, 2,
-				XPCU_VERSION_CPLD))
+	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
+			buf, 2, XPCU_VERSION_CPLD, "CPLD version"))
 		throw std::runtime_error("Unable to read CPLD version.");
 	const uint16_t cpld_firmware = ((uint16_t)buf[0] << 8) | buf[1];
 
-	if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_GET_VERSION, buf, 2,
-				XPCU_VERSION_CONST1))
+	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
+			buf, 2, XPCU_VERSION_CONST1, "const 1"))
 		throw std::runtime_error("Unable to read const 1.");
 	const uint16_t const1 = ((uint16_t)buf[0] << 8) | buf[1];
 
-	if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_GET_VERSION, buf, 2,
-				XPCU_VERSION_CONST2))
+	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
+			buf, 2, XPCU_VERSION_CONST2, "const 2"))
 		throw std::runtime_error("Unable to read const 2.");
 	const uint16_t const2 = ((uint16_t)buf[0] << 8) | buf[1];
 
