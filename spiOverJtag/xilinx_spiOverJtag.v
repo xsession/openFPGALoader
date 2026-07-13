@@ -114,7 +114,17 @@ module spiOverJtag
 		.USRDONEO (1'b1), // 1-bit input: User DONE pin output control.
 		.USRDONETS(1'b1)  // 1-bit input: User DONE 3-state enable output.
 	);
-`elsif virtex6 // !spartan6 && !spartan3e && !xilinxultrascale
+`elsif virtex4 // !spartan6 && !spartan3e && !xilinxultrascale
+	/* Virtex-4 exposes the dedicated CCLK pin through STARTUP_VIRTEX4.
+	 * The SPI data and chip-select signals remain normal fabric I/O and
+	 * must be assigned to the pins used by the board's flash device. */
+	STARTUP_VIRTEX4 startup_virtex4_inst (
+		.USRCCLKO (spi_clk), // user FPGA -> dedicated CCLK pin
+		.USRCCLKTS(1'b0),    // drive CCLK
+		.USRDONEO (1'b1),    // leave DONE under startup control
+		.USRDONETS(1'b1)
+	);
+`elsif virtex6 // !spartan6 && !spartan3e && !xilinxultrascale && !virtex4
 	wire di;
 
 	wire runtest;
@@ -159,7 +169,7 @@ module spiOverJtag
 			.USRDONEO (1'b1), // why both USRDONE are high?
 			.USRDONETS(1'b1)  // ??
 	);
-`else // !spartan6 && !spartan3e && !xilinxultrascale && !virtex6
+`else // !spartan6 && !spartan3e && !xilinxultrascale && !virtex4 && !virtex6
 	STARTUPE2 #(
 		.PROG_USR("FALSE"),  // Activate program event security feature. Requires encrypted bitstreams.
 		.SIM_CCLK_FREQ(0.0)  // Set the Configuration Clock Frequency(ns) for simulation.
@@ -226,6 +236,33 @@ module spiOverJtag
 		.TDO1   (tdo),     // 1-bit input: Test Data Output (TDO) input
 		                   //              for USER1 function.
 		.TDO2   ()         // 1-bit input: USER2 function
+	);
+`elsif virtex4
+	BSCAN_VIRTEX4 #(
+		.JTAG_CHAIN(1)
+	) bscan_virtex4_inst (
+		.CAPTURE(capture),
+		.DRCK   (drck),
+		.RESET  (),
+		.SEL    (sel),
+		.SHIFT  (shift),
+		.TDI    (tdi),
+		.UPDATE (update),
+		.TDO    (tdo)
+	);
+
+	/* USER4 carries the spiOverJtag version interface. */
+	BSCAN_VIRTEX4 #(
+		.JTAG_CHAIN(4)
+	) bscan_virtex4_version (
+		.CAPTURE(ver_cap),
+		.DRCK   (ver_drck),
+		.RESET  (),
+		.SEL    (ver_sel),
+		.SHIFT  (ver_shift),
+		.TDI    (ver_tdi),
+		.UPDATE (),
+		.TDO    (ver_tdo)
 	);
 `else
 `ifdef virtex6

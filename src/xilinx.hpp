@@ -192,6 +192,7 @@ class Xilinx: public Device, FlashInterface {
 		enum xilinx_family_t {
 			XC95_FAMILY     = 0,
 			XC2C_FAMILY,
+			VIRTEX4_FAMILY,
 			SPARTAN3_FAMILY,
 			SPARTAN6_FAMILY,
 			SPARTAN7_FAMILY,

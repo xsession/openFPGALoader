@@ -45,3 +45,6 @@ rem flash upload
 
 .\openFPGALoader.exe --scan-usb
 
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --detect   
+
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --freq 700000 --detect

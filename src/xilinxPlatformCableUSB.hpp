@@ -102,6 +102,7 @@ class XilinxPlatformCableUSB : public JtagInterface {
 	uint8_t _curr_tdi;
 	uint32_t _buffer_size;
 	uint32_t _buffer_bit_size;
+	bool _use_control_bitbang;
 	std::unique_ptr<FX2_ll> fx2;
 };
 

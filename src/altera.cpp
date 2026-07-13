@@ -5,6 +5,7 @@
 
 #include "altera.hpp"
 
+#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <string.h>
 
@@ -45,6 +46,8 @@ Altera::Altera(Jtag *jtag, const std::string &filename,
 	std::string family = fpga_list[_idcode].family;
 	if (family == "MAX 10") {
 		_fpga_family = MAX10_FAMILY;
+	} else if (family == "arria 10" || family == "arria 10 SoC") {
+		_fpga_family = ARRIA10_FAMILY;
 	} else if (family == "agilex 3") {
 		_fpga_family = AGILEX3_FAMILY;
 	} else if (family == "agilex 5") {

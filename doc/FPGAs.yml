@@ -146,6 +146,19 @@ Altera:
     Memory: OK
     Flash: OK
 
+  - Description: Arria 10 SX SoC
+    Model:
+      - SX160
+      - SX220
+      - SX270
+      - SX320
+      - SX480
+      - SX570
+      - SX660
+    URL: https://www.intel.com/content/www/us/en/products/details/fpga/arria/10/sx.html
+    Memory: RBF/SVF
+    Flash: NT
+
   - Description: Cyclone 10 LP
     Model: 10CL025
     URL: https://www.intel.com/content/www/us/en/products/programmable/fpga/cyclone-10.html

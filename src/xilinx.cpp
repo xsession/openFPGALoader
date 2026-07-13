@@ -136,6 +136,27 @@
 static std::map<std::string, std::map<std::string, std::vector<uint8_t>>>
 	ircode_mapping {
 		{
+			/* Virtex-4 FX devices with two PowerPC blocks have a 14-bit IR.
+			 * UG071: the six-bit opcodes are extended with ones in the MSBs.
+			 * Bytes are stored least-significant first for JTAG shifting. */
+			"virtex4_fx_dual_ppc",
+			{
+				{ "USER1",       {0xc2, 0x3f} },
+				{ "USER2",       {0xc3, 0x3f} },
+				{ "CFG_OUT",     {0xc4, 0x3f} },
+				{ "CFG_IN",      {0xc5, 0x3f} },
+				{ "USERCODE",    {0xc8, 0x3f} },
+				{ "IDCODE",      {0xc9, 0x3f} },
+				{ "ISC_ENABLE",  {0xd0, 0x3f} },
+				{ "JPROGRAM",    {0xcb, 0x3f} },
+				{ "JSTART",      {0xcc, 0x3f} },
+				{ "JSHUTDOWN",   {0xcd, 0x3f} },
+				{ "ISC_PROGRAM", {0xd1, 0x3f} },
+				{ "ISC_DISABLE", {0xd7, 0x3f} },
+				{ "BYPASS",      {0xff, 0x3f} },
+			}
+		},
+		{
 			/* 7-series default */
 			"default",
 			{
@@ -356,7 +377,10 @@ Xilinx::Xilinx(Jtag *jtag, const std::string &filename,
 	_irlen = fpga_list[idcode].irlength;
 	_ircode_map = ircode_mapping.at("default");
 
-	if (family.substr(0, 5) == "artix") {
+	if (family == "virtex4") {
+		_fpga_family = VIRTEX4_FAMILY;
+		_ircode_map = ircode_mapping.at("virtex4_fx_dual_ppc");
+	} else if (family.substr(0, 5) == "artix") {
 		_fpga_family = ARTIX_FAMILY;
 	} else if (family == "spartan7") {
 		_fpga_family = SPARTAN7_FAMILY;

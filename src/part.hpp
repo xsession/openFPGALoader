@@ -51,6 +51,10 @@ static std::map <uint32_t, fpga_model> fpga_list = {
 	{0x09608093, {"xilinx", "xc9500xl", "xc95144xl", 8}},
 	{0x09616093, {"xilinx", "xc9500xl", "xc95288xl", 8}},
 
+	/* Xilinx Virtex4 */
+	/* XC4VFX100 contains two PowerPC blocks and therefore has a 14-bit IR. */
+	{0x01ee4093, {"xilinx", "virtex4", "xc4vfx100", 14}},
+
 	/* Xilinx Spartan3 */
 	{0x01414093, {"xilinx", "spartan3",  "xc3s200",  6}},
 	{0x11c1a093, {"xilinx", "spartan3e", "xc3s250e", 6}},
@@ -299,13 +303,14 @@ static std::map <uint32_t, fpga_model> fpga_list = {
 	{0x02e660dd, {"altera", "arria 10", "GX1150", 10}},
 	{0x02e260dd, {"altera", "arria 10", "GT900",  10}},
 	{0x02e060dd, {"altera", "arria 10", "GT1150", 10}},
-	{0x02e620dd, {"altera", "arria 10", "SX160",  10}},
-	{0x02e020dd, {"altera", "arria 10", "SX220",  10}},
-	{0x02e630dd, {"altera", "arria 10", "SX270",  10}},
-	{0x02e030dd, {"altera", "arria 10", "SX320",  10}},
-	{0x02e040dd, {"altera", "arria 10", "SX480",  10}},
-	{0x02e650dd, {"altera", "arria 10", "SX570",  10}},
-	{0x02e050dd, {"altera", "arria 10", "SX660",  10}},
+	/* SX variants integrate the dual-core Arm Cortex-A9 HPS. */
+	{0x02e620dd, {"altera", "arria 10 SoC", "SX160", 10}},
+	{0x02e020dd, {"altera", "arria 10 SoC", "SX220", 10}},
+	{0x02e630dd, {"altera", "arria 10 SoC", "SX270", 10}},
+	{0x02e030dd, {"altera", "arria 10 SoC", "SX320", 10}},
+	{0x02e040dd, {"altera", "arria 10 SoC", "SX480", 10}},
+	{0x02e650dd, {"altera", "arria 10 SoC", "SX570", 10}},
+	{0x02e050dd, {"altera", "arria 10 SoC", "SX660", 10}},
 
 	/* Altera Agilex 3 */
 	{0x4361b0dd, {"altera", "agilex 3", "A3CY100", 10}},

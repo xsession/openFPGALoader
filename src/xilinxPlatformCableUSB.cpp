@@ -28,6 +28,7 @@
 #define XPCU_CMD_DISABLE          0x10
 #define XPCU_CMD_ENABLE           0x18
 #define XPCU_CMD_SET_SPEED        0x28
+#define XPCU_CMD_GPIO_WRITE       0x30
 #define XPCU_CMD_STATUS           0x38
 #define XPCU_CMD_RETURN_CONSTANT  0x40
 #define XPCU_CMD_GET_VERSION      0x50
@@ -35,6 +36,11 @@
 #define XPCU_EP_JTAG_OUT_DEFAULT  0x02
 #define XPCU_EP_JTAG_IN_DEFAULT   0x86
 #define XPCU_STATUS_CONNECTED     0x40
+#define XPCU_GPIO_TDI             0x01
+#define XPCU_GPIO_TDO             0x02
+#define XPCU_GPIO_TMS             0x02
+#define XPCU_GPIO_TCK             0x04
+#define XPCU_GPIO_PROG            0x08
 #define XPCU_SPEED_CLASS_ENABLE   0x10
 #define XPCU_VERSION_CPLD         0x01
 #define XPCU_VERSION_CONST1       0x02
@@ -175,9 +181,10 @@ bool xpcuBoolEnv(const char *name)
 	return value != nullptr && value[0] != '\0' && std::string(value) != "0";
 }
 
-bool xpcuSkipGpioTransferCtrl()
+bool xpcuForceControlBitbang()
 {
-	return xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL");
+	return xpcuBoolEnv("OPENFPGALOADER_XPCU_CONTROL_BITBANG") ||
+		xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL");
 }
 
 void xpcuRecoverUsbPipes(FX2_ll *fx2)
@@ -187,34 +194,14 @@ void xpcuRecoverUsbPipes(FX2_ll *fx2)
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
-bool xpcuGpioTransferCtrl(FX2_ll *fx2, uint16_t bit_count)
+bool xpcuGpioTransferCtrl(FX2_ll *fx2, uint32_t bit_count)
 {
-	if (xpcuSkipGpioTransferCtrl()) {
-		static bool warned = false;
-		if (!warned) {
-			printWarn("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL is set: skipping XPCU GPIO transfer control command");
-			printWarn("this is experimental and intended only for Windows/libusbK XPCU debugging");
-			warned = true;
-		}
-		return true;
-	}
-
-	if (xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_GPIO_TRANSFER, nullptr, 0,
-			bit_count, "GPIO transfer")) {
-		return true;
-	}
-
-	printWarn("XPCU GPIO transfer control failed; clearing bulk endpoint halts and retrying once");
-	xpcuRecoverUsbPipes(fx2);
-	if (xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_GPIO_TRANSFER, nullptr, 0,
-			bit_count, "GPIO transfer after clear-halt")) {
-		return true;
-	}
-
-	printError("XPCU GPIO transfer control is not accepted by the reloaded cable");
-	printError("try: set OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL=1 for one diagnostic run");
-	printError("also verify the post-firmware 03fd:0008 interface driver with Zadig");
-	return false;
+	/* The transfer count is 24-bit and zero-indexed.  Its high byte shares
+	 * wValue with the command, while the low 16 bits are carried in wIndex. */
+	const uint16_t value = XPCU_CMD_GPIO_TRANSFER |
+		static_cast<uint16_t>(((bit_count >> 16) & 0xffu) << 8);
+	return fx2->write_ctrl(XPCU_BREQUEST, value, nullptr, 0,
+		static_cast<uint16_t>(bit_count & 0xffffu));
 }
 
 bool xpcuReadCtrlRetry(FX2_ll *fx2, uint8_t request, uint16_t value,
@@ -308,7 +295,8 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	const std::string &firmware_path,
 	int8_t verbose): _verbose(verbose), _nb_bit(0), _nb_tdo_bit(0),
 		_curr_tms(0), _curr_tdi(0), _buffer_size(4096),
-		_buffer_bit_size((_buffer_size / 2 * 4) - 1)
+		_buffer_bit_size((_buffer_size / 2 * 4) - 1),
+		_use_control_bitbang(xpcuForceControlBitbang())
 {
 	// std::string firmware_file;
 	/* firmare path must be known:
@@ -377,6 +365,9 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	_in_buf = std::make_unique<uint8_t[]>(_buffer_size);
 
 	setClkFreq(clkHz);
+	if (_use_control_bitbang) {
+		printWarn("XPCU control-transfer JTAG mode forced; transfers will be slower");
+	}
 }
 
 XilinxPlatformCableUSB::~XilinxPlatformCableUSB()
@@ -539,16 +530,65 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 	if (_nb_bit == 0)
 		return 0;
 
+	/* The old GPIO command is slow but works with cable/Windows driver
+	 * combinations which accept normal control requests and reject the A6
+	 * accelerated-transfer trigger. */
+	if (_use_control_bitbang) {
+		uint32_t tdo_bit = 0;
+		for (uint32_t i = 0; i < _nb_bit; i++) {
+			const uint32_t buf_pos = (i >> 2) << 1;
+			const uint8_t bit_pos = i & 0x03;
+			uint16_t pins = XPCU_GPIO_PROG;
+			if (_in_buf[buf_pos] & (TDI_IDX << bit_pos))
+				pins |= XPCU_GPIO_TDI;
+			if (_in_buf[buf_pos] & (TMS_IDX << bit_pos))
+				pins |= XPCU_GPIO_TMS;
+
+			/* Drive TCK low, then high: one JTAG rising edge. */
+			if (!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
+					nullptr, 0, pins) ||
+					!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
+					nullptr, 0, pins | XPCU_GPIO_TCK)) {
+				printError("XPCU control-transfer JTAG write failed");
+				_nb_bit = 0;
+				_nb_tdo_bit = 0;
+				return -1;
+			}
+
+			if (_in_buf[buf_pos + 1] & (TDO_IDX << bit_pos)) {
+				uint8_t status = 0;
+				if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_STATUS,
+						&status, 1, 0)) {
+					printError("XPCU control-transfer JTAG read failed");
+					_nb_bit = 0;
+					_nb_tdo_bit = 0;
+					return -1;
+				}
+				if (rx != nullptr) {
+					const uint32_t out_bit = rx_offset + tdo_bit;
+					if (status & XPCU_GPIO_TDO)
+						rx[out_bit >> 3] |= (1u << (out_bit & 7));
+					else
+						rx[out_bit >> 3] &= ~(1u << (out_bit & 7));
+				}
+				tdo_bit++;
+			}
+		}
+		_nb_bit = 0;
+		_nb_tdo_bit = 0;
+		return 0;
+	}
+
 	/* N ops: N/4 pairs of 2 bytes each (round up to complete pair) */
 	uint32_t xfer_tx = (_nb_bit >> 1) & ~0x01u;
 	xfer_tx += ((_nb_bit & 0x03) != 0) ? 2 : 0;
 
 	/* count is 0-indexed per protocol spec */
 	if (!xpcuGpioTransferCtrl(fx2.get(), _nb_bit - 1)) {
-		printError("Fails to write GPIO transfer control message");
-		_nb_bit = 0;
-		_nb_tdo_bit = 0;
-		return -1;
+		printWarn("XPCU accelerated transfer is unavailable; switching to control-transfer JTAG mode");
+		printWarn("set OPENFPGALOADER_XPCU_CONTROL_BITBANG=1 to select this mode immediately");
+		_use_control_bitbang = true;
+		return write(rx, rx_offset);
 	}
 
 	if (fx2->write(xpcu_ep_jtag_out, _in_buf.get(), xfer_tx) != (int)xfer_tx) {

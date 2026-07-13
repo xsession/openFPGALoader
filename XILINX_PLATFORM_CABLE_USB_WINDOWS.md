@@ -119,3 +119,28 @@ $env:OPENFPGALOADER_XPCU_CTRL_RETRY_DELAY_MS = "100"
 
 Use normal `.\openFPGALoader.exe` in the command above; the escaped marker is
 only to avoid accidental formatting in some markdown renderers.
+
+## Accelerated-transfer timeout
+
+If version, status, and speed commands succeed but the first JTAG operation
+fails on the `GPIO transfer` command with `LIBUSB_ERROR_TIMEOUT`, the cable or
+its Windows USB driver is rejecting the accelerated `0xA6` transfer trigger.
+An IDCODE printed after that failure is invalid scan data and must not be added
+to the FPGA database.
+
+The backend now falls back automatically to the older control-transfer JTAG
+protocol. To avoid waiting for the initial accelerated-transfer timeout, force
+that mode before running the command:
+
+```powershell
+$env:OPENFPGALOADER_XPCU_CONTROL_BITBANG = "1"
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --freq 700000 --detect
+```
+
+This mode performs two USB control writes per JTAG clock and a status read for
+each captured TDO bit, so detection and programming are considerably slower.
+Clear the override to retry accelerated transfers:
+
+```powershell
+Remove-Item Env:\OPENFPGALOADER_XPCU_CONTROL_BITBANG -ErrorAction SilentlyContinue
+```
