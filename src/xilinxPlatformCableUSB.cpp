@@ -32,12 +32,13 @@
 #define XPCU_CMD_STATUS           0x38
 #define XPCU_CMD_RETURN_CONSTANT  0x40
 #define XPCU_CMD_GET_VERSION      0x50
+#define XPCU_CMD_SELECT_GPIO      0x52
 #define XPCU_CMD_GPIO_TRANSFER    0xA6
 #define XPCU_EP_JTAG_OUT_DEFAULT  0x02
 #define XPCU_EP_JTAG_IN_DEFAULT   0x86
 #define XPCU_STATUS_CONNECTED     0x40
 #define XPCU_GPIO_TDI             0x01
-#define XPCU_GPIO_TDO             0x02
+#define XPCU_GPIO_TDO             0x01
 #define XPCU_GPIO_TMS             0x02
 #define XPCU_GPIO_TCK             0x04
 #define XPCU_GPIO_PROG            0x08
@@ -183,8 +184,33 @@ bool xpcuBoolEnv(const char *name)
 
 bool xpcuForceControlBitbang()
 {
+	/* The 0xA6 trigger stalls endpoint zero with the Xilinx EMB firmware on
+	 * the Windows libusb/WinUSB backend.  Start with the reliable control
+	 * path there; retain an explicit override for protocol development. */
+	if (xpcuBoolEnv("OPENFPGALOADER_XPCU_ACCELERATED"))
+		return false;
+#ifdef _WIN32
+	return true;
+#else
 	return xpcuBoolEnv("OPENFPGALOADER_XPCU_CONTROL_BITBANG") ||
 		xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL");
+#endif
+}
+
+uint8_t xpcuTdoMask()
+{
+	const char *value = std::getenv("OPENFPGALOADER_XPCU_TDO_MASK");
+	if (value == nullptr || value[0] == '\0')
+		return XPCU_GPIO_TDO;
+
+	char *end = nullptr;
+	const unsigned long parsed = std::strtoul(value, &end, 0);
+	if (end == value || *end != '\0' || (parsed != 0x01 && parsed != 0x02)) {
+		printWarn(std::string("ignoring invalid OPENFPGALOADER_XPCU_TDO_MASK=") + value);
+		return XPCU_GPIO_TDO;
+	}
+
+	return static_cast<uint8_t>(parsed);
 }
 
 void xpcuRecoverUsbPipes(FX2_ll *fx2)
@@ -305,7 +331,11 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	 * 3/ from ISE install directory
 	 */
 
-	std::string firmware_file = findXusbFirmwareFile(pid, firmware_path);
+	const bool already_initialized = vid == XPCU_INITIALIZED_VID &&
+		pid == XPCU_INITIALIZED_PID;
+	std::string firmware_file;
+	if (!already_initialized)
+		firmware_file = findXusbFirmwareFile(pid, firmware_path);
 	// if (firmware_path.empty() && strlen(ISE_DIR) == 0 && strlen(VIVADO_DIR) == 0) {
 	// 	printError("missing FX2 firmware");
 	// 	printError("use --probe-firmware with something");
@@ -329,10 +359,15 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	// 	else
 	// 		firmware_file += "xusb_xp2.hex";
 	// }
-	printInfo("firmware_file : " + firmware_file);
+	if (!firmware_file.empty())
+		printInfo("firmware_file : " + firmware_file);
 
 	try {
-		fx2 = std::make_unique<FX2_ll>(vid, pid, XPCU_INITIALIZED_VID,
+		/* The initialized identity is also exposed as a cable definition so
+		 * --scan-usb can report it.  Do not treat that identity as an FX2
+		 * bootloader or attempt to upload firmware to it again. */
+		fx2 = std::make_unique<FX2_ll>(already_initialized ? 0 : vid,
+				already_initialized ? 0 : pid, XPCU_INITIALIZED_VID,
 				XPCU_INITIALIZED_PID, firmware_file);
 	} catch (std::exception &e) {
 		printError(e.what());
@@ -351,6 +386,10 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 
 	if (!enableDevice(true))
 		throw std::runtime_error("Unable to enable device");
+
+	if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_SELECT_GPIO,
+			nullptr, 0, 0, "select GPIO JTAG chain"))
+		throw std::runtime_error("Unable to select GPIO JTAG chain");
 
 	uint8_t buf[1];
 	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_STATUS, buf, 1,
@@ -535,6 +574,20 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 	 * accelerated-transfer trigger. */
 	if (_use_control_bitbang) {
 		uint32_t tdo_bit = 0;
+		uint32_t raw_tdo = 0;
+		uint32_t raw_tdo_bit = 0;
+		const uint8_t tdo_mask = xpcuTdoMask();
+		const bool capture_batch = _nb_tdo_bit != 0;
+		/* Command 0x38 returns the bit following the one shifted by the most
+		 * recent 0x30 clock.  The initial IDCODE/IR capture bit is mandated to
+		 * be one, so seed it and place subsequent status samples one bit later.
+		 * The sample following the final requested clock belongs to the next
+		 * TAP bit and is intentionally discarded. */
+		if (capture_batch && rx != nullptr) {
+			const uint32_t out_bit = rx_offset;
+			rx[out_bit >> 3] |= (1u << (out_bit & 7));
+			tdo_bit = 1;
+		}
 		for (uint32_t i = 0; i < _nb_bit; i++) {
 			const uint32_t buf_pos = (i >> 2) << 1;
 			const uint8_t bit_pos = i & 0x03;
@@ -544,10 +597,19 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 			if (_in_buf[buf_pos] & (TMS_IDX << bit_pos))
 				pins |= XPCU_GPIO_TMS;
 
-			/* Drive TCK low, then high: one JTAG rising edge. */
+			const bool capture = _in_buf[buf_pos + 1] & (TDO_IDX << bit_pos);
+
+			/* Set TDI/TMS while TCK is low. */
 			if (!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
-					nullptr, 0, pins) ||
-					!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
+					nullptr, 0, pins)) {
+				printError("XPCU control-transfer JTAG write failed");
+				_nb_bit = 0;
+				_nb_tdo_bit = 0;
+				return -1;
+			}
+
+			/* Complete the bit with one JTAG rising edge. */
+			if (!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
 					nullptr, 0, pins | XPCU_GPIO_TCK)) {
 				printError("XPCU control-transfer JTAG write failed");
 				_nb_bit = 0;
@@ -555,7 +617,7 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 				return -1;
 			}
 
-			if (_in_buf[buf_pos + 1] & (TDO_IDX << bit_pos)) {
+			if (capture && tdo_bit < _nb_tdo_bit) {
 				uint8_t status = 0;
 				if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_STATUS,
 						&status, 1, 0)) {
@@ -566,13 +628,23 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 				}
 				if (rx != nullptr) {
 					const uint32_t out_bit = rx_offset + tdo_bit;
-					if (status & XPCU_GPIO_TDO)
+					if (status & tdo_mask)
 						rx[out_bit >> 3] |= (1u << (out_bit & 7));
 					else
 						rx[out_bit >> 3] &= ~(1u << (out_bit & 7));
 				}
+				if (status & tdo_mask)
+					raw_tdo |= (1u << raw_tdo_bit);
+				raw_tdo_bit++;
 				tdo_bit++;
 			}
+		}
+		if (_verbose > 1 && capture_batch && _nb_tdo_bit == 32) {
+			char raw_message[96];
+			snprintf(raw_message, sizeof(raw_message),
+				"XPCU raw delayed TDO: 0x%08x (%u samples)",
+				raw_tdo, raw_tdo_bit);
+			printInfo(raw_message);
 		}
 		_nb_bit = 0;
 		_nb_tdo_bit = 0;

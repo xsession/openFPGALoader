@@ -70,6 +70,7 @@ class XilinxPlatformCableUSB : public JtagInterface {
 	int get_buffer_size() override { return static_cast<int>(_buffer_size); }
 
 	bool isFull() override { return _nb_bit >= _buffer_bit_size; }
+	bool ignoreTrailingScanArtifact() const override { return _use_control_bitbang; }
 
 	int flush() override;
 

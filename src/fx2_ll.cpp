@@ -63,6 +63,8 @@ FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
 		if (dev_handle) {
 			ret = libusb_claim_interface(dev_handle, 0);
 			if (ret) {
+				printError("claim interface failed: " +
+						std::string(libusb_error_name(ret)));
 				libusb_close(dev_handle);
 				libusb_exit(usb_ctx);
 				throw std::runtime_error("claim interface failed");
@@ -100,6 +102,8 @@ FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
 
 	ret = libusb_claim_interface(dev_handle, 0);
 	if (ret) {
+		printError("claim interface failed: " +
+				std::string(libusb_error_name(ret)));
 		libusb_close(dev_handle);
 		libusb_exit(usb_ctx);
 		throw std::runtime_error("claim interface failed");
@@ -204,22 +208,21 @@ FX2_ll::~FX2_ll()
 /* close device after releasing interface */
 bool FX2_ll::close()
 {
+	bool success = true;
 	if (dev_handle) {
 		int ret;
 		ret = libusb_release_interface(dev_handle, 0);
-		if (ret != 0) {
-			/* device is already disconnected */
-			if (ret == LIBUSB_ERROR_NO_DEVICE) {
-				return true;
-			} else {
-				printError("Error: Fail to release interface");
-				return false;
-			}
+		if (ret != LIBUSB_SUCCESS && ret != LIBUSB_ERROR_NO_DEVICE) {
+			printError("Error: Fail to release interface: " +
+					std::string(libusb_error_name(ret)));
+			success = false;
 		}
+		/* Always close the handle, including failed-release and disconnected
+		 * cases, so a later process can claim the WinUSB interface. */
 		libusb_close(dev_handle);
 		dev_handle = nullptr;
 	}
-	return true;
+	return success;
 }
 
 /* write len byte in bulk using endpoint */

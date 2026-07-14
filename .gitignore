@@ -53,3 +53,5 @@ build-docker-windows/
 dist/
 
 test_fw/
+
+build-native-xpcu/

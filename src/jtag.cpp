@@ -295,6 +295,12 @@ int Jtag::detectChain(unsigned max_dev)
 			found = search_and_insert_device_with_idcode(tmp & 0x0fffffff);
 
 		if (!found) {
+			if (!_devices_list.empty() && _jtag->ignoreTrailingScanArtifact()) {
+				snprintf(message, sizeof(message),
+					"ignoring XPCU control-mode trailing scan word 0x%08x", tmp);
+				printWarn(message);
+				break;
+			}
 			uint16_t mfg = IDCODE2MANUFACTURERID(tmp);
 			uint8_t part = IDCODE2PART(tmp);
 			uint8_t vers = IDCODE2VERS(tmp);

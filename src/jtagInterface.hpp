@@ -97,6 +97,10 @@ class JtagInterface {
 	 */
 	virtual bool isFull() = 0;
 
+	/* Some legacy transports can read valid devices but cannot reliably
+	 * propagate the all-ones chain terminator through their fallback path. */
+	virtual bool ignoreTrailingScanArtifact() const { return false; }
+
 	/*!
 	 * \brief force internal flush buffer
 	 * \return 1 if success, 0 if nothing to write, -1 is something wrong
