@@ -86,7 +86,35 @@ times out and stalls endpoint zero. Windows therefore defaults to the reliable
 control-transfer implementation. The accelerated path remains available as an
 explicit experiment with `OPENFPGALOADER_XPCU_ACCELERATED=1`.
 
-### 5. Close the USB handle after disconnects or release errors
+Further tests ruled out the Windows backend and interface selection as the
+cause. The same `0xA6` request timed out with both WinUSB and libusbK, and both
+with normal alternate-setting selection and with selection bypassed. Each
+timeout left endpoint zero unusable until the cable was fully power-cycled.
+
+The reverse-engineered protocol defines the 24-bit A6 transfer count as
+zero-based (`N - 1`). An experimental actual-count (`N`) build timed out in the
+same way and was reverted.
+
+### 5. Firmware variants and upload speed
+
+The working `xusb_emb.hex` reports firmware `0404`. Its control-transfer path
+requires two synchronous GPIO writes for every JTAG bit, plus status reads when
+TDO is captured. The displayed JTAG frequency is therefore the cable clock
+setting, not the achieved host-to-cable throughput. A bitstream upload reaching
+only 9% after 5--10 minutes is expected with this fallback and can take roughly
+an hour.
+
+The packaged `xusb_xlp.hex` is byte-for-byte identical to `xusb_emb.hex` and is
+not an accelerated XLP `1705` image. Loading `xusb_xp2.hex` into this
+`03fd:000d` cable was also tested and is incompatible: it returned versions
+`fc08`/`feff`, status `00`, and no target connection. Do not use XP2 firmware
+for this boot identity.
+
+A genuine Xilinx XLP firmware image is still needed to test the remaining
+full-speed path. It must come from an appropriate ISE installation; renaming a
+different HEX file is not sufficient.
+
+### 6. Close the USB handle after disconnects or release errors
 
 The FX2 cleanup path now closes the libusb handle even if interface release
 fails because the device has disconnected. This was verified by running two
@@ -107,12 +135,17 @@ Relevant source:
 | Read cable versions | FX2 `0404`, CPLD `1200` |
 | Read status | `0x43`, `connected: yes` |
 | Accelerated `0xA6` path | Timed out; experimental/disabled by default on Windows |
+| Accelerated path with libusbK | Same timeout as WinUSB; backend ruled out |
+| Accelerated path without alternate-setting selection | Same timeout; setting ruled out |
+| Experimental A6 count `N` instead of `N-1` | Same timeout; reverted to documented zero-based count |
+| `xusb_xp2.hex` on boot PID `000d` | Incompatible versions/status; do not use |
 | Forced control path after power cycle | Stable, no USB timeout, exit code 0 |
 | Second initialized-PID run without reconnect | Stable, proving teardown/reopen works |
 | Target TAP detection, old TDO mask `0x02` | `found 0 devices` |
 | Old delayed TDO stream with mask `0x01` | One-bit-shifted IDCODE `0xa2014049` |
 | Corrected control decoder | `0x04028093`, `xc6slx45T`, IR length 6 |
 | Repeated detection at 750 kHz and 6 MHz | Success, exit code 0 |
+| Digilent `0403:6014` (`digilent_hs2`) | Works at 6 MHz, but reaches a different XC7A35T board |
 
 The official driver identified the panel target as an XC6SLX45T. The diagnostic
 value was not random: shifting `0xa2014049` left by one and restoring mandatory
