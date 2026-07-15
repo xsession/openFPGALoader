@@ -52,3 +52,9 @@ rem flash upload
 
 
  .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs      
+
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs --bridge ..\..\..\..\test_fw\5042-9033\pab0_top.bit
+
+
+
+

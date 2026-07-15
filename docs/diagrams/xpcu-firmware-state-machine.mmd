@@ -1,0 +1,26 @@
+flowchart TD
+  P["Apply USB power"] --> D{"USB product ID"}
+
+  D -->|"03fd:000d embedded cable"| EMB["Upload xusb_emb.hex<br/>FX2 0x0404"]
+  EMB --> E8["Re-enumerate as 03fd:0008"]
+  E8 --> XLP["Reload xusb_xlp.hex<br/>FX2 0x0517"]
+  XLP --> PRIME["Prime XPCU bulk engine<br/>speed 0x11, A6, two zero bytes, speed 0x12"]
+  PRIME --> EXT["Select external JTAG chain"]
+  EXT --> TAP["Detect or program target TAP"]
+
+  D -->|"03fd:0013 Platform Cable USB II"| XP2L["Upload extracted xusb_xp2_loader.hex<br/>FX2 0x08FD"]
+  XP2L --> X8["Re-enumerate as 03fd:0008"]
+  X8 --> XP2["Reload xusb_xp2.hex<br/>FX2 0x0961"]
+  XP2 --> C{"Internal FPGA firmware"}
+  C -->|"loaded"| XP2EXT["Enable cable output and external chain"]
+  XP2EXT --> TAP
+  C -->|"not loaded: CPLD/FPGA reports 0xFFFE"| FMWR["Replay xusb_xp2.fmwr<br/>through cable-internal JTAG"]
+  FMWR --> XP2EXT
+
+  D -->|"03fd:0008 already initialized"| V["Read FX2 and internal-logic versions"]
+  V -->|"0x0404 or 0x0517"| EXT
+  V -->|"0x0961 plus valid internal logic"| XP2EXT
+  V -->|"0x0961 plus 0xFFFE"| FMWR
+
+  FAIL["Any endpoint-zero stall or corrupt IDCODE"] --> CYCLE["Remove USB and target power completely"]
+  CYCLE --> P

@@ -6,14 +6,15 @@ Cable: Xilinx Platform Cable USB II (`VID 03fd`)
 
 ## Outcome
 
-The Windows deployment and cable transport are working. openFPGALoader can:
+The Windows deployment and embedded-cable transport (`03fd:000d`) are working.
+openFPGALoader can:
 
 1. find the cable in its boot identity;
 2. upload `xusb_emb.hex`;
 3. follow the USB disconnect/re-enumeration;
 4. open the initialized cable;
 5. read the FX2 and CPLD versions and cable status;
-6. load the XLP `1705` second-stage firmware automatically;
+6. load the XLP `0517` second-stage firmware automatically;
 7. use accelerated bulk JTAG transfers and program an XC6SLX45T successfully.
 
 The final accelerated test programmed the 1.48 MB SP605
@@ -87,7 +88,7 @@ JTAG connector before transfers begin.
 
 With EMB firmware `0404`, accelerated XPCU request `0xA6` times out and stalls
 endpoint zero. That firmware therefore uses the reliable but slow
-control-transfer implementation. XLP firmware `1705` supports the accelerated
+control-transfer implementation. XLP firmware `0517` supports the accelerated
 engine after it is primed with the reference speed/transfer sequence; current
 builds select this path automatically.
 
@@ -109,13 +110,13 @@ setting, not the achieved host-to-cable throughput. A bitstream upload reaching
 only 9% after 5--10 minutes is expected with this fallback and can take roughly
 an hour.
 
-The newly supplied `xusb_xlp.hex` is genuine XLP firmware `1705`, but it is an
+The newly supplied `xusb_xlp.hex` is genuine XLP firmware `0517`, but it is an
 upgrade image rather than standalone boot firmware. Copying it over
 `xusb_emb.hex` made the cable fall back to boot PID `03fd:000d` after the reload
 wait. The correct pair is:
 
 - `xusb_emb.hex` version `0404` for initial boot and enumeration as `0008`;
-- `xusb_xlp.hex` version `1705` for the second-stage reload and accelerated JTAG.
+- `xusb_xlp.hex` version `0517` for the second-stage reload and accelerated JTAG.
 
 The loader reads the embedded HEX version, automatically performs this
 two-stage sequence for cold PID `000d`, reopens PID `0008`, and primes the
@@ -152,9 +153,9 @@ Relevant source:
 | Old delayed TDO stream with mask `0x01` | One-bit-shifted IDCODE `0xa2014049` |
 | Corrected control decoder | `0x04028093`, `xc6slx45T`, IR length 6 |
 | Repeated detection at 750 kHz and 6 MHz | Success, exit code 0 |
-| EMB `0404` then XLP `1705` automatic reload | Success; PID `0008` reopened |
-| XLP `1705` accelerated detect at 6 MHz | XC6SLX45T found, exit code 0 |
-| XLP `1705` accelerated SRAM program | 1.48 MB bitstream in 4.124 seconds, DONE=1 |
+| EMB `0404` then XLP `0517` automatic reload | Success; PID `0008` reopened |
+| XLP `0517` accelerated detect at 6 MHz | XC6SLX45T found, exit code 0 |
+| XLP `0517` accelerated SRAM program | 1.48 MB bitstream in 4.124 seconds, DONE=1 |
 | Digilent `0403:6014` (`digilent_hs2`) | Works at 6 MHz, but reaches a different XC7A35T board |
 
 The official driver identified the panel target as an XC6SLX45T. The diagnostic
@@ -228,6 +229,8 @@ That is a healthy initialized state, not an error.
 | `OPENFPGALOADER_XPCU_TDO_MASK=0x01` or `0x02` | Diagnostic TDO-bit selection; do not use as a normal fix |
 
 ## References
+
+- [Complete technical reproduction guide](xilinx-platform-cable-usb-technical-reproduction.md)
 
 - [XPCU reverse-engineering notes](https://diamondman.github.io/Adapt/cable_xilinx_PCU.html)
 - [Driver deployment guide](../externals/xilinx-usb-driver/DEPLOYMENT.md)
