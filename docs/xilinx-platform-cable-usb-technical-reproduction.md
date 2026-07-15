@@ -228,7 +228,10 @@ disable -> speed class 0x11 -> enable -> A6 transfer count 2
 -> bulk OUT 00 00 -> speed class 0x12 -> restore requested speed
 ```
 
-The 24-bit A6 count is zero based (`number_of_bits - 1`).
+The tested XLP firmware requires the zero-based transfer value
+`number_of_bits - 1`. Sending `N` makes common 32-bit scans a multiple-of-four
+XPCU CPLD failure case and stalls bulk IN. A USER/SPI readback problem must not
+be diagnosed by changing this count after the accelerator is working.
 
 Program SRAM with the same cable name and the desired `.bit` file:
 
@@ -383,6 +386,7 @@ version masking.
 | `OPENFPGALOADER_XPCU_CTRL_RETRY_DELAY_MS` | delay between control retries |
 | `OPENFPGALOADER_XPCU_OUT_EP` / `..._IN_EP` | developer endpoint override |
 | `OPENFPGALOADER_XPCU_TDO_MASK` | developer-only TDO mask override |
+| `OPENFPGALOADER_XPCU_TRACE_A6=1` | print raw accelerated bulk-IN data for alignment debugging |
 
 Unset experiments before a normal test:
 
@@ -445,7 +449,63 @@ Do not combine results taken before and after a failed `0xA6` request without a
 power cycle. That was the main source of false conclusions in the original
 session.
 
-## 14. Related project documentation
+## 14. External W25Q64 flash investigation
+
+The `5042-9033` target uses an `XC6SLX45T-FGG484` and identifies its attached
+configuration memory in iMPACT as a Winbond `W25Q64BV/CV`, data width 4.
+
+Do not use `test_fw/5042-9033/pab0_top.bit` with `--bridge`. Its BIT header is:
+
+```text
+pab0_top.ncd;HW_TIMEOUT=FALSE;UserID=0xFFFFFFFF
+6slx45tfgg484
+```
+
+It is a normal application image and contains no openFPGALoader SPI-over-JTAG
+protocol. `Unknown key HW_TIMEOUT` is only an unrecognised BIT-header field; it
+is not the flash failure. With that file loaded, the absent USER interface is
+reported as legacy `SOJ version: 1.000000` and JEDEC detection returns zero.
+
+Omit `--bridge` so `--fpga-part xc6slx45tfgg484` selects the packaged
+`spiOverJtag_xc6slx45tfgg484.bit.gz` automatically:
+
+```powershell
+& $ofl -c xilinxPlatformCableUsb_alt `
+  --fpga-part xc6slx45tfgg484 --external-flash `
+  -f .\test_fw\5042-9033\FW-5042-9033-T30.mcs
+```
+
+The packaged bridge is dated 2024-03-28 and predates the 2025 v2 bridge core.
+It is legitimately reported as SOJ v1 because it has no USER4 version endpoint.
+Raw A6 tracing nevertheless proved that its USER1 flash response is also zero:
+
+```text
+XPCU A6 RX: bytes=4 data=93800244  # valid FPGA IDCODE stream
+XPCU A6 RX: bytes=6 data=000000000000  # USER1 / JEDEC response
+```
+
+Reducing the requested JTAG frequency to 100 kHz (750 kHz was the cable's
+minimum realised frequency) did not change the zero response. Current bridge
+source uses an updated v2 protocol and opposite Spartan-6 SPI clock phase, so
+the next controlled experiment is to rebuild the bridge with ISE 14.7 and test
+USER4 `02.00` plus JEDEC ID before erasing flash.
+
+The local ISE installation can run iMPACT but has no user/WebPACK synthesis
+license configured. Both Edalize/`xtclsh` and direct XST stopped before creating
+a synthesis report. The temporary `libPortabilityNOSH.dll` compatibility test
+was reverted and the original installed DLL was hash-verified and restored.
+Configure a valid Spartan-6 WebPACK license with
+`E:\Xilinx\14.7\ISE_DS\common\bin\nt64\xlcm.exe` before rebuilding:
+
+```powershell
+Set-Location .\spiOverJtag
+cmd.exe /d /c "call E:\Xilinx\14.7\ISE_DS\settings64.bat && python build.py xc6slx45tfgg484 spi"
+```
+
+Only after `--detect -f` prints a nonzero JEDEC ID should the MCS write be
+allowed to proceed.
+
+## 15. Related project documentation
 
 - [Windows debug-session summary](xilinx-platform-cable-usb-windows-debug.md)
 - [Driver deployment guide](../externals/xilinx-usb-driver/DEPLOYMENT.md)

@@ -97,9 +97,9 @@ cause. The same `0xA6` request timed out with both WinUSB and libusbK, and both
 with normal alternate-setting selection and with selection bypassed. Each
 timeout left endpoint zero unusable until the cable was fully power-cycled.
 
-The reverse-engineered protocol defines the 24-bit A6 transfer count as
-zero-based (`N - 1`). An experimental actual-count (`N`) build timed out in the
-same way and was reverted.
+The tested firmware requires the 24-bit A6 transfer value to remain zero based
+(`N - 1`). Sending `N` makes common 32-bit scans a multiple-of-four XPCU CPLD
+failure case, stalls bulk IN, and poisons the USB state until a power cycle.
 
 ### 5. Firmware variants and upload speed
 
@@ -145,7 +145,7 @@ Relevant source:
 | EMB `0404` accelerated `0xA6` path | Timed out; use its control fallback |
 | Accelerated path with libusbK | Same timeout as WinUSB; backend ruled out |
 | Accelerated path without alternate-setting selection | Same timeout; setting ruled out |
-| Experimental A6 count `N` instead of `N-1` | Same timeout; reverted to documented zero-based count |
+| A6 count `N` | 32-bit scan stalls bulk IN; reverted to zero-based `N-1` |
 | `xusb_xp2.hex` on boot PID `000d` | Incompatible versions/status; do not use |
 | Forced control path after power cycle | Stable, no USB timeout, exit code 0 |
 | Second initialized-PID run without reconnect | Stable, proving teardown/reopen works |

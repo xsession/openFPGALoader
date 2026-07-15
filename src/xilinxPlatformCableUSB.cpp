@@ -764,7 +764,9 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 		printInfo(message);
 	}
 
-	/* count is 0-indexed per protocol spec */
+	/* This firmware expects the zero-based transfer count.  Sending N directly
+	 * also makes common 32-bit scans a multiple of four, a known XPCU CPLD
+	 * failure case which stalls the bulk IN endpoint. */
 	if (!xpcuGpioTransferCtrl(fx2.get(), _nb_bit - 1)) {
 		printWarn("XPCU accelerated transfer is unavailable; switching to control-transfer JTAG mode");
 		printWarn("set OPENFPGALOADER_XPCU_CONTROL_BITBANG=1 to select this mode immediately");
@@ -793,7 +795,7 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 			printError("try Zadig WinUSB/libusbK for the post-firmware 03fd:0008 interface, or test OPENFPGALOADER_XPCU_OUT_EP / OPENFPGALOADER_XPCU_IN_EP");
 			return -1;
 		}
-		if (_verbose > 1) {
+		if (_verbose > 1 || xpcuBoolEnv("OPENFPGALOADER_XPCU_TRACE_A6")) {
 			char message[256];
 			int off = snprintf(message, sizeof(message), "XPCU A6 RX: bytes=%u data=",
 				xfer_rx);
