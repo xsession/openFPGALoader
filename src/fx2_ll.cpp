@@ -44,6 +44,30 @@ unsigned int fx2ControlTimeoutMs()
 	return static_cast<unsigned int>(parsed);
 }
 
+int fx2ClaimInterface(libusb_device_handle *handle)
+{
+	int configuration = 0;
+	int ret = libusb_get_configuration(handle, &configuration);
+	if (ret == LIBUSB_SUCCESS && configuration == 0) {
+		ret = libusb_set_configuration(handle, 1);
+		if (ret != LIBUSB_SUCCESS && ret != LIBUSB_ERROR_BUSY &&
+				ret != LIBUSB_ERROR_NOT_SUPPORTED)
+			return ret;
+	}
+
+	ret = libusb_claim_interface(handle, 0);
+	if (ret != LIBUSB_ERROR_NOT_FOUND)
+		return ret;
+
+	/* Some FX2 loader firmware reaches Windows before its first
+	 * configuration has become active. Select it explicitly and retry. */
+	const int config_ret = libusb_set_configuration(handle, 1);
+	if (config_ret != LIBUSB_SUCCESS && config_ret != LIBUSB_ERROR_BUSY &&
+			config_ret != LIBUSB_ERROR_NOT_SUPPORTED)
+		return config_ret;
+	return libusb_claim_interface(handle, 0);
+}
+
 } // namespace
 
 FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
@@ -100,7 +124,7 @@ FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
 	}
 	progress.done();
 
-	ret = libusb_claim_interface(dev_handle, 0);
+	ret = fx2ClaimInterface(dev_handle);
 	if (ret) {
 		printError("claim interface failed: " +
 				std::string(libusb_error_name(ret)));
@@ -299,6 +323,41 @@ bool FX2_ll::reset_device()
 		printWarn("FX2 USB reset failed: " + std::string(libusb_error_name(ret)));
 		return false;
 	}
+	return true;
+}
+
+bool FX2_ll::reload_firmware(const std::string &firmware_path, uint16_t vid,
+		uint16_t pid)
+{
+	if (!dev_handle || !load_firmware(firmware_path))
+		return false;
+
+	close();
+
+	ProgressBar progress("Waiting firmware upgrade reload", 30, 50, false);
+	for (int attempt = 0; attempt < 30; attempt++) {
+		dev_handle = libusb_open_device_with_vid_pid(usb_ctx, vid, pid);
+		progress.display(attempt + 1);
+		if (dev_handle)
+			break;
+		sleep(1);
+	}
+
+	if (!dev_handle) {
+		progress.fail();
+		return false;
+	}
+	progress.done();
+
+	const int ret = fx2ClaimInterface(dev_handle);
+	if (ret != LIBUSB_SUCCESS) {
+		printError("claim interface after firmware upgrade failed: " +
+				std::string(libusb_error_name(ret)));
+		libusb_close(dev_handle);
+		dev_handle = nullptr;
+		return false;
+	}
+
 	return true;
 }
 

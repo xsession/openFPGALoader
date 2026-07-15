@@ -297,7 +297,7 @@ int Jtag::detectChain(unsigned max_dev)
 		if (!found) {
 			if (!_devices_list.empty() && _jtag->ignoreTrailingScanArtifact()) {
 				snprintf(message, sizeof(message),
-					"ignoring XPCU control-mode trailing scan word 0x%08x", tmp);
+					"ignoring XPCU trailing scan word 0x%08x", tmp);
 				printWarn(message);
 				break;
 			}

@@ -108,6 +108,16 @@ eturn true on success
 	 */
 	bool reset_device();
 
+	/*!
+	 * \brief replace firmware on an already initialized FX2 and reopen it
+	 * \param[in] firmware_path: firmware HEX to load
+	 * \param[in] vid: USB vendor ID expected after reload
+	 * \param[in] pid: USB product ID expected after reload
+	 * \return true when the firmware was loaded and the device reopened
+	 */
+	bool reload_firmware(const std::string &firmware_path, uint16_t vid,
+			uint16_t pid);
+
  private:
 	/*!
 	 * \brief load firmware into device

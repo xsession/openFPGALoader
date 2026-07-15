@@ -75,15 +75,52 @@ std::string firmwareLeafForPid(uint16_t pid)
 
 std::string findPackagedFirmware(uint16_t pid)
 {
+	const std::string leaf = (pid == 0x0013) ?
+		"xusb_xp2_loader.hex" : firmwareLeafForPid(pid);
     const std::string candidate = PathHelper::absolutePath(
-        std::string(DATA_DIR) + "/openFPGALoader/" + firmwareLeafForPid(pid)
+        std::string(DATA_DIR) + "/openFPGALoader/" + leaf
     );
 
     if (fileExists(candidate)) {
         return candidate;
     }
 
-    return {};
+	return {};
+}
+
+std::string findUpgradeFirmware(uint16_t pid)
+{
+	const bool xp2 = pid == 0x0013;
+	const char *env = std::getenv(xp2 ?
+		"OPENFPGALOADER_XUSB_XP2_FIRMWARE" :
+		"OPENFPGALOADER_XUSB_XLP_FIRMWARE");
+	if (env != nullptr && env[0] != '\0') {
+		const std::string env_path = PathHelper::absolutePath(env);
+		if (fileExists(env_path))
+			return env_path;
+	}
+
+	const std::string packaged = PathHelper::absolutePath(
+		std::string(DATA_DIR) + "/openFPGALoader/" +
+		(xp2 ? "xusb_xp2.hex" : "xusb_xlp.hex"));
+	return fileExists(packaged) ? packaged : std::string();
+}
+
+uint16_t firmwareHexVersion(const std::string &path)
+{
+	std::ifstream firmware(path);
+	std::string line;
+	while (std::getline(firmware, line)) {
+		if (line.rfind(":0219B900", 0) != 0 || line.size() < 13)
+			continue;
+		const std::string version_text = line.substr(9, 4);
+		char *end = nullptr;
+		const unsigned long raw = std::strtoul(version_text.c_str(), &end, 16);
+		if (end == nullptr || *end != '\0' || raw > 0xffff)
+			return 0;
+		return static_cast<uint16_t>(raw);
+	}
+	return 0;
 }
 
 std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path)
@@ -197,6 +234,12 @@ bool xpcuForceControlBitbang()
 #endif
 }
 
+bool xpcuExplicitControlBitbang()
+{
+	return xpcuBoolEnv("OPENFPGALOADER_XPCU_CONTROL_BITBANG") ||
+		xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_GPIO_TRANSFER_CTRL");
+}
+
 uint8_t xpcuTdoMask()
 {
 	const char *value = std::getenv("OPENFPGALOADER_XPCU_TDO_MASK");
@@ -264,6 +307,25 @@ bool xpcuWriteCtrlRetry(FX2_ll *fx2, uint8_t request, uint16_t value,
 
 	printError(std::string("XPCU control write failed after retries: ") + what);
 	return false;
+}
+
+bool xpcuPrimeAcceleratedTransfer(FX2_ll *fx2)
+{
+	uint8_t zero[2] = {0, 0};
+	if (!xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_DISABLE,
+			nullptr, 0, 0, "disable before accelerated prime") ||
+			!xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_SET_SPEED,
+			nullptr, 0, 0x11, "accelerated prime speed") ||
+			!xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_ENABLE,
+			nullptr, 0, 0, "enable before accelerated prime") ||
+			!xpcuGpioTransferCtrl(fx2, 2))
+		return false;
+
+	if (fx2->write(xpcu_ep_jtag_out, zero, sizeof(zero)) != sizeof(zero))
+		return false;
+
+	return xpcuWriteCtrlRetry(fx2, XPCU_BREQUEST, XPCU_CMD_SET_SPEED,
+		nullptr, 0, 0x12, "post-prime speed");
 }
 
 void waitForXpcuControlReady(FX2_ll *fx2)
@@ -374,10 +436,38 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		throw std::runtime_error("lowlevel init failed");
 	}
 
+	const std::string upgrade_firmware = findUpgradeFirmware(pid);
+	const uint16_t upgrade_version = upgrade_firmware.empty() ? 0 :
+		firmwareHexVersion(upgrade_firmware);
+	const bool xp2_upgrade = pid == 0x0013;
+	const bool force_upgrade = xpcuBoolEnv(xp2_upgrade ?
+		"OPENFPGALOADER_XPCU_XP2_UPGRADE" :
+		"OPENFPGALOADER_XPCU_XLP_UPGRADE");
+	const bool auto_upgrade = !already_initialized &&
+		(pid == 0x000d || pid == 0x0013) && upgrade_version != 0;
+	const bool skip_upgrade =
+		xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_FIRMWARE_UPGRADE") ||
+		xpcuBoolEnv(xp2_upgrade ? "OPENFPGALOADER_XPCU_SKIP_XP2_UPGRADE" :
+			"OPENFPGALOADER_XPCU_SKIP_XLP_UPGRADE");
+	if (!skip_upgrade && (force_upgrade || auto_upgrade)) {
+		if (upgrade_firmware.empty() || upgrade_version == 0)
+			throw std::runtime_error("XPCU firmware upgrade requested but the upgrade HEX was not found or is invalid");
+		char version_text[16];
+		snprintf(version_text, sizeof(version_text), "%04x", upgrade_version);
+		printInfo(std::string("XPCU ") + (xp2_upgrade ? "XP2" : "XLP") +
+			" upgrade firmware: " + upgrade_firmware + " (version " +
+			version_text + ")");
+		if (!fx2->reload_firmware(upgrade_firmware, XPCU_INITIALIZED_VID,
+				XPCU_INITIALIZED_PID))
+			throw std::runtime_error("XPCU firmware upgrade/reload failed");
+	}
+
 	configureXpcuUsbInterface(fx2.get());
 	waitForXpcuControlReady(fx2.get());
 
-	displayCableVersion();
+	const uint16_t fx2_firmware_version = displayCableVersion();
+	if (fx2_firmware_version != 0x0404 && !xpcuExplicitControlBitbang())
+		_use_control_bitbang = false;
 
 	/* Write GPIO bit */
 	if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, 0x030, nullptr, 0,
@@ -404,6 +494,14 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	_in_buf = std::make_unique<uint8_t[]>(_buffer_size);
 
 	setClkFreq(clkHz);
+	if (!_use_control_bitbang && fx2_firmware_version != 0x0404) {
+		if (!xpcuPrimeAcceleratedTransfer(fx2.get()))
+			throw std::runtime_error("Unable to prime XPCU accelerated transfer engine");
+		/* The prime sequence ends at speed class 0x12. Restore the requested
+		 * rate after the accelerator is active. */
+		setClkFreq(clkHz);
+		printInfo("XPCU accelerated transfer engine primed");
+	}
 	if (_use_control_bitbang) {
 		printWarn("XPCU control-transfer JTAG mode forced; transfers will be slower");
 	}
@@ -654,6 +752,17 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 	/* N ops: N/4 pairs of 2 bytes each (round up to complete pair) */
 	uint32_t xfer_tx = (_nb_bit >> 1) & ~0x01u;
 	xfer_tx += ((_nb_bit & 0x03) != 0) ? 2 : 0;
+	if (_verbose > 1) {
+		char message[256];
+		int off = snprintf(message, sizeof(message),
+			"XPCU A6 TX: bits=%u tdo=%u bytes=%u data=",
+			_nb_bit, _nb_tdo_bit, xfer_tx);
+		for (uint32_t i = 0; i < xfer_tx && i < 16 && off > 0 &&
+				off < static_cast<int>(sizeof(message)); i++)
+			off += snprintf(message + off, sizeof(message) - off, "%02x",
+					_in_buf[i]);
+		printInfo(message);
+	}
 
 	/* count is 0-indexed per protocol spec */
 	if (!xpcuGpioTransferCtrl(fx2.get(), _nb_bit - 1)) {
@@ -683,6 +792,16 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 			printError("XPCU bulk IN transfer failed on endpoint " + endpointToHex(xpcu_ep_jtag_in));
 			printError("try Zadig WinUSB/libusbK for the post-firmware 03fd:0008 interface, or test OPENFPGALOADER_XPCU_OUT_EP / OPENFPGALOADER_XPCU_IN_EP");
 			return -1;
+		}
+		if (_verbose > 1) {
+			char message[256];
+			int off = snprintf(message, sizeof(message), "XPCU A6 RX: bytes=%u data=",
+				xfer_rx);
+			for (uint32_t i = 0; i < xfer_rx && i < 32 && off > 0 &&
+					off < static_cast<int>(sizeof(message)); i++)
+				off += snprintf(message + off, sizeof(message) - off, "%02x",
+						rx_buf[i]);
+			printInfo(message);
 		}
 
 		/* Decode shift-register encoded TDO bits into rx.
@@ -738,38 +857,39 @@ bool XilinxPlatformCableUSB::enableDevice(bool enable)
 	return true;
 }
 
-void XilinxPlatformCableUSB::displayCableVersion()
+uint16_t XilinxPlatformCableUSB::displayCableVersion()
 {
 	uint8_t buf[2];
 
 	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_RETURN_CONSTANT,
 			buf, 2, 0, "constant"))
 		throw std::runtime_error("Unable to read constant.");
-	const uint16_t const0 = ((uint16_t)buf[0] << 8) | buf[1];
+	const uint16_t const0 = ((uint16_t)buf[1] << 8) | buf[0];
 
 	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
 			buf, 2, 0, "firmware version"))
 		throw std::runtime_error("Unable to read firmware version.");
-	const uint16_t fx2_firmware = ((uint16_t)buf[0] << 8) | buf[1];
+	const uint16_t fx2_firmware = ((uint16_t)buf[1] << 8) | buf[0];
 
 	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
 			buf, 2, XPCU_VERSION_CPLD, "CPLD version"))
 		throw std::runtime_error("Unable to read CPLD version.");
-	const uint16_t cpld_firmware = ((uint16_t)buf[0] << 8) | buf[1];
+	const uint16_t cpld_firmware = ((uint16_t)buf[1] << 8) | buf[0];
 
 	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
 			buf, 2, XPCU_VERSION_CONST1, "const 1"))
 		throw std::runtime_error("Unable to read const 1.");
-	const uint16_t const1 = ((uint16_t)buf[0] << 8) | buf[1];
+	const uint16_t const1 = ((uint16_t)buf[1] << 8) | buf[0];
 
 	if (!xpcuReadCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GET_VERSION,
 			buf, 2, XPCU_VERSION_CONST2, "const 2"))
 		throw std::runtime_error("Unable to read const 2.");
-	const uint16_t const2 = ((uint16_t)buf[0] << 8) | buf[1];
+	const uint16_t const2 = ((uint16_t)buf[1] << 8) | buf[0];
 
 	printf("FX2 version:    %04x\n", fx2_firmware);
 	printf("CPLD version:   %04x\n", cpld_firmware);
 	printf("Const0 version: %04x\n", const0);
 	printf("Const1 version: %04x\n", const1);
 	printf("Const2 version: %04x\n", const2);
+	return fx2_firmware;
 }

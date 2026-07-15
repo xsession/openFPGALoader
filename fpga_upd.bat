@@ -48,3 +48,7 @@ rem flash upload
 .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --detect   
 
 .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --freq 700000 --detect
+
+
+
+ .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs      
