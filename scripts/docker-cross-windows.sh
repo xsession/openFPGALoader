@@ -60,11 +60,18 @@ cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G Ninja \
 cmake --build "${BUILD_DIR}" --parallel "$(nproc)"
 cmake --install "${BUILD_DIR}"
 
-# Copy Xilinx Platform Cable USB FX2 firmware into the portable package when
-# the Docker image was built with xilinx-xusb mirrored into CROSS_PREFIX.
+# Copy Xilinx Platform Cable USB FX2 firmware into the portable package.
+# The repository is bind-mounted at /src by Docker Compose, so locally supplied
+# ISE firmware is available here at runtime (but not during Docker image build).
 mkdir -p "${PREFIX_DIR}/share/openFPGALoader"
 
-if compgen -G "${CROSS_PREFIX}/share/openFPGALoader/*.hex" >/dev/null; then
+LOCAL_FIRMWARE_DIR="${ROOT_DIR}/ise_programmer_bins"
+
+if compgen -G "${LOCAL_FIRMWARE_DIR}/*.hex" >/dev/null; then
+  cp -f "${LOCAL_FIRMWARE_DIR}/"*.hex \
+    "${PREFIX_DIR}/share/openFPGALoader/"
+  echo "Copied Xilinx firmware from ${LOCAL_FIRMWARE_DIR}"
+elif compgen -G "${CROSS_PREFIX}/share/openFPGALoader/*.hex" >/dev/null; then
   cp -f "${CROSS_PREFIX}/share/openFPGALoader/"*.hex \
     "${PREFIX_DIR}/share/openFPGALoader/"
 fi

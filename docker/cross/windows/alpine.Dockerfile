@@ -13,7 +13,7 @@ ARG ZLIB_VERSION=1.3.2
 ARG LIBUSB_VERSION=1.0.29
 ARG HIDAPI_VERSION=0.15.0
 ARG LIBFTDI_VERSION=1.5
-ARG XILINX_XUSB_REPO=https://github.com/gabrieldurante/xilinx-xusb.git
+# ARG XILINX_XUSB_REPO=https://github.com/gabrieldurante/xilinx-xusb.git
 
 ENV TARGET_TRIPLE=${TARGET_TRIPLE} \
     CROSS_PREFIX=${CROSS_PREFIX} \
@@ -116,18 +116,10 @@ RUN set -eux; \
     cmake --build libftdi-build; \
     cmake --install libftdi-build
 
-# Optional Xilinx Platform Cable USB FX2 firmware mirror.
-# The files are copied into the cross prefix and later into the portable
-# Windows package by scripts/docker-cross-windows.sh.
-# Verify redistribution rights before publishing release artifacts that include
-# these firmware files.
-RUN set -eux; \
-    cd /build-deps; \
-    git clone --depth 1 "${XILINX_XUSB_REPO}" xilinx-xusb; \
-    mkdir -p "${CROSS_PREFIX}/share/openFPGALoader"; \
-    cp xilinx-xusb/*.hex "${CROSS_PREFIX}/share/openFPGALoader/"; \
-    ls -l "${CROSS_PREFIX}/share/openFPGALoader"; \
-    rm -rf /build-deps
+# Local Xilinx firmware is copied by scripts/docker-cross-windows.sh at
+# container runtime. The Compose bind mount at /src does not exist while this
+# image is being built, so /src/ise_programmer_bins cannot be read in a RUN
+# instruction here.
 
 WORKDIR /src
 
