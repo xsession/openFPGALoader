@@ -1000,7 +1000,7 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 			("b,board",     "board name, may be used instead of cable",
 				cxxopts::value<std::string>(args->board))
 			("B,bridge",    "disable spiOverJtag model detection by providing "
-				"bitstream(intel/xilinx)",
+				"bitstream/intel/xilinx bridge file (for example .bit, .bit.gz, .cor)",
 				cxxopts::value<std::string>(args->bridge_path))
 			("c,cable", "jtag interface", cxxopts::value<std::string>(args->cable))
 			("status-pin",

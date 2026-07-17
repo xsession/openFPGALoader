@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <cctype>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -48,6 +49,33 @@ std::string format_hex32(uint32_t value)
 	std::ostringstream oss;
 	oss << "0x" << std::hex << std::setw(8) << std::setfill('0') << value;
 	return oss.str();
+}
+
+std::string to_lower_copy(const std::string &value)
+{
+	std::string result = value;
+	for (char &ch : result) {
+		ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+	}
+	return result;
+}
+
+std::string detect_config_extension(const std::string &filename)
+{
+	const std::string lower = to_lower_copy(filename);
+	const size_t last_dot = lower.rfind('.');
+	if (last_dot == std::string::npos || last_dot + 1 >= lower.size())
+		return "";
+
+	std::string extension = lower.substr(last_dot + 1);
+	if (extension == "gz" || extension == "gzip") {
+		const size_t prev_dot = lower.rfind('.', last_dot - 1);
+		if (prev_dot == std::string::npos || prev_dot + 1 >= last_dot)
+			return extension;
+		extension = lower.substr(prev_dot + 1, last_dot - prev_dot - 1);
+	}
+
+	return extension;
 }
 
 }
@@ -898,8 +926,10 @@ bool Xilinx::prepare_flash_access()
 bool Xilinx::load_bridge()
 {
 	std::string bitname;
+	std::string extension;
 	if (!_spiOverJtagPath.empty()) {
 		bitname = _spiOverJtagPath;
+		extension = detect_config_extension(bitname);
 	} else {
 		if (_device_package.empty()) {
 			printError("Can't program SPI flash: missing device-package information");
@@ -909,6 +939,7 @@ bool Xilinx::load_bridge()
 
 		bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR", DATA_DIR "/openFPGALoader");
 		bitname += "/spiOverJtag_" + _device_package + ".bit.gz";
+		extension = "bit";
 	}
 
 #if defined (_WIN64) || defined (_WIN32)
@@ -917,21 +948,27 @@ bool Xilinx::load_bridge()
 #endif
 
 	/* first: load spi over jtag */
+	ConfigBitstreamParser *bridge = nullptr;
 	try {
-		BitParser bridge(bitname, true, _verbose);
-		printSuccess("Use: " + bridge.getFilename());
-
-		bridge.parse();
+		open_bitfile(bitname, extension, &bridge, true, _verbose);
+		printSuccess("Use: " + bridge->getFilename());
+		if (_verbose && !_spiOverJtagPath.empty()) {
+			printInfo("SPI bridge parser: explicit file extension '" +
+				(extension.empty() ? std::string("<raw>") : extension) + "'");
+		}
 		if (_fpga_family == SPARTAN3_FAMILY)
-			xc3s_flow_program(&bridge);
+			xc3s_flow_program(bridge);
 		else
-			program_mem(&bridge);
+			program_mem(bridge);
 	} catch (std::exception &e) {
+		delete bridge;
 		printError("SPI bridge load context: " + debug_context() +
-			", resolved_bridge=" + bitname);
+			", resolved_bridge=" + bitname +
+			", bridge_extension=" + (extension.empty() ? std::string("<raw>") : extension));
 		printError(e.what());
 		throw std::runtime_error(e.what());
 	}
+	delete bridge;
 
 	return true;
 }
@@ -939,6 +976,7 @@ bool Xilinx::load_bridge()
 bool Xilinx::load_bpi_bridge()
 {
 	std::string bitname;
+	std::string extension = "bit";
 
 	if (_device_package.empty()) {
 		printError("Can't program BPI flash: missing device-package information");
@@ -954,18 +992,20 @@ bool Xilinx::load_bpi_bridge()
 #endif
 
 	/* Load BPI over JTAG bridge */
+	ConfigBitstreamParser *bridge = nullptr;
 	try {
-		BitParser bridge(bitname, true, _verbose);
-		printSuccess("Use: " + bridge.getFilename());
-
-		bridge.parse();
-		program_mem(&bridge);
+		open_bitfile(bitname, extension, &bridge, true, _verbose);
+		printSuccess("Use: " + bridge->getFilename());
+		program_mem(bridge);
 	} catch (std::exception &e) {
+		delete bridge;
 		printError("BPI bridge load context: " + debug_context() +
-			", resolved_bridge=" + bitname);
+			", resolved_bridge=" + bitname +
+			", bridge_extension=" + extension);
 		printError(e.what());
 		throw std::runtime_error(e.what());
 	}
+	delete bridge;
 
 	/* Initialize BPI flash instance */
 	_bpi_flash.reset(new BPIFlash(_jtag, _verbose));
