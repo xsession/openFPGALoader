@@ -56,6 +56,7 @@
 #include "part.hpp"
 #include "progressBar.hpp"
 #include "spiFlash.hpp"
+#include "spiFlashdb.hpp"
 #include "rawParser.hpp"
 #ifdef ENABLE_XILINX_SUPPORT
 #include "xilinx.hpp"
@@ -73,6 +74,7 @@ struct arguments {
 	int8_t verbose;
 	bool force_terminal_mode;
 	bool reset, detect, detect_flash, verify, scan_usb;
+	bool detect_external_flash;
 	unsigned int offset;
 	std::string bit_file;
 	std::string secondary_bit_file;
@@ -88,6 +90,7 @@ struct arguments {
 	bool list_cables;
 	bool list_boards;
 	bool list_fpga;
+	bool list_flash;
 	Device::prog_type_t prg_type;
 	bool is_list_command;
 	bool spi;
@@ -182,6 +185,7 @@ std::string describe_program_request(const struct arguments &args)
 		<< ", prg_type=" << program_type_name(args.prg_type)
 		<< ", fpga_part=" << (args.fpga_part.empty() ? "<auto>" : args.fpga_part)
 		<< ", target_flash=" << args.target_flash
+		<< ", detect_external_flash=" << yes_no(args.detect_external_flash)
 		<< ", freq=" << args.freq
 		<< ", verify=" << yes_no(args.verify)
 		<< ", unprotect_flash=" << yes_no(args.unprotect_flash)
@@ -218,8 +222,9 @@ int main(int argc, char **argv)
 			0,          false,
 			//reset, detect, detect_flash, verify, scan_usb
 			false,   false,  false,        false,  false,
+			false,
 			0, "", "", "", "-", "", -1,
-			-1, 0, false, "-", false, false, false, false, Device::PRG_NONE, false,
+			-1, 0, false, "-", false, false, false, false, false, Device::PRG_NONE, false,
 			/* spi dfu    file_type fpga_part bridge_path probe_firmware */
 			false, false, "",       "",       "",         "",
 			/* index_chain file_size target_flash external_flash spi_flash_type altsetting */
@@ -622,7 +627,8 @@ int main(int argc, char **argv)
 		} else if (fab == "Gowin") {
 #ifdef ENABLE_GOWIN_SUPPORT
 			fpga = new Gowin(jtag, args.bit_file, args.file_type, args.mcufw,
-				args.prg_type, args.external_flash, args.verify, args.verbose, args.user_flash);
+				args.prg_type, args.external_flash || args.detect_external_flash,
+				args.verify, args.verbose, args.user_flash);
 #else
 			printError("Support for Gowin FPGAs was not enabled at compile time");
 			delete(jtag);
@@ -1021,6 +1027,9 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 				cxxopts::value<std::string>(args->device))
 			("detect",      "detect FPGA, add -f to show connected flash",
 				cxxopts::value<bool>(args->detect))
+			("detect-external-flash",
+				"detect/display external flash chip information",
+				cxxopts::value<bool>(args->detect_external_flash))
 			("dfu",   "DFU mode", cxxopts::value<bool>(args->dfu))
 			("dump-flash",  "Dump flash mode")
 			("bulk-erase",   "Bulk erase flash",
@@ -1061,6 +1070,8 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 				cxxopts::value<bool>(args->list_cables))
 			("list-fpga", "list all supported FPGA",
 				cxxopts::value<bool>(args->list_fpga))
+			("list-flash", "list supported SPI flash chips",
+				cxxopts::value<bool>(args->list_flash))
 			("m,write-sram",
 				"write bitstream in SRAM (default: true)")
 			("o,offset", "Start address (in bytes) for read/write into non volatile memory (default: 0)",
@@ -1300,6 +1311,7 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 		}
 
 		if (args->list_cables || args->list_boards || args->list_fpga ||
+			args->list_flash ||
 			args->scan_usb)
 			args->is_list_command = true;
 
@@ -1319,10 +1331,17 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 			!args->conmcu &&
 			!args->read_dna &&
 			!args->read_xadc &&
-			args->read_register.empty()) {
+			args->read_register.empty() &&
+			!args->detect_external_flash) {
 			printError("Error: bitfile not specified");
 			std::cout << options.help() << std::endl;
 			return -1;
+		}
+
+		if (args->detect_external_flash) {
+			args->external_flash = true;
+			args->detect = false;
+			args->detect_flash = true;
 		}
 
 		// user ask detect with flash set
@@ -1391,6 +1410,23 @@ void displaySupported(const struct arguments &args)
 			ss << std::setw(12) << std::left << idCode.str();
 			ss << std::setw(14) << fpga.manufacturer << std::setw(16) << fpga.family;
 			ss << std::setw(20) << fpga.model;
+			printInfo(ss.str());
+		}
+		std::cout << std::endl;
+	}
+
+	if (args.list_flash) {
+		std::stringstream t;
+		t << std::setw(12) << std::left << "JEDEC ID"
+			<< std::setw(18) << "manufacturer"
+			<< "model";
+		printSuccess(t.str());
+		for (auto b = flash_list.begin(); b != flash_list.end(); b++) {
+			const flash_t &flash = (*b).second;
+			std::stringstream ss, jedec;
+			jedec << "0x" << std::hex << std::setw(6) << std::setfill('0') << (*b).first;
+			ss << std::setw(12) << std::left << jedec.str();
+			ss << std::setw(18) << flash.manufacturer << flash.model;
 			printInfo(ss.str());
 		}
 		std::cout << std::endl;
