@@ -245,77 +245,92 @@ int Jtag::detectChain(unsigned max_dev)
 	/* WA for CH552/tangNano: write is always mandatory */
 	const uint8_t tx_buff[4] = {0xff, 0xff, 0xff, 0xff};
 	uint32_t tmp;
+	std::string pending_error;
 
-	/* cleanup */
-	_devices_list.clear();
-	_irlength_list.clear();
-	_ir_bits_before = _ir_bits_after = _dr_bits_before = _dr_bits_after = 0;
-	go_test_logic_reset();
-	set_state(SHIFT_DR);
-
-	if (_verbose)
-		printInfo("Raw IDCODE:");
-
-	for (unsigned i = 0; i < max_dev; ++i) {
-		read_write(tx_buff, rx_buff, 32, 0);
-		tmp = 0;
-		for (int ii = 0; ii < 4; ++ii)
-			tmp |= (rx_buff[ii] << (8 * ii));
+	for (int attempt = 0; attempt < 2; ++attempt) {
+		pending_error.clear();
+		/* cleanup */
+		_devices_list.clear();
+		_irlength_list.clear();
+		_ir_bits_before = _ir_bits_after = _dr_bits_before = _dr_bits_after = 0;
+		go_test_logic_reset();
+		set_state(SHIFT_DR);
 
 		if (_verbose) {
-			snprintf(message, sizeof(message), "- %d -> 0x%08x", i, tmp);
-			printInfo(message);
+			if (attempt == 0)
+				printInfo("Raw IDCODE:");
+			else
+				printInfo("Raw IDCODE retry with alternate XPCU TDO mask:");
 		}
 
-		if (tmp == 0) {
-			throw std::runtime_error("TDO is stuck at 0");
-		}
-		if (tmp == 0xffffffff) {
+		for (unsigned i = 0; i < max_dev; ++i) {
+			read_write(tx_buff, rx_buff, 32, 0);
+			tmp = 0;
+			for (int ii = 0; ii < 4; ++ii)
+				tmp |= (rx_buff[ii] << (8 * ii));
+
 			if (_verbose) {
-				snprintf(message, sizeof(message), "Fetched TDI, end-of-chain");
+				snprintf(message, sizeof(message), "- %d -> 0x%08x", i, tmp);
 				printInfo(message);
 			}
-			break;
-		}
 
-		/* search IDCODE in fpga_list and misc_dev_list
-		 * since most device have idcode with high nibble masked
-		 * we start to search sub IDCODE
-		 * if IDCODE has no match: try the same with version unmasked
-		 */
-		bool found = false;
-		/* ckeck highest nibble to prevent confusion between Cologne Chip
-		 * GateMate and Efinix Trion T4/T8 devices
-		 */
-		if (tmp == 0x20000001)
-			found = search_and_insert_device_with_idcode(tmp);
-		if (!found) /* not specific case -> search for full */
-			found = search_and_insert_device_with_idcode(tmp);
-		if (!found) /* if full idcode not found -> search for masked */
-			found = search_and_insert_device_with_idcode(tmp & 0x0fffffff);
-
-		if (!found) {
-			if (!_devices_list.empty() && _jtag->ignoreTrailingScanArtifact()) {
-				snprintf(message, sizeof(message),
-					"ignoring XPCU trailing scan word 0x%08x", tmp);
-				printWarn(message);
+			if (tmp == 0) {
+				pending_error = "TDO is stuck at 0";
 				break;
 			}
-			uint16_t mfg = IDCODE2MANUFACTURERID(tmp);
-			uint8_t part = IDCODE2PART(tmp);
-			uint8_t vers = IDCODE2VERS(tmp);
+			if (tmp == 0xffffffff) {
+				if (_verbose) {
+					snprintf(message, sizeof(message), "Fetched TDI, end-of-chain");
+					printInfo(message);
+				}
+				break;
+			}
 
-			char error[1024];
-			snprintf(error, sizeof(error),
-				 "Unknown device with IDCODE: 0x%08x"
-				 " (manufacturer: 0x%03x (%s),"
-				 " part: 0x%02x vers: 0x%x", tmp,
-				 mfg, list_manufacturer[mfg].c_str(), part, vers);
-			throw std::runtime_error(error);
+			bool found = false;
+			if (tmp == 0x20000001)
+				found = search_and_insert_device_with_idcode(tmp);
+			if (!found)
+				found = search_and_insert_device_with_idcode(tmp);
+			if (!found)
+				found = search_and_insert_device_with_idcode(tmp & 0x0fffffff);
+
+			if (!found) {
+				if (!_devices_list.empty() && _jtag->ignoreTrailingScanArtifact()) {
+					snprintf(message, sizeof(message),
+						"ignoring XPCU trailing scan word 0x%08x", tmp);
+					printWarn(message);
+					break;
+				}
+				uint16_t mfg = IDCODE2MANUFACTURERID(tmp);
+				uint8_t part = IDCODE2PART(tmp);
+				uint8_t vers = IDCODE2VERS(tmp);
+
+				char error[1024];
+				snprintf(error, sizeof(error),
+					 "Unknown device with IDCODE: 0x%08x"
+					 " (manufacturer: 0x%03x (%s),"
+					 " part: 0x%02x vers: 0x%x", tmp,
+					 mfg, list_manufacturer[mfg].c_str(), part, vers);
+				pending_error = error;
+				break;
+			}
 		}
+
+		set_state(TEST_LOGIC_RESET);
+		flushTMS(true);
+
+		if (pending_error.empty()) {
+			_jtag->restorePrimaryTdoMask();
+			return _devices_list.size();
+		}
+
+		if (!_jtag->selectAlternateTdoMask())
+			break;
 	}
-	set_state(TEST_LOGIC_RESET);
-	flushTMS(true);
+
+	_jtag->restorePrimaryTdoMask();
+	if (!pending_error.empty())
+		throw std::runtime_error(pending_error);
 	return _devices_list.size();
 }
 

@@ -100,6 +100,8 @@ class JtagInterface {
 	/* Some legacy transports can read valid devices but cannot reliably
 	 * propagate the all-ones chain terminator through their fallback path. */
 	virtual bool ignoreTrailingScanArtifact() const { return false; }
+	virtual bool selectAlternateTdoMask() { return false; }
+	virtual void restorePrimaryTdoMask() {}
 
 	/*!
 	 * \brief force internal flush buffer

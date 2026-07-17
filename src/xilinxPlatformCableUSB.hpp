@@ -71,6 +71,8 @@ class XilinxPlatformCableUSB : public JtagInterface {
 
 	bool isFull() override { return _nb_bit >= _buffer_bit_size; }
 	bool ignoreTrailingScanArtifact() const override { return true; }
+	bool selectAlternateTdoMask() override;
+	void restorePrimaryTdoMask() override;
 
 	int flush() override;
 
@@ -104,6 +106,9 @@ class XilinxPlatformCableUSB : public JtagInterface {
 	uint32_t _buffer_size;
 	uint32_t _buffer_bit_size;
 	bool _use_control_bitbang;
+	uint8_t _tdo_mask;
+	uint8_t _primary_tdo_mask;
+	bool _tdo_mask_explicit;
 	std::unique_ptr<FX2_ll> fx2;
 };
 

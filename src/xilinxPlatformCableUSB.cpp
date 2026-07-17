@@ -219,6 +219,12 @@ bool xpcuBoolEnv(const char *name)
 	return value != nullptr && value[0] != '\0' && std::string(value) != "0";
 }
 
+bool xpcuTdoMaskWasExplicit()
+{
+	const char *value = std::getenv("OPENFPGALOADER_XPCU_TDO_MASK");
+	return value != nullptr && value[0] != '\0';
+}
+
 bool xpcuForceControlBitbang()
 {
 	/* The 0xA6 trigger stalls endpoint zero with the Xilinx EMB firmware on
@@ -384,7 +390,10 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	int8_t verbose): _verbose(verbose), _nb_bit(0), _nb_tdo_bit(0),
 		_curr_tms(0), _curr_tdi(0), _buffer_size(4096),
 		_buffer_bit_size((_buffer_size / 2 * 4) - 1),
-		_use_control_bitbang(xpcuForceControlBitbang())
+		_use_control_bitbang(xpcuForceControlBitbang()),
+		_tdo_mask(xpcuTdoMask()),
+		_primary_tdo_mask(_tdo_mask),
+		_tdo_mask_explicit(xpcuTdoMaskWasExplicit())
 {
 	// std::string firmware_file;
 	/* firmare path must be known:
@@ -674,7 +683,7 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 		uint32_t tdo_bit = 0;
 		uint32_t raw_tdo = 0;
 		uint32_t raw_tdo_bit = 0;
-		const uint8_t tdo_mask = xpcuTdoMask();
+		const uint8_t tdo_mask = _tdo_mask;
 		const bool capture_batch = _nb_tdo_bit != 0;
 		/* Command 0x38 returns the bit following the one shifted by the most
 		 * recent 0x30 clock.  The initial IDCODE/IR capture bit is mandated to
@@ -843,6 +852,26 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 	_nb_bit = 0;
 	_nb_tdo_bit = 0;
 	return 0;
+}
+
+bool XilinxPlatformCableUSB::selectAlternateTdoMask()
+{
+	if (_tdo_mask_explicit || !_use_control_bitbang)
+		return false;
+
+	const uint8_t alternate = (_primary_tdo_mask == 0x01) ? 0x02 : 0x01;
+	if (_tdo_mask == alternate)
+		return false;
+
+	_tdo_mask = alternate;
+	printWarn("Retrying XPCU control-transfer JTAG with alternate TDO mask " +
+		endpointToHex(_tdo_mask));
+	return true;
+}
+
+void XilinxPlatformCableUSB::restorePrimaryTdoMask()
+{
+	_tdo_mask = _primary_tdo_mask;
 }
 
 bool XilinxPlatformCableUSB::enableDevice(bool enable)
