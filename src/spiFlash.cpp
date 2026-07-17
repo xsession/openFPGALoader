@@ -624,12 +624,19 @@ void SPIFlash::read_id()
 	}
 
 	/* something wrong with read */
-	if ((_jedec_id >> 8) == 0xffff || (_jedec_id >> 8) == 0x0000)
+	const uint32_t jedec24 = _jedec_id >> 8;
+	if (jedec24 == 0x000000 || jedec24 == 0x00ffff || jedec24 == 0xffffff) {
+		char content[128];
+		snprintf(content, sizeof(content),
+			"Read ID failed: SPI RDID raw bytes: %02x %02x %02x %02x -> 0x%08x",
+			rx[0], rx[1], rx[2], rx[3], _jedec_id);
+		printError(content);
 		throw std::runtime_error("Read ID failed");
+	}
 
 	if (_verbose > 0)
 		printf("read %x\n", _jedec_id);
-	auto t = flash_list.find(_jedec_id >> 8);
+	auto t = flash_list.find(jedec24);
 	if (t != flash_list.end()) {
 		_flash_model = &(*t).second;
 		char content[256];

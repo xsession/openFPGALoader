@@ -73,6 +73,8 @@ class XilinxPlatformCableUSB : public JtagInterface {
 	bool ignoreTrailingScanArtifact() const override { return true; }
 	bool selectAlternateTdoMask() override;
 	void restorePrimaryTdoMask() override;
+	bool setPreferControlBitbang(bool enable) override;
+	void setUserScanCaptureMode(bool enabled) override;
 
 	int flush() override;
 
@@ -109,6 +111,7 @@ class XilinxPlatformCableUSB : public JtagInterface {
 	uint8_t _tdo_mask;
 	uint8_t _primary_tdo_mask;
 	bool _tdo_mask_explicit;
+	bool _control_assume_capture_one;
 	std::unique_ptr<FX2_ll> fx2;
 };
 

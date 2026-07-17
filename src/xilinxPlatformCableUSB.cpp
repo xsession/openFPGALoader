@@ -393,7 +393,8 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		_use_control_bitbang(xpcuForceControlBitbang()),
 		_tdo_mask(xpcuTdoMask()),
 		_primary_tdo_mask(_tdo_mask),
-		_tdo_mask_explicit(xpcuTdoMaskWasExplicit())
+		_tdo_mask_explicit(xpcuTdoMaskWasExplicit()),
+		_control_assume_capture_one(true)
 {
 	// std::string firmware_file;
 	/* firmare path must be known:
@@ -685,14 +686,31 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 		uint32_t raw_tdo_bit = 0;
 		const uint8_t tdo_mask = _tdo_mask;
 		const bool capture_batch = _nb_tdo_bit != 0;
+		const bool user_scan_mode = !_control_assume_capture_one;
 		/* Command 0x38 returns the bit following the one shifted by the most
-		 * recent 0x30 clock.  The initial IDCODE/IR capture bit is mandated to
-		 * be one, so seed it and place subsequent status samples one bit later.
-		 * The sample following the final requested clock belongs to the next
-		 * TAP bit and is intentionally discarded. */
-		if (capture_batch && rx != nullptr) {
+		 * recent 0x30 clock. Raw chain-detect scans expect the implicit DR
+		 * capture bit of one; USER bridge scans should consume only the actual
+		 * sampled TDO stream. */
+		if (_control_assume_capture_one && capture_batch && rx != nullptr) {
 			const uint32_t out_bit = rx_offset;
 			rx[out_bit >> 3] |= (1u << (out_bit & 7));
+			tdo_bit = 1;
+		} else if (user_scan_mode && capture_batch && rx != nullptr) {
+			uint8_t status = 0;
+			if (!fx2->read_ctrl(XPCU_BREQUEST, XPCU_CMD_STATUS, &status, 1, 0)) {
+				printError("XPCU control-transfer JTAG read failed");
+				_nb_bit = 0;
+				_nb_tdo_bit = 0;
+				return -1;
+			}
+			const uint32_t out_bit = rx_offset;
+			if (status & tdo_mask)
+				rx[out_bit >> 3] |= (1u << (out_bit & 7));
+			else
+				rx[out_bit >> 3] &= ~(1u << (out_bit & 7));
+			if (status & tdo_mask)
+				raw_tdo |= (1u << raw_tdo_bit);
+			raw_tdo_bit++;
 			tdo_bit = 1;
 		}
 		for (uint32_t i = 0; i < _nb_bit; i++) {
@@ -722,6 +740,19 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 				_nb_bit = 0;
 				_nb_tdo_bit = 0;
 				return -1;
+			}
+
+			/* Spartan-6 USER scans feed TDO through the BSCAN timing
+			 * register, which updates on the falling edge of TCK. Drop
+			 * TCK before sampling to match the real external TDO phase. */
+			if (user_scan_mode) {
+				if (!fx2->write_ctrl(XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
+						nullptr, 0, pins)) {
+					printError("XPCU control-transfer JTAG write failed");
+					_nb_bit = 0;
+					_nb_tdo_bit = 0;
+					return -1;
+				}
 			}
 
 			if (capture && tdo_bit < _nb_tdo_bit) {
@@ -856,7 +887,7 @@ int XilinxPlatformCableUSB::write(uint8_t *rx, uint32_t rx_offset)
 
 bool XilinxPlatformCableUSB::selectAlternateTdoMask()
 {
-	if (_tdo_mask_explicit || !_use_control_bitbang)
+	if (!_use_control_bitbang)
 		return false;
 
 	const uint8_t alternate = (_primary_tdo_mask == 0x01) ? 0x02 : 0x01;
@@ -864,14 +895,54 @@ bool XilinxPlatformCableUSB::selectAlternateTdoMask()
 		return false;
 
 	_tdo_mask = alternate;
-	printWarn("Retrying XPCU control-transfer JTAG with alternate TDO mask " +
-		endpointToHex(_tdo_mask));
+	std::string message = "Retrying XPCU control-transfer JTAG with alternate TDO mask " +
+		endpointToHex(_tdo_mask);
+	if (_tdo_mask_explicit)
+		message += " (overriding explicit environment setting for retry)";
+	printWarn(message);
 	return true;
 }
 
 void XilinxPlatformCableUSB::restorePrimaryTdoMask()
 {
 	_tdo_mask = _primary_tdo_mask;
+}
+
+bool XilinxPlatformCableUSB::setPreferControlBitbang(bool enable)
+{
+	if (_use_control_bitbang == enable)
+		return true;
+
+	if (_nb_bit != 0 || _nb_tdo_bit != 0) {
+		if (flush() < 0)
+			return false;
+	}
+
+	if (enable) {
+		if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_DISABLE,
+				nullptr, 0, 0, "disable before control-bitbang switch"))
+			return false;
+		if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_GPIO_WRITE,
+				nullptr, 0, (1 << 3), "GPIO setup after control-bitbang switch"))
+			return false;
+		if (!enableDevice(true))
+			return false;
+		if (!xpcuWriteCtrlRetry(fx2.get(), XPCU_BREQUEST, XPCU_CMD_SELECT_GPIO,
+				nullptr, 0, 0, "select GPIO JTAG chain after control-bitbang switch"))
+			return false;
+	}
+
+	_use_control_bitbang = enable;
+	if (_verbose > 0) {
+		printWarn(std::string("XPCU JTAG mode switched to ") +
+			(enable ? "control-transfer bitbang" : "accelerated bulk"));
+	}
+	return true;
+}
+
+void XilinxPlatformCableUSB::setUserScanCaptureMode(bool enabled)
+{
+	_control_assume_capture_one = !enabled;
 }
 
 bool XilinxPlatformCableUSB::enableDevice(bool enable)

@@ -78,11 +78,86 @@ std::string detect_config_extension(const std::string &filename)
 	return extension;
 }
 
+bool looks_like_repo_spioverjtag_bridge(const std::string &filename)
+{
+	const std::string lower = to_lower_copy(filename);
+	return lower.find("spioverjtag_") != std::string::npos &&
+		(lower.size() >= 4 && (lower.rfind(".bit") == lower.size() - 4 ||
+			lower.rfind(".bit.gz") == lower.size() - 7));
+}
+
+uint8_t decode_shifted_jtag_byte(const uint8_t *data, uint8_t shift)
+{
+	if (shift == 0)
+		return McsParser::reverseByte(data[0]);
+	uint8_t value = McsParser::reverseByte(data[0] >> shift);
+	if (shift == 1)
+		value |= (data[1] & 0x01);
+	else
+		value |= McsParser::reverseByte(data[1]) >> (8 - shift);
+	return value;
+}
+
+void decode_shifted_jtag_stream(const uint8_t *src, uint8_t *dst,
+		uint32_t len, uint8_t shift, uint32_t start_byte)
+{
+	for (uint32_t i = 0; i < len; i++)
+		dst[i] = decode_shifted_jtag_byte(&src[start_byte + i], shift);
+}
+
+bool looks_like_valid_jedec_reply(const uint8_t *rx, uint32_t len)
+{
+	if (len < 3)
+		return false;
+
+	bool all_zero = true;
+	bool all_ff = true;
+	for (uint32_t i = 0; i < len; i++) {
+		all_zero &= (rx[i] == 0x00);
+		all_ff &= (rx[i] == 0xff);
+	}
+	if (all_zero || all_ff)
+		return false;
+
+	if ((rx[0] == 0x00 || rx[0] == 0xff) &&
+			(rx[1] == 0x00 || rx[1] == 0xff) &&
+			(rx[2] == 0x00 || rx[2] == 0xff))
+		return false;
+
+	return true;
+}
+
+bool looks_like_invalid_bridge_reply(const uint8_t *rx, uint32_t len)
+{
+	if (len == 0)
+		return true;
+
+	bool all_zero = true;
+	bool all_ff = true;
+	bool only_edge_artifacts = true;
+	for (uint32_t i = 0; i < len; i++) {
+		all_zero &= (rx[i] == 0x00);
+		all_ff &= (rx[i] == 0xff);
+		switch (rx[i]) {
+		case 0x00:
+		case 0x01:
+		case 0x80:
+		case 0xff:
+		case 0xfe:
+		case 0x7f:
+			break;
+		default:
+			only_edge_artifacts = false;
+			break;
+		}
+	}
+	return all_zero || all_ff || only_edge_artifacts;
+}
+
 }
 
 /* Used for xc3s */
 #define USER1       0x02
-#define USER4       0x23
 #define CFG_IN      0x05
 #define USERCODE    0x08
 #define IDCODE      0x09
@@ -206,6 +281,8 @@ static std::map<std::string, std::map<std::string, std::vector<uint8_t>>>
 			{
 				{ "USER1",       {0x02} },
 				{ "USER2",       {0x03} },
+				{ "USER3",       {0x22} },
+				{ "USER4",       {0x23} },
 				{ "CFG_OUT",     {0x04} },
 				{ "CFG_IN",      {0x05} },
 				{ "USERCODE",    {0x08} },
@@ -217,6 +294,27 @@ static std::map<std::string, std::map<std::string, std::vector<uint8_t>>>
 				{ "ISC_PROGRAM", {0x11} },
 				{ "ISC_DISABLE", {0x16} },
 				{ "STATUS", 	 {0x1F} },
+				{ "BYPASS",      {0xff} },
+			}
+		},
+		{
+			/* Spartan-6 USER3/USER4 differ from 7-series (UG380 Table 10-2). */
+			"spartan6",
+			{
+				{ "USER1",       {0x02} },
+				{ "USER2",       {0x03} },
+				{ "USER3",       {0x1a} },
+				{ "USER4",       {0x1b} },
+				{ "CFG_OUT",     {0x04} },
+				{ "CFG_IN",      {0x05} },
+				{ "USERCODE",    {0x08} },
+				{ "IDCODE",      {0x09} },
+				{ "ISC_ENABLE",  {0x10} },
+				{ "JPROGRAM",    {0x0B} },
+				{ "JSTART",      {0x0C} },
+				{ "JSHUTDOWN",   {0x0D} },
+				{ "ISC_PROGRAM", {0x11} },
+				{ "ISC_DISABLE", {0x16} },
 				{ "BYPASS",      {0xff} },
 			}
 		},
@@ -477,6 +575,9 @@ Xilinx::Xilinx(Jtag *jtag, const std::string &filename,
 			_ircode_map = ircode_mapping.at("virtexusp");
 	} else if (family.substr(0, 8) == "spartan3") {
 		_fpga_family = SPARTAN3_FAMILY;
+	} else if (family == "spartan6") {
+		_fpga_family = SPARTAN6_FAMILY;
+		_ircode_map = ircode_mapping.at("spartan6");
 	} else if (family == "xcf") {
 		_fpga_family = XCF_FAMILY;
 		if (_mode == Device::MEM_MODE) {
@@ -902,6 +1003,7 @@ bool Xilinx::post_flash_access()
 bool Xilinx::prepare_flash_access()
 {
 	bool ret = false;
+	bool likely_repo_v2_bridge = false;
 	if (_skip_load_bridge) {
 		printInfo("Skip loading bridge for spiOverjtag");
 		ret = true;
@@ -909,15 +1011,34 @@ bool Xilinx::prepare_flash_access()
 		if (_verbose)
 			printInfo("Preparing flash access with " + debug_context());
 		ret = load_bridge();
+		const std::string bridge_path = _spiOverJtagPath.empty() ?
+			(std::string(DATA_DIR "/openFPGALoader") + "/spiOverJtag_" +
+				_device_package + ".bit.gz") : _spiOverJtagPath;
+		likely_repo_v2_bridge = looks_like_repo_spioverjtag_bridge(bridge_path);
 	}
 
 	/* Get number of FPGAs in the Jtag Chain */
 	_jtag_chain_len = _jtag->get_chain_len();
 
+	/* Keep the cable in its current JTAG transport mode here.
+	 * Some XPCU variants detect and access Spartan-6 more reliably through
+	 * the accelerated path, and the low-level implementation already falls
+	 * back to control-transfer bitbang if the bulk engine cannot service a
+	 * scan. */
+	if (_fpga_family == SPARTAN6_FAMILY) {
+		if (auto *ll = _jtag->get_ll_class(); ll != nullptr) {
+			ll->setUserScanCaptureMode(true);
+		}
+	}
+
 	/* check SpiOverJtag version */
 	if (ret) {
 		if (get_spiOverJtag_version() == 2.0f)
 			_soj_is_v2 = true;
+		else if (_fpga_family == SPARTAN6_FAMILY && likely_repo_v2_bridge) {
+			_soj_is_v2 = true;
+			printWarn("SOJ version probe failed on Spartan-6; assuming bundled bridge uses v2 framing");
+		}
 		printf("SOJ version: %f\n", _soj_is_v2 ? 2.0f : 1.0f);
 	}
 	return ret;
@@ -1082,16 +1203,45 @@ float Xilinx::get_spiOverJtag_version()
 	uint8_t jtx[6] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
 	uint8_t jrx[7];
 	uint8_t rx[6];
+	const uint8_t shift = _jtag_chain_len;
 
-	_jtag->shiftIR(USER4, _irlen, Jtag::UPDATE_IR);
-	printf("jtag_chain_len: %d\n", _jtag_chain_len);
-	if (_jtag_chain_len > 1)
-		_jtag->shiftDR(jtx, NULL, _jtag_chain_len - 1, Jtag::SHIFT_DR);
-	_jtag->shiftDR(jtx, jrx, 6 * 8);
-	_jtag->flush();
+	auto probe_version = [&]() {
+		_jtag->shiftIR(get_ircode(_ircode_map, "USER4"), NULL, _irlen,
+			Jtag::UPDATE_IR);
+		printf("jtag_chain_len: %d\n", _jtag_chain_len);
+		if (_jtag_chain_len > 1)
+			_jtag->shiftDR(jtx, NULL, _jtag_chain_len - 1, Jtag::SHIFT_DR);
+		_jtag->shiftDR(jtx, jrx, 6 * 8);
+		_jtag->flush();
 
-	memcpy(rx, &jrx[1], 5);
-	rx[5] = '\0';
+		decode_shifted_jtag_stream(jrx, rx, 5, shift, 1);
+		if (_fpga_family == SPARTAN6_FAMILY &&
+				looks_like_invalid_bridge_reply(rx, 5))
+			decode_shifted_jtag_stream(jrx, rx, 5, shift, 0);
+		rx[5] = '\0';
+	};
+
+	probe_version();
+
+	if (_fpga_family == SPARTAN6_FAMILY &&
+			looks_like_invalid_bridge_reply(rx, 5)) {
+		if (auto *ll = _jtag->get_ll_class();
+				ll != nullptr && ll->selectAlternateTdoMask()) {
+			printWarn("Retrying Spartan-6 spiOverJtag version probe with alternate XPCU TDO mask");
+			probe_version();
+			ll->restorePrimaryTdoMask();
+		}
+	}
+
+	if (_verbose > 0) {
+		printf("SOJ version raw:");
+		for (size_t i = 0; i < sizeof(jrx); i++)
+			printf(" %02x", jrx[i]);
+		printf("\nSOJ version decoded:");
+		for (int i = 0; i < 5; i++)
+			printf(" %02x", rx[i]);
+		printf(" -> '%s'\n", rx);
+	}
 
 	float version = atof((const char *)rx);
 	if (version == 0.0f)  // not supported => 1.0
@@ -1235,9 +1385,21 @@ void Xilinx::program_mem(ConfigBitstreamParser *bitfile)
 		* 22: Move to the RTI state and clock the
 		*     startup sequence by applying a minimum         X     0   2000
 		*     of 2000 clock cycles to the TCK.
+		*
+		* Spartan-6 can additionally require ISC_DISABLE while in RTI for the
+		* final handoff into user mode, but cutting the startup clocks down to
+		* a tiny value leaves the USER scan chains inactive on some boards.
+		* Keep the long startup clock run, then do an extra ISC_DISABLE pulse
+		* for Spartan-6 as a follow-up.
 		*/
 		_jtag->set_state(Jtag::RUN_TEST_IDLE);
 		_jtag->toggleClk(2000);
+		if (_fpga_family == SPARTAN6_FAMILY) {
+			_jtag->shiftIR(get_ircode(_ircode_map, "ISC_DISABLE"), NULL,
+				_irlen, Jtag::UPDATE_IR);
+			_jtag->set_state(Jtag::RUN_TEST_IDLE);
+			_jtag->toggleClk(64);
+		}
 		/*
 		* 23: Move to the TLR state. The device is
 		* now functional.                                    X     1   3
@@ -2467,10 +2629,40 @@ int Xilinx::spi_put(uint8_t cmd,
 	 * to next
 	 */
 	_jtag->shiftDR(jtx, (rx == NULL)? NULL: jrx, 8*xfer_len);
+	_jtag->flush();
 
 	if (rx != NULL) {
 		for (uint32_t i=0; i < len; i++)
 			rx[i] = McsParser::reverseByte(jrx[i+1] >> 1) | (jrx[i+2] & 0x01);
+
+		/* Some Spartan-6 bridges answer correctly only to the v2 packet format
+		 * even when USER4 version probing did not decode to "2.0". Probe both
+		 * framings for RDID and promote the session when v2 is the sane one. */
+		if (!_soj_is_v2 && _fpga_family == SPARTAN6_FAMILY &&
+				cmd == 0x9F && len >= 3) {
+			std::vector<uint8_t> rx_v2(len, 0x00);
+			const bool v1_valid = looks_like_valid_jedec_reply(rx, len);
+			_jtag->go_test_logic_reset();
+			spi_put_v2(cmd, tx, rx_v2.data(), len);
+			const bool v2_valid = looks_like_valid_jedec_reply(rx_v2.data(), len);
+
+			if (_verbose > 0) {
+				printf("SPI RDID probe v1:");
+				for (uint32_t i = 0; i < len; i++)
+					printf(" %02x", rx[i]);
+				printf("\nSPI RDID probe v2:");
+				for (uint32_t i = 0; i < len; i++)
+					printf(" %02x", rx_v2[i]);
+				printf("\n");
+			}
+
+			if (!v1_valid && v2_valid) {
+				memcpy(rx, rx_v2.data(), len);
+				_soj_is_v2 = true;
+				if (_verbose > 0)
+					printf("SPI RDID selected SOJ v2 framing\n");
+			}
+		}
 	}
 	return 0;
 }
@@ -2491,6 +2683,7 @@ int Xilinx::spi_put(const uint8_t *tx, uint8_t *rx, uint32_t len)
 	 * to next
 	 */
 	_jtag->shiftDR(jtx, (rx == NULL)? NULL: jrx, 8*xfer_len);
+	_jtag->flush();
 
 	if (rx != NULL) {
 		for (uint32_t i=0; i < len; i++)
@@ -2604,11 +2797,36 @@ int Xilinx::spi_put_v2(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
 				rx[i] |= (jrx[i + idx + 1] & 0x01);
 			else
 				rx[i] |= McsParser::reverseByte(jrx[i + idx + 1]) >> (8 - shift);
-			if (_verbose)
-				printf("%02x ", rx[i]);
 		}
-		if (_verbose)
+
+		if (_fpga_family == SPARTAN6_FAMILY &&
+				looks_like_invalid_bridge_reply(rx, len) && idx > 0) {
+			for (uint32_t i = 0; i < len; i++) {
+				rx[i] = McsParser::reverseByte(jrx[i + idx - 1] >> shift);
+				if (shift == 1)
+					rx[i] |= (jrx[i + idx] & 0x01);
+				else
+					rx[i] |= McsParser::reverseByte(jrx[i + idx]) >> (8 - shift);
+			}
+		}
+
+		if (_verbose) {
+			for (uint32_t i = 0; i < len; i++)
+				printf("%02x ", rx[i]);
 			printf("\n");
+		}
+
+		if (_fpga_family == SPARTAN6_FAMILY &&
+				looks_like_invalid_bridge_reply(rx, len)) {
+			if (auto *ll = _jtag->get_ll_class();
+					ll != nullptr && ll->selectAlternateTdoMask()) {
+				printWarn("Retrying Spartan-6 spiOverJtag transfer with alternate XPCU TDO mask");
+				const int ret = spi_put_v2(cmd, tx, rx, len);
+				if (looks_like_invalid_bridge_reply(rx, len))
+					ll->restorePrimaryTdoMask();
+				return ret;
+			}
+		}
 	}
 
 	return 0;

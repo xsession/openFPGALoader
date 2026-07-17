@@ -102,6 +102,8 @@ class JtagInterface {
 	virtual bool ignoreTrailingScanArtifact() const { return false; }
 	virtual bool selectAlternateTdoMask() { return false; }
 	virtual void restorePrimaryTdoMask() {}
+	virtual bool setPreferControlBitbang(bool enable) { (void)enable; return false; }
+	virtual void setUserScanCaptureMode(bool enabled) { (void)enabled; }
 
 	/*!
 	 * \brief force internal flush buffer
