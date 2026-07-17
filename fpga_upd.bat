@@ -49,12 +49,17 @@ rem flash upload
 
 .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --freq 700000 --detect
 
-
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs       
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs --bridge ..\..\..\..\test_fw\5042-9033\pab0_top.bit 
 
 rem Do not pass pab0_top.bit as --bridge: it is an application image, not SPI-over-JTAG.
 rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs
 
 
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash -f ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\example\fw_files\application\EL-24-80\FW-24-80-R410.MCS --bridge ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\S320_06_20260703.bit
+
+.\openFPGALoader.exe -c xilinxPlatformCableUsb -f ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\example\fw_files\application\EL-24-80\FW-24-80-R410.MCS --bridge ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\S320_06_20260703.bit
 
 
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --enable-quad -f ..\..\..\..\test_fw\5042-9033\FW-5042-9033-T30.mcs  

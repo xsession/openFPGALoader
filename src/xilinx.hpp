@@ -242,6 +242,10 @@ class Xilinx: public Device, FlashInterface {
 		 * \return 2.0 for v2 or 1.0 for v1
 		 */
 		float get_spiOverJtag_version();
+		std::string mode_name() const;
+		std::string family_name() const;
+		std::string flash_target_name() const;
+		std::string debug_context() const;
 
 		enum xilinx_flash_chip_t {
 			PRIMARY_FLASH = 0x1,

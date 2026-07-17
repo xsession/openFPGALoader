@@ -1,0 +1,76 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-base",
+      "hidden": true,
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "windows-debug-minimal",
+      "displayName": "Windows Debug (minimal deps)",
+      "description": "Debug build without optional libusb/libftdi features so configure works on a plain MinGW setup.",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "ENABLE_CABLE_ALL": "OFF",
+        "ENABLE_VENDORS_ALL": "OFF",
+        "ENABLE_USB_SCAN": "OFF",
+        "ENABLE_XILINX_SUPPORT": "ON",
+        "ENABLE_GOWIN_SUPPORT": "ON",
+        "ENABLE_ANLOGIC_SUPPORT": "ON",
+        "ENABLE_LATTICE_SUPPORT": "ON",
+        "ENABLE_SVF_JTAG": "ON",
+        "ENABLE_XILINX_PLATFORM_CABLE_USB": "OFF",
+        "ENABLE_FTDI_BASED_CABLE": "OFF",
+        "ENABLE_USB_BLASTERI": "OFF",
+        "ENABLE_USB_BLASTERII": "OFF",
+        "ENABLE_DFU": "OFF",
+        "ENABLE_ANLOGIC_CABLE": "OFF",
+        "ENABLE_CH347": "OFF",
+        "ENABLE_DIRTYJTAG": "OFF",
+        "ENABLE_ESP_USB": "OFF",
+        "ENABLE_JLINK": "OFF",
+        "ENABLE_GOWIN_GWU2X": "OFF",
+        "ENABLE_CMSISDAP": "OFF",
+        "ENABLE_CMSISDAP_V1": "OFF",
+        "ENABLE_CMSISDAP_V2": "OFF",
+        "ENABLE_COLOGNECHIP_SUPPORT": "OFF",
+        "ENABLE_EFINIX_SUPPORT": "OFF",
+        "ENABLE_ICE40_SUPPORT": "OFF",
+        "ENABLE_LATTICESSPI_SUPPORT": "OFF"
+      }
+    },
+    {
+      "name": "windows-debug-full",
+      "displayName": "Windows Debug (full feature set)",
+      "description": "Debug build with the project's default feature set. Requires pkg-config packages such as libusb-1.0 and libftdi1.",
+      "inherits": "windows-base"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-debug-minimal",
+      "configurePreset": "windows-debug-minimal",
+      "targets": [
+        "openFPGALoader"
+      ]
+    },
+    {
+      "name": "windows-debug-full",
+      "configurePreset": "windows-debug-full",
+      "targets": [
+        "openFPGALoader"
+      ]
+    }
+  ]
+}

@@ -681,6 +681,12 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	# winsock provides ntohs
 	target_link_libraries(openFPGALoader ws2_32)
 
+	# GCC 8 still requires an explicit filesystem support library.
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
+			CMAKE_CXX_COMPILER_VERSION VERSION_LESS 9)
+		target_link_libraries(openFPGALoader stdc++fs)
+	endif()
+
 	target_sources(openFPGALoader PRIVATE src/pathHelper.cpp)
 	list(APPEND OPENFPGALOADER_HEADERS src/pathHelper.hpp)
 endif()

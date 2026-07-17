@@ -36,6 +36,22 @@
 #include "xilinx.hpp"
 #include "xilinxMapParser.hpp"
 
+namespace {
+
+std::string yes_no(bool value)
+{
+	return value ? "yes" : "no";
+}
+
+std::string format_hex32(uint32_t value)
+{
+	std::ostringstream oss;
+	oss << "0x" << std::hex << std::setw(8) << std::setfill('0') << value;
+	return oss.str();
+}
+
+}
+
 /* Used for xc3s */
 #define USER1       0x02
 #define USER4       0x23
@@ -534,6 +550,100 @@ Xilinx::Xilinx(Jtag *jtag, const std::string &filename,
 }
 Xilinx::~Xilinx() {}
 
+std::string Xilinx::mode_name() const
+{
+	switch (_mode) {
+	case Device::NONE_MODE:
+		return "none";
+	case Device::SPI_MODE:
+		return "spi";
+	case Device::MEM_MODE:
+		return "mem";
+	case Device::READ_MODE:
+		return "read";
+	}
+	return "unknown";
+}
+
+std::string Xilinx::family_name() const
+{
+	switch (_fpga_family) {
+	case XC95_FAMILY:
+		return "xc95";
+	case XC2C_FAMILY:
+		return "xc2c";
+	case VIRTEX4_FAMILY:
+		return "virtex4";
+	case SPARTAN3_FAMILY:
+		return "spartan3";
+	case SPARTAN6_FAMILY:
+		return "spartan6";
+	case SPARTAN7_FAMILY:
+		return "spartan7";
+	case ARTIX_FAMILY:
+		return "artix";
+	case KINTEX_FAMILY:
+		return "kintex7";
+	case KINTEXUS_FAMILY:
+		return "kintexus";
+	case KINTEXUSP_FAMILY:
+		return "kintexusp";
+	case ZYNQ_FAMILY:
+		return "zynq";
+	case ZYNQMP_FAMILY:
+		return "zynqmp";
+	case XCF_FAMILY:
+		return "xcf";
+	case ARTIXUSP_FAMILY:
+		return "artixusp";
+	case SPARTANUSP_FAMILY:
+		return "spartanusp";
+	case VIRTEXUS_FAMILY:
+		return "virtexus";
+	case VIRTEXUSP_FAMILY:
+		return "virtexusp";
+	case UNKNOWN_FAMILY:
+		return "unknown";
+	}
+	return "unknown";
+}
+
+std::string Xilinx::flash_target_name() const
+{
+	if (_flash_chips == PRIMARY_FLASH)
+		return "primary";
+	if (_flash_chips == SECONDARY_FLASH)
+		return "secondary";
+	if (_flash_chips == (PRIMARY_FLASH | SECONDARY_FLASH))
+		return "both";
+	return "mask=" + std::to_string(_flash_chips);
+}
+
+std::string Xilinx::debug_context() const
+{
+	std::ostringstream oss;
+	oss << "file=" << (_filename.empty() ? "<none>" : _filename)
+		<< ", secondary_file="
+		<< (_secondary_filename.empty() ? "<none>" : _secondary_filename)
+		<< ", extension=" << (_file_extension.empty() ? "<auto>" : _file_extension)
+		<< ", secondary_extension="
+		<< (_secondary_file_extension.empty() ? "<none>" : _secondary_file_extension)
+		<< ", mode=" << mode_name()
+		<< ", family=" << family_name()
+		<< ", device_package="
+		<< (_device_package.empty() ? "<none>" : _device_package)
+		<< ", flash_target=" << flash_target_name()
+		<< ", user_instruction="
+		<< (_user_instruction.empty() ? "<none>" : _user_instruction)
+		<< ", verify=" << yes_no(_verify)
+		<< ", skip_load_bridge=" << yes_no(_skip_load_bridge)
+		<< ", skip_reset=" << yes_no(_skip_reset)
+		<< ", bridge_path="
+		<< (_spiOverJtagPath.empty() ? "<auto>" : _spiOverJtagPath)
+		<< ", bpi_board=" << yes_no(_is_bpi_board);
+	return oss.str();
+}
+
 bool Xilinx::zynqmp_init(const std::string &family)
 {
 	/* by default, at powering a zynqmp has
@@ -570,6 +680,16 @@ bool Xilinx::zynqmp_init(const std::string &family)
 				" JTAG length: %zu instead of 2\n",
 				listDev.size());
 		printError(mess);
+		if (!listDev.empty()) {
+			std::ostringstream oss;
+			oss << "ZynqMP detected chain: ";
+			for (size_t i = 0; i < listDev.size(); ++i) {
+				if (i != 0)
+					oss << ", ";
+				oss << "[" << i << "]=" << format_hex32(listDev[i]);
+			}
+			printError(oss.str());
+		}
 		return false;
 	}
 
@@ -578,6 +698,7 @@ bool Xilinx::zynqmp_init(const std::string &family)
 				" is not the PL TAP -> 0x%08x\n",
 				listDev[0]);
 		printError(mess);
+		printError("ZynqMP init context: " + debug_context());
 		return false;
 	}
 
@@ -586,6 +707,7 @@ bool Xilinx::zynqmp_init(const std::string &family)
 				" is not the ARM DAP cortex A53 -> 0x%08x\n",
 				listDev[1]);
 		printError(mess);
+		printError("ZynqMP init context: " + debug_context());
 		return false;
 	}
 
@@ -690,6 +812,7 @@ void Xilinx::program(unsigned int offset, bool unprotect_flash)
 				&secondary_bit, reverse, _verbose);
 		}
 	} catch (std::exception &e) {
+		printError("Xilinx bitstream open context: " + debug_context());
 		if (bit)
 			delete bit;
 		if (secondary_bit)
@@ -713,14 +836,19 @@ void Xilinx::program(unsigned int offset, bool unprotect_flash)
 	if (_mode == Device::SPI_MODE) {
 		/* Check for BPI flash boards */
 		if (_is_bpi_board) {
+			printInfo("Programming via BPI bridge");
 			program_bpi(bit, offset);
 		} else {
 			if (_flash_chips & PRIMARY_FLASH) {
 				select_flash_chip(PRIMARY_FLASH);
+				if (_verbose)
+					printInfo("Programming primary SPI flash with " + debug_context());
 				program_spi(bit, _file_extension, offset, unprotect_flash);
 			}
 			if (_flash_chips & SECONDARY_FLASH) {
 				select_flash_chip(SECONDARY_FLASH);
+				if (_verbose)
+					printInfo("Programming secondary SPI flash with " + debug_context());
 				program_spi(secondary_bit, _secondary_file_extension, offset, unprotect_flash);
 			}
 		}
@@ -750,6 +878,8 @@ bool Xilinx::prepare_flash_access()
 		printInfo("Skip loading bridge for spiOverjtag");
 		ret = true;
 	} else {
+		if (_verbose)
+			printInfo("Preparing flash access with " + debug_context());
 		ret = load_bridge();
 	}
 
@@ -773,6 +903,7 @@ bool Xilinx::load_bridge()
 	} else {
 		if (_device_package.empty()) {
 			printError("Can't program SPI flash: missing device-package information");
+			printError("SPI bridge context: " + debug_context());
 			return false;
 		}
 
@@ -796,6 +927,8 @@ bool Xilinx::load_bridge()
 		else
 			program_mem(&bridge);
 	} catch (std::exception &e) {
+		printError("SPI bridge load context: " + debug_context() +
+			", resolved_bridge=" + bitname);
 		printError(e.what());
 		throw std::runtime_error(e.what());
 	}
@@ -809,6 +942,7 @@ bool Xilinx::load_bpi_bridge()
 
 	if (_device_package.empty()) {
 		printError("Can't program BPI flash: missing device-package information");
+		printError("BPI bridge context: " + debug_context());
 		return false;
 	}
 
@@ -827,6 +961,8 @@ bool Xilinx::load_bpi_bridge()
 		bridge.parse();
 		program_mem(&bridge);
 	} catch (std::exception &e) {
+		printError("BPI bridge load context: " + debug_context() +
+			", resolved_bridge=" + bitname);
 		printError(e.what());
 		throw std::runtime_error(e.what());
 	}
@@ -841,6 +977,9 @@ void Xilinx::program_bpi(ConfigBitstreamParser *bit, unsigned int offset)
 {
 	if (!bit)
 		throw std::runtime_error("called with null bitstream");
+	if (_verbose)
+		printInfo("BPI programming context: " + debug_context() +
+			", offset=" + std::to_string(offset));
 
 	/* Load BPI bridge if not already loaded */
 	if (!_bpi_flash) {
@@ -851,6 +990,7 @@ void Xilinx::program_bpi(ConfigBitstreamParser *bit, unsigned int offset)
 
 	/* Detect flash */
 	if (!_bpi_flash->detect()) {
+		printError("BPI flash detect context: " + debug_context());
 		throw std::runtime_error("BPI flash detection failed");
 	}
 

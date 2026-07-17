@@ -69,7 +69,6 @@
 
 #define DEFAULT_FREQ 	6000000
 
-
 struct arguments {
 	int8_t verbose;
 	bool force_terminal_mode;
@@ -129,6 +128,70 @@ struct arguments {
 	std::string read_register;
 	std::string user_flash;
 };
+
+namespace {
+
+std::string yes_no(bool value)
+{
+	return value ? "yes" : "no";
+}
+
+std::string program_type_name(Device::prog_type_t prg_type)
+{
+	switch (prg_type) {
+	case Device::WR_SRAM:
+		return "write-sram";
+	case Device::WR_FLASH:
+		return "write-flash";
+	case Device::RD_FLASH:
+		return "read-flash";
+	case Device::PRG_NONE:
+		return "auto";
+	}
+	return "unknown";
+}
+
+std::string format_idcode_list(const std::vector<uint32_t> &devices)
+{
+	std::ostringstream oss;
+	for (size_t i = 0; i < devices.size(); ++i) {
+		if (i != 0)
+			oss << ", ";
+		oss << "[" << i << "]=0x" << std::hex << std::setw(8)
+			<< std::setfill('0') << devices[i] << std::dec;
+	}
+	return oss.str();
+}
+
+std::string format_idcode_hex(uint32_t idcode)
+{
+	std::ostringstream oss;
+	oss << std::hex << std::setw(8) << std::setfill('0') << idcode;
+	return oss.str();
+}
+
+std::string describe_program_request(const struct arguments &args)
+{
+	std::ostringstream oss;
+	oss << "cable=" << args.cable
+		<< ", board=" << args.board
+		<< ", device=" << args.device
+		<< ", bit_file=" << (args.bit_file.empty() ? "<none>" : args.bit_file)
+		<< ", secondary_bit_file=" << (args.secondary_bit_file.empty() ? "<none>" : args.secondary_bit_file)
+		<< ", file_type=" << (args.file_type.empty() ? "<auto>" : args.file_type)
+		<< ", prg_type=" << program_type_name(args.prg_type)
+		<< ", fpga_part=" << (args.fpga_part.empty() ? "<auto>" : args.fpga_part)
+		<< ", target_flash=" << args.target_flash
+		<< ", freq=" << args.freq
+		<< ", verify=" << yes_no(args.verify)
+		<< ", unprotect_flash=" << yes_no(args.unprotect_flash)
+		<< ", skip_load_bridge=" << yes_no(args.skip_load_bridge)
+		<< ", skip_reset=" << yes_no(args.skip_reset)
+		<< ", index_chain=" << args.index_chain;
+	return oss.str();
+}
+
+}
 
 int run_xvc_server(const struct arguments &args, const cable_t &cable,
 	const jtag_pins_conf_t *pins_config);
@@ -396,6 +459,7 @@ int main(int argc, char **argv)
 				args.user_misc_devs);
 	} catch (std::exception &e) {
 		printError("JTAG init failed with: " + std::string(e.what()));
+		printError("JTAG init context: " + describe_program_request(args));
 		return EXIT_FAILURE;
 	}
 
@@ -407,6 +471,9 @@ int main(int argc, char **argv)
 
 	if (args.verbose > 0)
 		std::cout << "found " << std::to_string(found) << " devices" << std::endl;
+
+	if (args.verbose > 0 && found > 0)
+		printInfo("JTAG chain: " + format_idcode_list(listDev));
 
 	/* in verbose mode or when detect
 	 * display full chain with details
@@ -448,6 +515,7 @@ int main(int argc, char **argv)
 					if (idcode != -1) {
 						printError("Error: more than one FPGA found");
 						printError("Use --index-chain to force selection");
+						printError("Detected chain: " + format_idcode_list(listDev));
 						for (size_t i = 0; i < found; i++)
 							printf("0x%08x\n", listDev[i]);
 						delete(jtag);
@@ -461,6 +529,10 @@ int main(int argc, char **argv)
 			index = args.index_chain;
 			if (index > found) {
 				printError("wrong index for device in JTAG chain");
+				printError("Requested index: " + std::to_string(args.index_chain) +
+					", detected devices: " + std::to_string(found));
+				if (!listDev.empty())
+					printError("Detected chain: " + format_idcode_list(listDev));
 				delete(jtag);
 				return EXIT_FAILURE;
 			}
@@ -468,6 +540,7 @@ int main(int argc, char **argv)
 		}
 	} else {
 		printError("Error: no device found");
+		printError("JTAG scan context: " + describe_program_request(args));
 		delete(jtag);
 		return EXIT_FAILURE;
 	}
@@ -580,6 +653,9 @@ int main(int argc, char **argv)
 		}
 	} catch (std::exception &e) {
 		printError("Error: Failed to claim FPGA device: " + std::string(e.what()));
+		printError("FPGA claim context: manufacturer=" + fab +
+			", idcode=0x" + format_idcode_hex(idcode));
+		printError("Request context: " + describe_program_request(args));
 		delete(jtag);
 		return EXIT_FAILURE;
 	}
@@ -592,6 +668,11 @@ int main(int argc, char **argv)
 			fpga->program(args.offset, args.unprotect_flash);
 		} catch (std::exception &e) {
 			printError("Error: Failed to program FPGA: " + std::string(e.what()));
+			printError("Programming context: manufacturer=" + fab +
+				", idcode=0x" + format_idcode_hex(idcode) +
+				", chain_index=" + std::to_string(index) +
+				", offset=" + std::to_string(args.offset));
+			printError("Request context: " + describe_program_request(args));
 			delete(fpga);
 			delete(jtag);
 			return EXIT_FAILURE;
