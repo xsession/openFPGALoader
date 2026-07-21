@@ -70,6 +70,6 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 
 .\openFPGALoader.exe --list-flash
 
-
+.\openFPGALoader.exe -c digilent_hs3 --fpga-part xc6slx9tqg144 --detect-external-flash -v -v
 
 
