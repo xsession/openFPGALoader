@@ -88,6 +88,13 @@ std::string findPackagedFirmware(uint16_t pid)
 	return {};
 }
 
+std::string findPackagedFirmwareLeaf(const std::string &leaf)
+{
+	const std::string candidate = PathHelper::absolutePath(
+		std::string(DATA_DIR) + "/openFPGALoader/" + leaf);
+	return fileExists(candidate) ? candidate : std::string();
+}
+
 std::string findUpgradeFirmware(uint16_t pid)
 {
 	const bool xp2 = pid == 0x0013;
@@ -157,7 +164,15 @@ std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path)
     }
 
     firmware_file += firmwareLeafForPid(pid);
-    return firmware_file;
+	return firmware_file;
+}
+
+std::unique_ptr<FX2_ll> openXpcuFx2(uint16_t vid, uint16_t pid,
+	const std::string &firmware_file, bool already_initialized)
+{
+	return std::make_unique<FX2_ll>(already_initialized ? 0 : vid,
+		already_initialized ? 0 : pid, XPCU_INITIALIZED_VID,
+		XPCU_INITIALIZED_PID, firmware_file);
 }
 
 bool parseEndpointEnv(const char *name, uint8_t &endpoint)
@@ -387,6 +402,7 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	const uint16_t pid,
 	uint32_t clkHz,
 	const std::string &firmware_path,
+	bool skip_firmware_upload,
 	int8_t verbose): _verbose(verbose), _nb_bit(0), _nb_tdo_bit(0),
 		_curr_tms(0), _curr_tdi(0), _buffer_size(4096),
 		_buffer_bit_size((_buffer_size / 2 * 4) - 1),
@@ -403,8 +419,9 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	 * 3/ from ISE install directory
 	 */
 
-	const bool already_initialized = vid == XPCU_INITIALIZED_VID &&
-		pid == XPCU_INITIALIZED_PID;
+	const bool already_initialized = skip_firmware_upload ||
+		(vid == XPCU_INITIALIZED_VID &&
+		pid == XPCU_INITIALIZED_PID);
 	std::string firmware_file;
 	if (!already_initialized)
 		firmware_file = findXusbFirmwareFile(pid, firmware_path);
@@ -433,17 +450,40 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	// }
 	if (!firmware_file.empty())
 		printInfo("firmware_file : " + firmware_file);
+	if (skip_firmware_upload)
+		printWarn("Skipping XPCU FX2 firmware upload; opening initialized 03fd:0008");
 
+	bool cold_boot_used_operational_xp2 = false;
 	try {
 		/* The initialized identity is also exposed as a cable definition so
 		 * --scan-usb can report it.  Do not treat that identity as an FX2
 		 * bootloader or attempt to upload firmware to it again. */
-		fx2 = std::make_unique<FX2_ll>(already_initialized ? 0 : vid,
-				already_initialized ? 0 : pid, XPCU_INITIALIZED_VID,
-				XPCU_INITIALIZED_PID, firmware_file);
+		fx2 = openXpcuFx2(vid, pid, firmware_file, already_initialized);
 	} catch (std::exception &e) {
-		printError(e.what());
-		throw std::runtime_error("lowlevel init failed");
+		/* Some genuine Platform Cable USB II / PID 0013 setups do not
+		 * re-open reliably after the extracted loader image.  Try the
+		 * operational XP2 firmware once before giving up; this preserves the
+		 * loader-first path but gives Windows driver/firmware combinations a
+		 * second valid cold-boot route. */
+		const bool xp2_loader_path = !already_initialized && pid == 0x0013 &&
+			firmware_file.find("xusb_xp2_loader.hex") != std::string::npos;
+		const std::string xp2_firmware = xp2_loader_path ?
+			findPackagedFirmwareLeaf("xusb_xp2.hex") : std::string();
+		if (!xp2_firmware.empty()) {
+			printWarn(std::string(e.what()) +
+				"; retrying Platform Cable USB II with " + xp2_firmware);
+			try {
+				fx2 = openXpcuFx2(vid, pid, xp2_firmware, already_initialized);
+				firmware_file = xp2_firmware;
+				cold_boot_used_operational_xp2 = true;
+			} catch (std::exception &retry_e) {
+				printError(retry_e.what());
+				throw std::runtime_error("lowlevel init failed");
+			}
+		} else {
+			printError(e.what());
+			throw std::runtime_error("lowlevel init failed");
+		}
 	}
 
 	const std::string upgrade_firmware = findUpgradeFirmware(pid);
@@ -454,7 +494,8 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		"OPENFPGALOADER_XPCU_XP2_UPGRADE" :
 		"OPENFPGALOADER_XPCU_XLP_UPGRADE");
 	const bool auto_upgrade = !already_initialized &&
-		(pid == 0x000d || pid == 0x0013) && upgrade_version != 0;
+		(pid == 0x000d || pid == 0x0013) && upgrade_version != 0 &&
+		!cold_boot_used_operational_xp2;
 	const bool skip_upgrade =
 		xpcuBoolEnv("OPENFPGALOADER_XPCU_SKIP_FIRMWARE_UPGRADE") ||
 		xpcuBoolEnv(xp2_upgrade ? "OPENFPGALOADER_XPCU_SKIP_XP2_UPGRADE" :

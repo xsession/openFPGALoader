@@ -119,6 +119,7 @@ struct arguments {
 	std::string flash_sector;
 	bool skip_load_bridge;
 	bool skip_reset;
+	bool skip_probe_firmware_upload;
 	/* xvc server */
 	bool xvc;
 	int port;
@@ -190,6 +191,7 @@ std::string describe_program_request(const struct arguments &args)
 		<< ", verify=" << yes_no(args.verify)
 		<< ", unprotect_flash=" << yes_no(args.unprotect_flash)
 		<< ", skip_load_bridge=" << yes_no(args.skip_load_bridge)
+		<< ", skip_probe_firmware_upload=" << yes_no(args.skip_probe_firmware_upload)
 		<< ", skip_reset=" << yes_no(args.skip_reset)
 		<< ", index_chain=" << args.index_chain;
 	return oss.str();
@@ -231,7 +233,7 @@ int main(int argc, char **argv)
 			-1,            0,        "primary",   false,         true,          -1,
 			/* vid, pid, index bus_addr, device_addr */
 				0,   0,   -1,     0,         0,
-			"127.0.0.1", 0, false, false, false, false, "", false, false,
+			"127.0.0.1", 0, false, false, false, false, "", false, false, false,
 			/* xvc server */
 			false, 3721, "-",
 			"", false, {},  // mcufw conmcu, user_misc_dev_list
@@ -461,6 +463,7 @@ int main(int argc, char **argv)
 		jtag = new Jtag(cable, &pins_config, args.device, args.usb_serial_num,
 				args.freq, args.verbose, args.ip_adr, args.port,
 				args.invert_read_edge, args.probe_firmware,
+				args.skip_probe_firmware_upload,
 				args.user_misc_devs);
 	} catch (std::exception &e) {
 		printError("JTAG init failed with: " + std::string(e.what()));
@@ -1080,6 +1083,9 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 				cxxopts::value<std::vector<std::string>>(pins))
 			("probe-firmware", "firmware for JTAG probe (usbBlasterII/xilinxPlatformCableUsb)",
 				cxxopts::value<std::string>(args->probe_firmware))
+			("skip-probe-firmware-upload",
+				"JTAG mode / xilinxPlatformCableUsb: do not upload FX2 firmware; open initialized 03fd:0008 directly",
+				cxxopts::value<bool>(args->skip_probe_firmware_upload))
 			("protect-flash",   "protect SPI flash area",
 				cxxopts::value<uint32_t>(args->protect_flash))
 			("quiet", "Produce quiet output (no progress bar)",

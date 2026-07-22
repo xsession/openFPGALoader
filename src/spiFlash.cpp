@@ -430,11 +430,12 @@ bool SPIFlash::prepare_flash(const int base_addr, const int len)
 				_unprotect = true;
 				_must_relock = true;
 			}
-			/* ST M25P16 / MX25L6045 have not TB bit:
+			/* ST M25P40 / M25P16 / MX25L6045 have not TB bit:
 			 * block protection is always in top mode:
 			 * if write is not at offset 0 -> force unlock
 			 */
-			if (((jedec == 0x202015) || (jedec == 0xC22017))
+			if (((jedec == 0x202013) || (jedec == 0x202015) ||
+				(jedec == 0xC22017))
 				&& tb == 1 && base_addr != 0) {
 				_unprotect = true;
 				_must_relock = true;

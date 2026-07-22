@@ -109,6 +109,10 @@ openFPGALoader -- a program to flash FPGA
                                 MOSI:MISO:SCK:CS[:HOLDN:WPN]
       --probe-firmware arg      firmware for JTAG probe
                                 (usbBlasterII/xilinxPlatformCableUsb)
+      --skip-probe-firmware-upload
+                                JTAG mode / xilinxPlatformCableUsb: do not
+                                upload FX2 firmware; open initialized
+                                03fd:0008 directly
       --protect-flash arg       protect SPI flash area
       --quiet                   Produce quiet output (no progress bar)
   -r, --reset                   reset FPGA after operations

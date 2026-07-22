@@ -912,3 +912,9 @@ install(FILES
 	${GZ_FILES}
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openFPGALoader
 )
+
+file(GLOB SPARTAN6_ISE_COR_FILES spiOverJtag/from_ise/spartan-6/*.cor)
+install(FILES
+	${SPARTAN6_ISE_COR_FILES}
+	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openFPGALoader/from_ise/spartan-6
+)

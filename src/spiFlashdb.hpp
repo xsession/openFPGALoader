@@ -153,6 +153,23 @@ static std::map <uint32_t, flash_t> flash_list = {
 		.quad_mask = 0,
 		.global_lock = false,
 	}},
+	{0x202013, {
+		/* ST/Micron M25P40 class, 4 Mbit / 512 KiB, 8 x 64 KiB sectors. */
+		.manufacturer = "ST",
+		.model = "M25P40",
+		.nr_sector = 8,
+		.sector_erase = true,
+		.subsector_erase = false,
+		.has_extended = false,
+		.tb_otp = true,
+		.tb_offset = 0, // unused
+		.tb_register = STATR,
+		.bp_len = 3,
+		.bp_offset = {(1 << 2), (1 << 3), (1 << 4), 0},
+		.quad_register = NONER,
+		.quad_mask = 0,
+		.global_lock = false,
+	}},
 	{0x202014, {
 		/* https://pdf1.alldatasheet.com/datasheet-pdf/download/22807/STMICROELECTRONICS/M25P80.html */
 		.manufacturer = "ST",

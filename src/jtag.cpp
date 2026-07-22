@@ -100,6 +100,7 @@ Jtag::Jtag(const cable_t &cable, const jtag_pins_conf_t *pin_conf,
 			const std::string &serial, uint32_t clkHZ, int8_t verbose,
 			const std::string &ip_adr, int port,
 			const bool invert_read_edge, const std::string &firmware_path,
+			bool skip_probe_firmware_upload,
 			const std::map<uint32_t, misc_device> &user_misc_devs):
 			_verbose(verbose > 1),
 			_state(RUN_TEST_IDLE),
@@ -214,7 +215,7 @@ Jtag::Jtag(const cable_t &cable, const jtag_pins_conf_t *pin_conf,
 	case MODE_XPCU:
 #ifdef ENABLE_XILINX_PLATFORM_CABLE_USB
 		_jtag = new XilinxPlatformCableUSB(cable.vid, cable.pid, clkHZ,
-			firmware_path, verbose);
+			firmware_path, skip_probe_firmware_upload, verbose);
 		break;
 #else
 		printError("Jtag: support for Xilinx Platform Cable USB (XPCU) was not enabled at compile time");

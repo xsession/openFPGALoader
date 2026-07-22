@@ -25,6 +25,7 @@ class Jtag {
 		const std::string &ip_adr, int port,
 		const bool invert_read_edge = false,
 		const std::string &firmware_path = "",
+		bool skip_probe_firmware_upload = false,
 		const std::map<uint32_t, misc_device> &user_misc_devs = {});
 	~Jtag();
 

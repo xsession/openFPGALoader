@@ -187,7 +187,9 @@ bool FlashInterface::write(const std::vector<FlashDataSection>&sections,
 	/* test SPI */
 	try {
 		SPIFlash flash(this, unprotect_flash, _spif_verbose);
+		printInfo("Read flash status: ", false);
 		flash.read_status_reg();
+		printSuccess("DONE");
 		if (!flash.erase_and_prog(sections, full_erase))
 			ret = false;
 		if (_spif_verify && ret)

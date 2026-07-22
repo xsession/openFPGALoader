@@ -60,6 +60,30 @@ std::string to_lower_copy(const std::string &value)
 	return result;
 }
 
+bool file_exists(const std::string &filename)
+{
+	std::ifstream file(filename, std::ios::binary);
+	return file.good();
+}
+
+std::string spartan6_bridge_model_from_package(const std::string &device_package)
+{
+	const std::string lower = to_lower_copy(device_package);
+	const std::string prefix = "xc6slx";
+	if (lower.rfind(prefix, 0) != 0)
+		return "";
+
+	size_t pos = prefix.size();
+	while (pos < lower.size() && std::isdigit(static_cast<unsigned char>(lower[pos])))
+		pos++;
+	if (pos == prefix.size())
+		return "";
+	if (pos < lower.size() && lower[pos] == 't')
+		pos++;
+
+	return lower.substr(0, pos);
+}
+
 std::string detect_config_extension(const std::string &filename)
 {
 	const std::string lower = to_lower_copy(filename);
@@ -76,14 +100,6 @@ std::string detect_config_extension(const std::string &filename)
 	}
 
 	return extension;
-}
-
-bool looks_like_repo_spioverjtag_bridge(const std::string &filename)
-{
-	const std::string lower = to_lower_copy(filename);
-	return lower.find("spioverjtag_") != std::string::npos &&
-		(lower.size() >= 4 && (lower.rfind(".bit") == lower.size() - 4 ||
-			lower.rfind(".bit.gz") == lower.size() - 7));
 }
 
 uint8_t decode_shifted_jtag_byte(const uint8_t *data, uint8_t shift)
@@ -372,7 +388,7 @@ static void open_bitfile(
 {
 	printInfo("Open file " + filename + " ", false);
 	try {
-		if (extension == "bit") {
+		if (extension == "bit" || extension == "cor") {
 			*parser = new BitParser(filename, reverse, verbose);
 		} else if (extension == "mcs") {
 			*parser = new McsParser(filename, reverse, verbose);
@@ -1003,7 +1019,6 @@ bool Xilinx::post_flash_access()
 bool Xilinx::prepare_flash_access()
 {
 	bool ret = false;
-	bool likely_repo_v2_bridge = false;
 	if (_skip_load_bridge) {
 		printInfo("Skip loading bridge for spiOverjtag");
 		ret = true;
@@ -1011,10 +1026,6 @@ bool Xilinx::prepare_flash_access()
 		if (_verbose)
 			printInfo("Preparing flash access with " + debug_context());
 		ret = load_bridge();
-		const std::string bridge_path = _spiOverJtagPath.empty() ?
-			(std::string(DATA_DIR "/openFPGALoader") + "/spiOverJtag_" +
-				_device_package + ".bit.gz") : _spiOverJtagPath;
-		likely_repo_v2_bridge = looks_like_repo_spioverjtag_bridge(bridge_path);
 	}
 
 	/* Get number of FPGAs in the Jtag Chain */
@@ -1035,10 +1046,6 @@ bool Xilinx::prepare_flash_access()
 	if (ret) {
 		if (get_spiOverJtag_version() == 2.0f)
 			_soj_is_v2 = true;
-		else if (_fpga_family == SPARTAN6_FAMILY && likely_repo_v2_bridge) {
-			_soj_is_v2 = true;
-			printWarn("SOJ version probe failed on Spartan-6; assuming bundled bridge uses v2 framing");
-		}
 		printf("SOJ version: %f\n", _soj_is_v2 ? 2.0f : 1.0f);
 	}
 	return ret;
@@ -1058,9 +1065,25 @@ bool Xilinx::load_bridge()
 			return false;
 		}
 
-		bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR", DATA_DIR "/openFPGALoader");
-		bitname += "/spiOverJtag_" + _device_package + ".bit.gz";
-		extension = "bit";
+		const std::string bridge_dir = get_shell_env_var("OPENFPGALOADER_SOJ_DIR",
+			DATA_DIR "/openFPGALoader");
+		if (_fpga_family == SPARTAN6_FAMILY) {
+			const std::string model = spartan6_bridge_model_from_package(
+				_device_package);
+			if (!model.empty()) {
+				const std::string cor_path = bridge_dir +
+					"/from_ise/spartan-6/" + model + "_spi.cor";
+				if (file_exists(cor_path)) {
+					bitname = cor_path;
+					extension = "cor";
+				}
+			}
+		}
+		if (bitname.empty()) {
+			bitname = bridge_dir + "/spiOverJtag_" + _device_package +
+				".bit.gz";
+			extension = "bit";
+		}
 	}
 
 #if defined (_WIN64) || defined (_WIN32)
@@ -1208,7 +1231,8 @@ float Xilinx::get_spiOverJtag_version()
 	auto probe_version = [&]() {
 		_jtag->shiftIR(get_ircode(_ircode_map, "USER4"), NULL, _irlen,
 			Jtag::UPDATE_IR);
-		printf("jtag_chain_len: %d\n", _jtag_chain_len);
+		if (_verbose > 0)
+			printf("jtag_chain_len: %d\n", _jtag_chain_len);
 		if (_jtag_chain_len > 1)
 			_jtag->shiftDR(jtx, NULL, _jtag_chain_len - 1, Jtag::SHIFT_DR);
 		_jtag->shiftDR(jtx, jrx, 6 * 8);
@@ -2614,34 +2638,75 @@ int Xilinx::spi_put(uint8_t cmd,
 		return spi_put_v2(cmd, tx, rx, len);
 
 	int xfer_len = len + 1 + ((rx == NULL) ? 0 : 1);
-	uint8_t jtx[xfer_len];
-	jtx[0] = McsParser::reverseByte(cmd);
-	/* uint8_t jtx[xfer_len] = {McsParser::reverseByte(cmd)}; */
-	uint8_t jrx[xfer_len];
-	if (tx != NULL) {
-		for (uint32_t i=0; i < len; i++)
-			jtx[i+1] = McsParser::reverseByte(tx[i]);
-	}
-	/* addr BSCAN user1 */
-	_jtag->shiftIR(get_ircode(_ircode_map, _user_instruction), NULL, _irlen);
-	/* send first already stored cmd,
-	 * in the same time store each byte
-	 * to next
-	 */
-	_jtag->shiftDR(jtx, (rx == NULL)? NULL: jrx, 8*xfer_len);
-	_jtag->flush();
+	auto spi_put_v1_on_user = [&](const std::string &user_instruction,
+			uint8_t *out) {
+		uint8_t jtx[xfer_len];
+		jtx[0] = McsParser::reverseByte(cmd);
+		/* uint8_t jtx[xfer_len] = {McsParser::reverseByte(cmd)}; */
+		uint8_t jrx[xfer_len];
+		if (tx != NULL) {
+			for (uint32_t i=0; i < len; i++)
+				jtx[i+1] = McsParser::reverseByte(tx[i]);
+		}
+		/* addr BSCAN user1 */
+		_jtag->shiftIR(get_ircode(_ircode_map, user_instruction), NULL,
+			_irlen);
+		/* send first already stored cmd,
+		 * in the same time store each byte
+		 * to next
+		 */
+		_jtag->shiftDR(jtx, (out == NULL)? NULL: jrx, 8*xfer_len);
+		_jtag->flush();
+
+		if (out != NULL) {
+			for (uint32_t i=0; i < len; i++)
+				out[i] = McsParser::reverseByte(jrx[i+1] >> 1) |
+					(jrx[i+2] & 0x01);
+		}
+	};
+
+	spi_put_v1_on_user(_user_instruction, rx);
 
 	if (rx != NULL) {
-		for (uint32_t i=0; i < len; i++)
-			rx[i] = McsParser::reverseByte(jrx[i+1] >> 1) | (jrx[i+2] & 0x01);
-
-		/* Some Spartan-6 bridges answer correctly only to the v2 packet format
-		 * even when USER4 version probing did not decode to "2.0". Probe both
-		 * framings for RDID and promote the session when v2 is the sane one. */
 		if (!_soj_is_v2 && _fpga_family == SPARTAN6_FAMILY &&
 				cmd == 0x9F && len >= 3) {
-			std::vector<uint8_t> rx_v2(len, 0x00);
 			const bool v1_valid = looks_like_valid_jedec_reply(rx, len);
+			if (!v1_valid) {
+				const std::string saved_user_instruction =
+					_user_instruction;
+				const char *user_candidates[] = {
+					"USER1", "USER2", "USER3", "USER4"
+				};
+				for (const char *candidate : user_candidates) {
+					if (saved_user_instruction == candidate)
+						continue;
+					std::vector<uint8_t> rx_user(len, 0x00);
+					_jtag->go_test_logic_reset();
+					spi_put_v1_on_user(candidate, rx_user.data());
+					if (_verbose > 0) {
+						printf("SPI RDID probe %s:", candidate);
+						for (uint32_t i = 0; i < len; i++)
+							printf(" %02x", rx_user[i]);
+						printf("\n");
+					}
+					if (looks_like_valid_jedec_reply(
+							rx_user.data(), len)) {
+						memcpy(rx, rx_user.data(), len);
+						_user_instruction = candidate;
+						if (_verbose > 0)
+							printf("SPI RDID selected %s\n",
+								candidate);
+						return 0;
+					}
+				}
+				_user_instruction = saved_user_instruction;
+			}
+
+			/* Some Spartan-6 bridges answer correctly only to the v2 packet
+			 * format even when USER4 version probing did not decode to "2.0".
+			 * Probe both framings for RDID and promote the session when v2 is
+			 * the sane one. */
+			std::vector<uint8_t> rx_v2(len, 0x00);
 			_jtag->go_test_logic_reset();
 			spi_put_v2(cmd, tx, rx_v2.data(), len);
 			const bool v2_valid = looks_like_valid_jedec_reply(rx_v2.data(), len);
@@ -2661,6 +2726,74 @@ int Xilinx::spi_put(uint8_t cmd,
 				_soj_is_v2 = true;
 				if (_verbose > 0)
 					printf("SPI RDID selected SOJ v2 framing\n");
+			} else if (!looks_like_valid_jedec_reply(rx, len) &&
+					!v2_valid) {
+				if (auto *ll = _jtag->get_ll_class();
+						ll != nullptr && ll->setPreferControlBitbang(true)) {
+					printWarn("Retrying Spartan-6 RDID probes through XPCU control-transfer JTAG");
+					const std::string saved_user_instruction =
+						_user_instruction;
+					const char *user_candidates[] = {
+						"USER1", "USER2", "USER3", "USER4"
+					};
+
+					_jtag->go_test_logic_reset();
+					spi_put_v1_on_user(saved_user_instruction, rx);
+					if (_verbose > 0) {
+						printf("SPI RDID control probe %s:",
+							saved_user_instruction.c_str());
+						for (uint32_t i = 0; i < len; i++)
+							printf(" %02x", rx[i]);
+						printf("\n");
+					}
+					if (looks_like_valid_jedec_reply(rx, len))
+						return 0;
+
+					for (const char *candidate : user_candidates) {
+						if (saved_user_instruction == candidate)
+							continue;
+						std::vector<uint8_t> rx_user(len, 0x00);
+						_jtag->go_test_logic_reset();
+						spi_put_v1_on_user(candidate, rx_user.data());
+						if (_verbose > 0) {
+							printf("SPI RDID control probe %s:",
+								candidate);
+							for (uint32_t i = 0; i < len; i++)
+								printf(" %02x", rx_user[i]);
+							printf("\n");
+						}
+						if (looks_like_valid_jedec_reply(
+								rx_user.data(), len)) {
+							memcpy(rx, rx_user.data(), len);
+							_user_instruction = candidate;
+							if (_verbose > 0)
+								printf("SPI RDID selected %s in control-transfer mode\n",
+									candidate);
+							return 0;
+						}
+					}
+					_user_instruction = saved_user_instruction;
+
+					std::vector<uint8_t> rx_v2_control(len, 0x00);
+					_jtag->go_test_logic_reset();
+					spi_put_v2(cmd, tx, rx_v2_control.data(), len);
+					if (_verbose > 0) {
+						printf("SPI RDID control probe v2:");
+						for (uint32_t i = 0; i < len; i++)
+							printf(" %02x", rx_v2_control[i]);
+						printf("\n");
+					}
+					if (looks_like_valid_jedec_reply(
+							rx_v2_control.data(), len)) {
+						memcpy(rx, rx_v2_control.data(), len);
+						_soj_is_v2 = true;
+						if (_verbose > 0)
+							printf("SPI RDID selected SOJ v2 framing in control-transfer mode\n");
+						return 0;
+					}
+
+					ll->setPreferControlBitbang(false);
+				}
 			}
 		}
 	}
