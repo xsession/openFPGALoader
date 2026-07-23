@@ -87,6 +87,9 @@ openFPGALoader -- a program to flash FPGA
                                 flash: primary (default), secondary or both
       --external-flash          select ext flash for device with internal and
                                 external storage
+      --external-flash-type arg force external SPI flash type by JEDEC ID
+                                (for example 0x202013) or model name
+                                (for example M25P40)
       --file-size arg           provides size in Byte to dump, must be used
                                 with dump-flash
       --file-type arg           provides file type instead of let's deduced
@@ -113,6 +116,10 @@ openFPGALoader -- a program to flash FPGA
                                 JTAG mode / xilinxPlatformCableUsb: do not
                                 upload FX2 firmware; open initialized
                                 03fd:0008 directly
+      --xpcu-direct-xp2-firmware
+                                JTAG mode / xilinxPlatformCableUsb: for cold
+                                PID 03fd:0013, upload xusb_xp2.hex directly
+                                instead of xusb_xp2_loader.hex
       --protect-flash arg       protect SPI flash area
       --quiet                   Produce quiet output (no progress bar)
   -r, --reset                   reset FPGA after operations

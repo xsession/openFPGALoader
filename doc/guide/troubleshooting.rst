@@ -20,6 +20,42 @@ JTAG init failed
 
 Avoid using USB hubs and connect it directly to your PC USB port.
 
+MachXO3LF JEDEC fails with UFM section out of bounds
+====================================================
+
+On MachXO3L/MachXO3LF, ``.jed`` files program the internal
+NVCM/Flash through the Lattice JTAG/ISC command flow. A ``--bridge``
+bitstream is not required for this operation.
+
+If programming reaches JEDEC parsing and then stops with:
+
+.. code:: bash
+
+    UFM section detected in JEDEC file, but calculated flash start address was out of bounds
+
+check the verbose log just before the error. A typical affected
+MachXO3LF-9400C file may show:
+
+.. code:: text
+
+    JTAG chain: [0]=0x612be043
+    family MachXO3LF
+    model  LCMXO3LF-9400C
+    NOTE TAG DATA
+    L2063488
+
+MachXO3 JEDEC files can contain ``NOTE TAG DATA`` sections for
+NVCM1/UFM pages. For a 9400 device, ``2063488 / 128`` is page
+``16121``, the documented total CFG+UFM page count. If that section is
+all zero, it is a trailing empty tag block emitted by Diamond and should
+be skipped rather than programmed as UFM payload.
+
+Use a version of openFPGALoader that includes the MachXO3 9400 UFM page
+map and skips empty out-of-range ``TAG DATA`` blocks. If you still see the
+error with a non-empty ``TAG DATA`` section, regenerate the JEDEC from
+Diamond and verify the selected device density/package matches the
+physical FPGA reported by ``openFPGALoader --detect``.
+
 
 Tang Primer 20k program slow and stucked (issue `#250 <https://github.com/trabucayre/openFPGALoader/issues/250>`_)
 ==================================================================================================================
@@ -126,4 +162,3 @@ At the boot prompt, typing in
 will boot the new kernel with the disabled module. 
 
 Either way, openFPGALoader will then be able to access the development board as a generic USB device via ugen(4).
-

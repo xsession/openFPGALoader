@@ -103,6 +103,7 @@ struct arguments {
 	unsigned int file_size;
 	std::string target_flash;
 	bool external_flash;
+	std::string external_flash_type;
 	bool spi_flash_type;
 	int16_t altsetting;
 	uint16_t vid;
@@ -120,6 +121,7 @@ struct arguments {
 	bool skip_load_bridge;
 	bool skip_reset;
 	bool skip_probe_firmware_upload;
+	bool xpcu_direct_xp2_firmware;
 	/* xvc server */
 	bool xvc;
 	int port;
@@ -186,12 +188,14 @@ std::string describe_program_request(const struct arguments &args)
 		<< ", prg_type=" << program_type_name(args.prg_type)
 		<< ", fpga_part=" << (args.fpga_part.empty() ? "<auto>" : args.fpga_part)
 		<< ", target_flash=" << args.target_flash
+		<< ", external_flash_type=" << (args.external_flash_type.empty() ? "<auto>" : args.external_flash_type)
 		<< ", detect_external_flash=" << yes_no(args.detect_external_flash)
 		<< ", freq=" << args.freq
 		<< ", verify=" << yes_no(args.verify)
 		<< ", unprotect_flash=" << yes_no(args.unprotect_flash)
 		<< ", skip_load_bridge=" << yes_no(args.skip_load_bridge)
 		<< ", skip_probe_firmware_upload=" << yes_no(args.skip_probe_firmware_upload)
+		<< ", xpcu_direct_xp2_firmware=" << yes_no(args.xpcu_direct_xp2_firmware)
 		<< ", skip_reset=" << yes_no(args.skip_reset)
 		<< ", index_chain=" << args.index_chain;
 	return oss.str();
@@ -229,11 +233,11 @@ int main(int argc, char **argv)
 			-1, 0, false, "-", false, false, false, false, false, Device::PRG_NONE, false,
 			/* spi dfu    file_type fpga_part bridge_path probe_firmware */
 			false, false, "",       "",       "",         "",
-			/* index_chain file_size target_flash external_flash spi_flash_type altsetting */
-			-1,            0,        "primary",   false,         true,          -1,
+			/* index_chain file_size target_flash external_flash external_flash_type spi_flash_type altsetting */
+			-1,            0,        "primary",   false,         "",                  true,          -1,
 			/* vid, pid, index bus_addr, device_addr */
 				0,   0,   -1,     0,         0,
-			"127.0.0.1", 0, false, false, false, false, "", false, false, false,
+			"127.0.0.1", 0, false, false, false, false, "", false, false, false, false,
 			/* xvc server */
 			false, 3721, "-",
 			"", false, {},  // mcufw conmcu, user_misc_dev_list
@@ -464,6 +468,7 @@ int main(int argc, char **argv)
 				args.freq, args.verbose, args.ip_adr, args.port,
 				args.invert_read_edge, args.probe_firmware,
 				args.skip_probe_firmware_upload,
+				args.xpcu_direct_xp2_firmware,
 				args.user_misc_devs);
 	} catch (std::exception &e) {
 		printError("JTAG init failed with: " + std::string(e.what()));
@@ -591,7 +596,8 @@ int main(int argc, char **argv)
 #ifdef ENABLE_XILINX_SUPPORT
 			fpga = new Xilinx(jtag, args.bit_file, args.secondary_bit_file,
 				args.file_type, args.prg_type, args.fpga_part, args.spi_flash_type, args.bridge_path,
-				args.target_flash, args.verify, args.verbose, args.skip_load_bridge, args.skip_reset,
+				args.target_flash, args.external_flash_type, args.verify, args.verbose,
+				args.skip_load_bridge, args.skip_reset,
 				args.read_dna, args.read_xadc);
 #else
 			printError("Support for Xilinx FPGAs was not enabled at compile time");
@@ -884,7 +890,8 @@ int spi_comm(struct arguments args, const cable_t &cable,
 			spi->gpio_clear(board->reset_pin, true);
 		}
 
-		SPIFlash flash((FlashInterface *)spi, args.unprotect_flash, args.verbose);
+		SPIFlash flash((FlashInterface *)spi, args.unprotect_flash,
+				args.verbose, args.external_flash_type);
 		flash.display_status_reg();
 
 		if (args.prg_type != Device::RD_FLASH &&
@@ -1048,6 +1055,9 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 			("external-flash",
 				"select ext flash for device with internal and external storage",
 				cxxopts::value<bool>(args->external_flash))
+			("external-flash-type",
+				"force external SPI flash type by JEDEC ID (for example 0x202013) or model name (for example M25P40)",
+				cxxopts::value<std::string>(args->external_flash_type))
 			("file-size",
 				"provides size in Byte to dump, must be used with dump-flash",
 				cxxopts::value<unsigned int>(args->file_size))
@@ -1086,6 +1096,9 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 			("skip-probe-firmware-upload",
 				"JTAG mode / xilinxPlatformCableUsb: do not upload FX2 firmware; open initialized 03fd:0008 directly",
 				cxxopts::value<bool>(args->skip_probe_firmware_upload))
+			("xpcu-direct-xp2-firmware",
+				"JTAG mode / xilinxPlatformCableUsb: for cold PID 03fd:0013, upload xusb_xp2.hex directly instead of xusb_xp2_loader.hex",
+				cxxopts::value<bool>(args->xpcu_direct_xp2_firmware))
 			("protect-flash",   "protect SPI flash area",
 				cxxopts::value<uint32_t>(args->protect_flash))
 			("quiet", "Produce quiet output (no progress bar)",

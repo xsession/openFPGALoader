@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <map>
 #include <iostream>
@@ -84,14 +86,226 @@
 /* Global Block Protection unlock */
 #define FLASH_ULBPR 0x98
 
-SPIFlash::SPIFlash(FlashInterface *spi, bool unprotect, int8_t verbose):
+namespace {
+
+std::string lowercase(std::string value)
+{
+	std::transform(value.begin(), value.end(), value.begin(),
+		[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	return value;
+}
+
+bool is_hex_string(const std::string &value)
+{
+	if (value.empty())
+		return false;
+	for (char c : value) {
+		if (!std::isxdigit(static_cast<unsigned char>(c)))
+			return false;
+	}
+	return true;
+}
+
+bool parse_flash_type_jedec(const std::string &flash_type,
+		uint32_t *jedec, std::string *error)
+{
+	if (flash_type.empty()) {
+		if (error)
+			*error = "empty flash type";
+		return false;
+	}
+
+	try {
+		size_t idx = 0;
+		uint32_t parsed = 0;
+		if (flash_type.size() > 2 && flash_type[0] == '0' &&
+				(flash_type[1] == 'x' || flash_type[1] == 'X')) {
+			parsed = static_cast<uint32_t>(std::stoul(flash_type, &idx, 16));
+			if (idx == flash_type.size()) {
+				*jedec = parsed;
+				if (flash_list.find(*jedec) != flash_list.end())
+					return true;
+				if (error)
+					*error = "JEDEC ID not found in SPI flash database";
+				return false;
+			}
+		} else if (flash_type.size() == 6 && is_hex_string(flash_type)) {
+			parsed = static_cast<uint32_t>(std::stoul(flash_type, &idx, 16));
+			if (idx == flash_type.size()) {
+				*jedec = parsed;
+				if (flash_list.find(*jedec) != flash_list.end())
+					return true;
+				if (error)
+					*error = "JEDEC ID not found in SPI flash database";
+				return false;
+			}
+		}
+	} catch (const std::exception &) {
+	}
+
+	const std::string requested = lowercase(flash_type);
+	uint32_t match = 0;
+	unsigned int match_count = 0;
+	for (const auto &entry : flash_list) {
+		const flash_t &flash = entry.second;
+		const std::string model = lowercase(flash.model);
+		const std::string manufacturer = lowercase(flash.manufacturer);
+		const std::string manufacturer_model = manufacturer + ":" + model;
+		const std::string manufacturer_space_model = manufacturer + " " + model;
+		if (requested == model || requested == manufacturer_model ||
+				requested == manufacturer_space_model) {
+			match = entry.first;
+			match_count++;
+		}
+	}
+
+	if (match_count == 1) {
+		*jedec = match;
+		return true;
+	}
+
+	if (error) {
+		if (match_count > 1)
+			*error = "ambiguous model name, use a JEDEC ID instead";
+		else
+			*error = "not found in SPI flash database";
+	}
+	return false;
+}
+
+const char *jedec_manufacturer_name(uint8_t id)
+{
+	switch (id) {
+	case 0x01: return "Spansion/Cypress/AMD";
+	case 0x1c: return "EON";
+	case 0x1f: return "Atmel/Adesto";
+	case 0x20: return "ST/Micron";
+	case 0x85: return "Puya";
+	case 0x9d: return "ISSI";
+	case 0xbf: return "Microchip/SST";
+	case 0xc2: return "Macronix";
+	case 0xc8: return "GigaDevice";
+	case 0xef: return "Winbond";
+	default: return "unknown";
+	}
+}
+
+std::string format_bytes(uint64_t bytes)
+{
+	char content[64];
+	if ((bytes % (1024 * 1024)) == 0) {
+		snprintf(content, sizeof(content), "%llu MiB",
+				static_cast<unsigned long long>(bytes / (1024 * 1024)));
+	} else if ((bytes % 1024) == 0) {
+		snprintf(content, sizeof(content), "%llu KiB",
+				static_cast<unsigned long long>(bytes / 1024));
+	} else {
+		snprintf(content, sizeof(content), "%llu bytes",
+				static_cast<unsigned long long>(bytes));
+	}
+	return content;
+}
+
+void display_unknown_flash(uint8_t manufacturer_id, uint8_t memory_type,
+		uint8_t memory_capacity, uint32_t jedec24)
+{
+	printWarn("SPI flash RDID succeeded, but this chip is not in openFPGALoader's SPI flash database");
+
+	char content[256];
+	snprintf(content, sizeof(content), "JEDEC ID: 0x%06x", jedec24);
+	printInfo(content);
+	snprintf(content, sizeof(content), "Manufacturer byte: 0x%02x (%s)",
+			manufacturer_id, jedec_manufacturer_name(manufacturer_id));
+	printInfo(content);
+	snprintf(content, sizeof(content), "Memory type byte: 0x%02x", memory_type);
+	printInfo(content);
+	snprintf(content, sizeof(content), "Memory capacity byte: 0x%02x",
+			memory_capacity);
+	printInfo(content);
+
+	uint64_t size_bytes = 0;
+	if (memory_capacity < 63)
+		size_bytes = 1ULL << memory_capacity;
+
+	if (size_bytes != 0) {
+		snprintf(content, sizeof(content),
+				"Common JEDEC capacity decode: %s (%llu Mbit)",
+				format_bytes(size_bytes).c_str(),
+				static_cast<unsigned long long>((size_bytes * 8) / (1024 * 1024)));
+		printInfo(content);
+	} else {
+		printWarn("Common JEDEC capacity decode is not available for this capacity byte");
+	}
+
+	printInfo("This usually means the JTAG/SPI bridge can reach the flash, but spiFlashdb.hpp needs a new entry");
+	printInfo("Starter spiFlashdb.hpp entry:");
+	printf("\t{0x%06x, {\n", jedec24);
+	printf("\t\t.manufacturer = \"%s\",\n", jedec_manufacturer_name(manufacturer_id));
+	printf("\t\t.model = \"<exact part number>\",\n");
+	if (size_bytes != 0 && (size_bytes % 0x10000) == 0) {
+		printf("\t\t.nr_sector = %llu,\n",
+				static_cast<unsigned long long>(size_bytes / 0x10000));
+	} else {
+		printf("\t\t.nr_sector = 0, /* fill number of 64 KiB sectors from datasheet */\n");
+	}
+	printf("\t\t.sector_erase = true,      /* check datasheet */\n");
+	printf("\t\t.subsector_erase = true,   /* check 4 KiB erase support */\n");
+	printf("\t\t.has_extended = false,\n");
+	printf("\t\t.tb_otp = false,\n");
+	printf("\t\t.tb_offset = (1 << 5),     /* check BP/TB bits */\n");
+	printf("\t\t.tb_register = STATR,\n");
+	printf("\t\t.bp_len = 3,\n");
+	printf("\t\t.bp_offset = {(1 << 2), (1 << 3), (1 << 4), 0},\n");
+	printf("\t\t.quad_register = NONER,\n");
+	printf("\t\t.quad_mask = 0,\n");
+	printf("\t\t.global_lock = false,\n");
+	printf("\t}},\n");
+}
+
+}  // namespace
+
+SPIFlash::SPIFlash(FlashInterface *spi, bool unprotect, int8_t verbose,
+	const std::string &external_flash_type):
 	_spi(spi), _verbose(verbose), _jedec_id(0),
-	_flash_model(NULL), _unprotect(unprotect), _must_relock(false),
+	_flash_model(NULL), _external_flash_type(external_flash_type),
+	_unprotect(unprotect), _must_relock(false),
 	_status(0)
 {
 	reset();
 	power_up();
 	read_id();
+}
+
+bool SPIFlash::force_flash_model(uint32_t detected_jedec)
+{
+	uint32_t forced_jedec = 0;
+	std::string error;
+	if (!parse_flash_type_jedec(_external_flash_type, &forced_jedec, &error)) {
+		throw std::runtime_error("Error: unknown --external-flash-type '" +
+				_external_flash_type + "': " + error);
+	}
+
+	auto t = flash_list.find(forced_jedec);
+	_flash_model = &(*t).second;
+	_jedec_id = forced_jedec << 8;
+
+	char content[256];
+	if (detected_jedec != forced_jedec) {
+		snprintf(content, sizeof(content),
+			"Using explicit SPI flash type 0x%06x instead of RDID 0x%06x",
+			forced_jedec, detected_jedec);
+		printWarn(content);
+	} else {
+		snprintf(content, sizeof(content),
+			"Using explicit SPI flash type 0x%06x", forced_jedec);
+		printInfo(content);
+	}
+
+	snprintf(content, sizeof(content), "Detected: %s %s %u sectors size: %uMb",
+			_flash_model->manufacturer.c_str(), _flash_model->model.c_str(),
+			_flash_model->nr_sector, _flash_model->nr_sector * 0x80000 / 1048576);
+	printInfo(content);
+	return true;
 }
 
 int SPIFlash::bulk_erase(bool verbose, bool skip_bp_check)
@@ -627,6 +841,16 @@ void SPIFlash::read_id()
 	/* something wrong with read */
 	const uint32_t jedec24 = _jedec_id >> 8;
 	if (jedec24 == 0x000000 || jedec24 == 0x00ffff || jedec24 == 0xffffff) {
+		if (!_external_flash_type.empty()) {
+			char content[128];
+			snprintf(content, sizeof(content),
+				"SPI RDID raw bytes invalid: %02x %02x %02x %02x -> 0x%08x",
+				rx[0], rx[1], rx[2], rx[3], _jedec_id);
+			printWarn(content);
+			force_flash_model(jedec24);
+			return;
+		}
+
 		char content[128];
 		snprintf(content, sizeof(content),
 			"Read ID failed: SPI RDID raw bytes: %02x %02x %02x %02x -> 0x%08x",
@@ -637,6 +861,11 @@ void SPIFlash::read_id()
 
 	if (_verbose > 0)
 		printf("read %x\n", _jedec_id);
+	if (!_external_flash_type.empty()) {
+		force_flash_model(jedec24);
+		return;
+	}
+
 	auto t = flash_list.find(jedec24);
 	if (t != flash_list.end()) {
 		_flash_model = &(*t).second;
@@ -657,10 +886,7 @@ void SPIFlash::read_id()
 
 		/* must be 0x20BA1810 ... */
 
-		printf("Detail: \n");
-		printf("Jedec ID          : %02x\n", rx[0]);
-		printf("memory type       : %02x\n", rx[1]);
-		printf("memory capacity   : %02x\n", rx[2]);
+		display_unknown_flash(rx[0], rx[1], rx[2], jedec24);
 		if (has_edid) {
 			printf("EDID + CFD length : %02x\n", rx[3]);
 			printf("EDID              : %02x%02x\n", rx[5], rx[4]);

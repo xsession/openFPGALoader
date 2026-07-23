@@ -12,10 +12,12 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <list>
 #include <stdexcept>
+#include <vector>
 
 #include "jtag.hpp"
 #include "lattice.hpp"
@@ -643,6 +645,13 @@ bool Lattice::program_intFlash(ConfigBitstreamParser *_cbp)
 	uint16_t feabits;
 	uint8_t eraseMode = 0;
 	std::vector<std::string> ufm_data, cfg_data, ebr_data;
+	auto all_zero = [](const std::vector<std::string> &data) {
+		return std::all_of(data.begin(), data.end(),
+			[](const std::string &line) {
+				return std::all_of(line.begin(), line.end(),
+					[](char value) { return value == 0; });
+			});
+	};
 
 	/* bypass */
 	wr_rd(0xff, NULL, 0, NULL, 0);
@@ -661,6 +670,19 @@ bool Lattice::program_intFlash(ConfigBitstreamParser *_cbp)
 	//  all machXO
 	if (_file_extension == "jed") {
 		JedParser *_jed = reinterpret_cast<JedParser *>(_cbp);
+		uint16_t max_ufm_pages = 2046;
+		const std::string model = fpga_list[_jtag->get_target_device_id()].model;
+		if (model.find("9400") != std::string::npos)
+			max_ufm_pages = 3582;
+		else if (model.find("4300") != std::string::npos)
+			max_ufm_pages = 767;
+		else if (model.find("2100") != std::string::npos)
+			max_ufm_pages = 639;
+		else if (model.find("1300") != std::string::npos)
+			max_ufm_pages = 511;
+		else if (model.find("640") != std::string::npos)
+			max_ufm_pages = 191;
+
 		for (size_t i = 0; i < _jed->nb_section(); i++) {
 			std::string note = _jed->noteForSection(i);
 			if (note == "TAG DATA") {
@@ -671,7 +693,13 @@ bool Lattice::program_intFlash(ConfigBitstreamParser *_cbp)
 				if (_verbose)
 					printInfo("UFM init detected in JEDEC file");
 
-				if(ufm_start > 2045) {
+				if(ufm_start >= max_ufm_pages) {
+					if (all_zero(ufm_data)) {
+						if (_verbose)
+							printInfo("Skipping empty UFM TAG DATA section");
+						eraseMode &= ~FLASH_ERASE_UFM;
+						continue;
+					}
 					printError("UFM section detected in JEDEC file, but "
 						"calculated flash start address was out of bounds");
 					return false;
@@ -1751,7 +1779,9 @@ uint16_t Lattice::getUFMStartPageFromJEDEC(JedParser *_jed, int id)
 	TODO: In any case, JEDEC files don't carry part information. Verify against
 	IDCODE read previously? */
 
-	if(raw_page_offset > 9211) {
+	if(raw_page_offset >= 12539) {
+		return raw_page_offset - 12539; // 9400
+	} else if(raw_page_offset > 9211) {
 		return raw_page_offset - 9211 - 1; // 7000
 	} else if(raw_page_offset > 5758) {
 		return raw_page_offset - 5758; // 4000, 2000U

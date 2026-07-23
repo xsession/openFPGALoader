@@ -112,13 +112,14 @@ struct cable_details_t {
 	std::string manufacturer;
 	std::string serial;
 	std::string product;
+	std::string open_error;
 	cable_details_t(uint8_t& b, uint8_t& d,
 		uint16_t& v, uint16_t& p,
 		std::string prb, std::string m,
-		std::string s, std::string prd):
+		std::string s, std::string prd, std::string err):
 		bus(b), device(d), vid(v), pid(p),
 		probe(prb), manufacturer(m),
-		serial(s), product(prd) {}
+		serial(s), product(prd), open_error(err) {}
 };
 std::string formatHex(uint16_t c, int len) {
 	std::stringstream ss;
@@ -140,6 +141,7 @@ bool libusb_ll::scan()
 	size_t manufacturer_len = 12;
 	size_t probe_len = 10;
 	size_t serial_len = 6;
+	size_t open_error_len = 10;
 
 	get_devices_list(nullptr);
 
@@ -200,11 +202,24 @@ bool libusb_ll::scan()
 		if (ret != 0) {
 			char mess[1024];
 			snprintf(mess, 1024,
-				"Error: can't open device with vid:vid = 0x%04x:0x%04x. "
+				"Error: can't open device with vid:pid = 0x%04x:0x%04x. "
 				"Error code %d %s",
 				desc.idVendor, desc.idProduct,
 				ret, libusb_strerror(static_cast<libusb_error>(ret)));
 			printError(mess);
+
+			uint8_t bus_addr = libusb_get_bus_number(usb_dev);
+			uint8_t dev_addr = libusb_get_device_address(usb_dev);
+			const std::string open_error = std::string(libusb_error_name(ret));
+			list_cables.emplace_back(cable_details_t(
+				bus_addr, dev_addr, desc.idVendor, desc.idProduct,
+				std::string(probe_type), "<unreadable>", "<unreadable>",
+				"<unreadable>", open_error));
+
+			if (strlen(probe_type) > probe_len)
+				probe_len = strlen(probe_type);
+			if (open_error.size() > open_error_len)
+				open_error_len = open_error.size();
 			continue;
 		}
 
@@ -229,7 +244,8 @@ bool libusb_ll::scan()
 		list_cables.emplace_back(cable_details_t(
 			bus_addr, dev_addr, desc.idVendor, desc.idProduct,
 			std::string(probe_type), std::string((const char *)imanufacturer),
-			std::string((const char *)iserial), std::string((const char *)iproduct)));
+			std::string((const char *)iserial), std::string((const char *)iproduct),
+			""));
 
 		if (strlen((const char *)imanufacturer) > manufacturer_len)
 			manufacturer_len = strlen((const char *)imanufacturer);
@@ -237,6 +253,8 @@ bool libusb_ll::scan()
 			probe_len = strlen((const char *)probe_type);
 		if (strlen((const char *)iserial) > serial_len)
 			serial_len = strlen((const char *)iserial);
+		if (open_error_len < 1)
+			open_error_len = 1;
 
 		libusb_close(handle);
 	}
@@ -244,6 +262,7 @@ bool libusb_ll::scan()
 	manufacturer_len++;
 	serial_len++;
 	probe_len++;
+	open_error_len++;
 
 	std::stringstream buffer;
 	buffer << std::left
@@ -253,7 +272,8 @@ bool libusb_ll::scan()
 		<< std::setw(probe_len) << "probe_type"
 		<< std::setw(manufacturer_len) << "manufacturer"
 		<< std::setw(serial_len) << "serial"
-		<< "product";
+		<< std::setw(24) << "product"
+		<< std::setw(open_error_len) << "open_error";
 	printSuccess(buffer.str());
 
 	for (const auto& cable : list_cables) {
@@ -266,7 +286,8 @@ bool libusb_ll::scan()
 			<< std::setw(probe_len) << cable.probe
 			<< std::setw(manufacturer_len) << cable.manufacturer
 			<< std::setw(serial_len) << cable.serial
-			<< cable.product;
+			<< std::setw(24) << cable.product
+			<< std::setw(open_error_len) << cable.open_error;
 
 		printInfo(buffer.str());
 	}

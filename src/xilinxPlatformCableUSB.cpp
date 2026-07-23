@@ -73,9 +73,9 @@ std::string firmwareLeafForPid(uint16_t pid)
     return (pid == 0x0d) ? "xusb_emb.hex" : "xusb_xp2.hex";
 }
 
-std::string findPackagedFirmware(uint16_t pid)
+std::string findPackagedFirmware(uint16_t pid, bool direct_xp2_firmware)
 {
-	const std::string leaf = (pid == 0x0013) ?
+	const std::string leaf = (pid == 0x0013 && !direct_xp2_firmware) ?
 		"xusb_xp2_loader.hex" : firmwareLeafForPid(pid);
     const std::string candidate = PathHelper::absolutePath(
         std::string(DATA_DIR) + "/openFPGALoader/" + leaf
@@ -130,7 +130,8 @@ uint16_t firmwareHexVersion(const std::string &path)
 	return 0;
 }
 
-std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path)
+std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path,
+	bool direct_xp2_firmware)
 {
     if (!firmware_path.empty()) {
         return PathHelper::absolutePath(firmware_path);
@@ -144,7 +145,7 @@ std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path)
         }
     }
 
-    const std::string packaged = findPackagedFirmware(pid);
+	const std::string packaged = findPackagedFirmware(pid, direct_xp2_firmware);
     if (!packaged.empty()) {
         return packaged;
     }
@@ -403,6 +404,7 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	uint32_t clkHz,
 	const std::string &firmware_path,
 	bool skip_firmware_upload,
+	bool direct_xp2_firmware,
 	int8_t verbose): _verbose(verbose), _nb_bit(0), _nb_tdo_bit(0),
 		_curr_tms(0), _curr_tdi(0), _buffer_size(4096),
 		_buffer_bit_size((_buffer_size / 2 * 4) - 1),
@@ -424,7 +426,8 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		pid == XPCU_INITIALIZED_PID);
 	std::string firmware_file;
 	if (!already_initialized)
-		firmware_file = findXusbFirmwareFile(pid, firmware_path);
+		firmware_file = findXusbFirmwareFile(pid, firmware_path,
+			direct_xp2_firmware);
 	// if (firmware_path.empty() && strlen(ISE_DIR) == 0 && strlen(VIVADO_DIR) == 0) {
 	// 	printError("missing FX2 firmware");
 	// 	printError("use --probe-firmware with something");
@@ -452,6 +455,8 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		printInfo("firmware_file : " + firmware_file);
 	if (skip_firmware_upload)
 		printWarn("Skipping XPCU FX2 firmware upload; opening initialized 03fd:0008");
+	if (direct_xp2_firmware && pid == 0x0013 && !skip_firmware_upload)
+		printWarn("Using direct xusb_xp2.hex upload for Xilinx Platform Cable USB II");
 
 	bool cold_boot_used_operational_xp2 = false;
 	try {
@@ -460,22 +465,31 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 		 * bootloader or attempt to upload firmware to it again. */
 		fx2 = openXpcuFx2(vid, pid, firmware_file, already_initialized);
 	} catch (std::exception &e) {
+		const std::string init_error = e.what();
+		if (init_error.find("initialized device present") != std::string::npos) {
+			printError(init_error);
+			printError("XPCU: firmware reached 03fd:0008; install WinUSB/libusbK for this PID and retry with --skip-probe-firmware-upload");
+			throw std::runtime_error("lowlevel init failed");
+		}
+
 		/* Some genuine Platform Cable USB II / PID 0013 setups do not
-		 * re-open reliably after the extracted loader image.  Try the
-		 * operational XP2 firmware once before giving up; this preserves the
-		 * loader-first path but gives Windows driver/firmware combinations a
-		 * second valid cold-boot route. */
+		 * re-open reliably with only one of the two Xilinx images.  Try the
+		 * other XP2 cold-boot route once before giving up. */
 		const bool xp2_loader_path = !already_initialized && pid == 0x0013 &&
 			firmware_file.find("xusb_xp2_loader.hex") != std::string::npos;
+		const bool xp2_direct_path = !already_initialized && pid == 0x0013 &&
+			firmware_file.find("xusb_xp2.hex") != std::string::npos;
 		const std::string xp2_firmware = xp2_loader_path ?
-			findPackagedFirmwareLeaf("xusb_xp2.hex") : std::string();
+			findPackagedFirmwareLeaf("xusb_xp2.hex") :
+			(xp2_direct_path ? findPackagedFirmwareLeaf("xusb_xp2_loader.hex") :
+				std::string());
 		if (!xp2_firmware.empty()) {
 			printWarn(std::string(e.what()) +
 				"; retrying Platform Cable USB II with " + xp2_firmware);
 			try {
 				fx2 = openXpcuFx2(vid, pid, xp2_firmware, already_initialized);
 				firmware_file = xp2_firmware;
-				cold_boot_used_operational_xp2 = true;
+				cold_boot_used_operational_xp2 = xp2_loader_path;
 			} catch (std::exception &retry_e) {
 				printError(retry_e.what());
 				throw std::runtime_error("lowlevel init failed");

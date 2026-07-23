@@ -25,7 +25,8 @@ class FlashInterface {
 	FlashInterface();
 	FlashInterface(const std::string &filename, int8_t verbose,
 			uint32_t rd_burst, bool verify, bool skip_load_bridge = false,
-			bool skip_reset = false);
+			bool skip_reset = false,
+			const std::string &external_flash_type = "");
 	virtual ~FlashInterface() {}
 
 	bool detect_flash();
@@ -34,6 +35,9 @@ class FlashInterface {
 	bool set_quad_bit(bool set_quad);
 	bool bulk_erase_flash();
 	void set_filename(const std::string &filename) {_spif_filename = filename;}
+	void set_external_flash_type(const std::string &external_flash_type) {
+		_spif_external_flash_type = external_flash_type;
+	}
 
 	/*!
 	 * \brief write len byte into flash starting at offset,
@@ -127,6 +131,7 @@ class FlashInterface {
 	bool _spif_verify;
 	bool _skip_load_bridge;
 	bool _skip_reset; /*!< don't reset the device after write */
+	std::string _spif_external_flash_type;
 
  private:
 	std::string _spif_filename;

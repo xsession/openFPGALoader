@@ -480,11 +480,12 @@ Xilinx::Xilinx(Jtag *jtag, const std::string &filename,
 	const bool spi_flash_type,
 	const std::string &spiOverJtagPath,
 	const std::string &target_flash,
+	const std::string &external_flash_type,
 	bool verify, int8_t verbose,
 	bool skip_load_bridge, bool skip_reset, bool read_dna, bool read_xadc):
 	Device(jtag, filename, file_type, verify, verbose),
 	FlashInterface(filename, verbose, 256, verify, skip_load_bridge,
-				 skip_reset),
+				 skip_reset, external_flash_type),
 	_device_package(device_package), _spiOverJtagPath(spiOverJtagPath),
 	_irlen(6), _secondary_filename(secondary_filename), _soj_is_v2(false),
 	_jtag_chain_len(1), _is_bpi_board(!spi_flash_type)

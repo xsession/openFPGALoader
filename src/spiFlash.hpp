@@ -40,7 +40,8 @@ class FlashDataSection {
 
 class SPIFlash {
 	public:
-		SPIFlash(FlashInterface *spi, bool unprotect, int8_t verbose);
+		SPIFlash(FlashInterface *spi, bool unprotect, int8_t verbose,
+				const std::string &external_flash_type = "");
 		/* power */
 		virtual void power_up();
 		virtual void power_down();
@@ -156,6 +157,7 @@ class SPIFlash {
 
 	private:
 		bool prepare_flash(const int base_addr, const int len);
+		bool force_flash_model(uint32_t detected_jedec);
 
 	public:
 		/*!
@@ -177,6 +179,7 @@ class SPIFlash {
 		int8_t _verbose;
 		uint32_t _jedec_id; /**< CHIP ID */
 		flash_t *_flash_model; /**< detect flash model */
+		std::string _external_flash_type; /**< explicit SPI flash type */
 		bool _unprotect; /**< allows to unprotect memory before write */
 		bool _must_relock;
 		uint8_t _status;

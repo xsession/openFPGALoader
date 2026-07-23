@@ -11,15 +11,16 @@
 #include "spiFlash.hpp"
 
 FlashInterface::FlashInterface():_spif_verbose(0), _spif_rd_burst(0),
-	_spif_verify(false), _skip_load_bridge(false)
+	_spif_verify(false), _skip_load_bridge(false), _skip_reset(false)
 {}
 
 FlashInterface::FlashInterface(const std::string &filename, int8_t verbose,
 		uint32_t rd_burst, bool verify, bool skip_load_bridge,
-		bool skip_reset):
+		bool skip_reset, const std::string &external_flash_type):
 	_spif_verbose(verbose), _spif_rd_burst(rd_burst),
 	_spif_verify(verify), _skip_load_bridge(skip_load_bridge),
-	_skip_reset(skip_reset), _spif_filename(filename)
+	_skip_reset(skip_reset), _spif_external_flash_type(external_flash_type),
+	_spif_filename(filename)
 {}
 
 /* spiFlash generic acces */
@@ -38,7 +39,7 @@ bool FlashInterface::detect_flash()
 	/* spi flash access */
 	try {
 		// instanciate call (display flash ID is automatic)
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 		// display status register
 		flash.display_status_reg();
 
@@ -66,7 +67,7 @@ bool FlashInterface::protect_flash(uint32_t len)
 
 	/* spi flash access */
 	try {
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 
 		/* configure flash protection */
 		ret = (flash.enable_protection(len) == 0);
@@ -96,7 +97,7 @@ bool FlashInterface::unprotect_flash()
 
 	/* spi flash access */
 	try {
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 
 		/* configure flash protection */
 		printInfo("unprotect_flash:");
@@ -127,7 +128,7 @@ bool FlashInterface::set_quad_bit(bool set_quad)
 
 	/* spi flash access */
 	try {
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 
 		/* configure flash protection */
 		printInfo("set_quad_bit:");
@@ -159,7 +160,7 @@ bool FlashInterface::bulk_erase_flash()
 
 	/* spi flash access */
 	try {
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 
 		/* bulk erase flash */
 		ret = (flash.bulk_erase() == 0);
@@ -186,7 +187,8 @@ bool FlashInterface::write(const std::vector<FlashDataSection>&sections,
 
 	/* test SPI */
 	try {
-		SPIFlash flash(this, unprotect_flash, _spif_verbose);
+		SPIFlash flash(this, unprotect_flash, _spif_verbose,
+				_spif_external_flash_type);
 		printInfo("Read flash status: ", false);
 		flash.read_status_reg();
 		printSuccess("DONE");
@@ -213,7 +215,8 @@ bool FlashInterface::write(uint32_t offset, const uint8_t *data, uint32_t len,
 
 	/* test SPI */
 	try {
-		SPIFlash flash(this, unprotect_flash, _spif_verbose);
+		SPIFlash flash(this, unprotect_flash, _spif_verbose,
+				_spif_external_flash_type);
 		restore_flash_access_frequency();
 		flash.read_status_reg();
 		if (flash.erase_and_prog(offset, data, len) == -1)
@@ -237,7 +240,7 @@ bool FlashInterface::read(uint8_t *data, uint32_t base_addr, uint32_t len)
 		return false;
 
 	try {
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 		ret = flash.read(base_addr, data, len);
 	} catch (std::exception &e) {
 		printError(e.what());
@@ -256,7 +259,7 @@ bool FlashInterface::dump(uint32_t base_addr, uint32_t len)
 		return false;
 
 	try {
-		SPIFlash flash(this, false, _spif_verbose);
+		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
 		ret = flash.dump(_spif_filename, base_addr, len, _spif_rd_burst);
 	} catch (std::exception &e) {
 		printError(e.what());

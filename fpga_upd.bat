@@ -89,3 +89,5 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 @rem This worked previosly missed flash controller needed M25P40
 .\openFPGALoader.exe -c digilent_hs3 --fpga-part xc6slx9tqg144 --external-flash -f ..\..\..\..\test_fw\EL-24-02\mcc_servo_fpga_fw-0v3-2024_0620_0922.mcs    
 
+.\openFPGALoader.exe -c ft2232 -f ../../../../test_fw\EL-26-38-00_spin_scan\el_27_37_00_el_27_37_00_3V0.jed -v  
+

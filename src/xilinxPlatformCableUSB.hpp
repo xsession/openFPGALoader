@@ -29,6 +29,7 @@ class XilinxPlatformCableUSB : public JtagInterface {
 		uint32_t clkHz = 750000,
 		const std::string &firmware_path = "",
 		bool skip_firmware_upload = false,
+		bool direct_xp2_firmware = false,
 		int8_t verbose = 0);
 	~XilinxPlatformCableUSB() override;
 

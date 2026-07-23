@@ -28,6 +28,7 @@ class Xilinx: public Device, FlashInterface {
 				const bool spi_flash_type,
 				const std::string &spiOverJtagPath,
 				const std::string &target_flash,
+				const std::string &external_flash_type,
 				bool verify, int8_t verbose,
 				bool skip_load_bridge, bool skip_reset,
 				bool read_dna, bool read_xadc);

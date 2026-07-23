@@ -7,9 +7,11 @@
 
 #include <cstdlib>
 #include <cstdint>
+#include <cstdio>
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include <libusb.h>
 
@@ -68,6 +70,92 @@ int fx2ClaimInterface(libusb_device_handle *handle)
 	return libusb_claim_interface(handle, 0);
 }
 
+bool fx2DevicePresent(libusb_context *ctx, uint16_t vid, uint16_t pid)
+{
+	libusb_device **list = nullptr;
+	const ssize_t count = libusb_get_device_list(ctx, &list);
+	if (count < 0)
+		return false;
+
+	bool found = false;
+	for (ssize_t i = 0; i < count; i++) {
+		libusb_device_descriptor desc;
+		if (libusb_get_device_descriptor(list[i], &desc) != LIBUSB_SUCCESS)
+			continue;
+		if (desc.idVendor == vid && desc.idProduct == pid) {
+			found = true;
+			break;
+		}
+	}
+	libusb_free_device_list(list, 1);
+	return found;
+}
+
+libusb_device_handle *fx2OpenDeviceWithVidPid(libusb_context *ctx,
+	uint16_t vid, uint16_t pid, int *last_open_error, bool *present)
+{
+	if (last_open_error)
+		*last_open_error = LIBUSB_SUCCESS;
+	if (present)
+		*present = false;
+
+	libusb_device **list = nullptr;
+	const ssize_t count = libusb_get_device_list(ctx, &list);
+	if (count < 0) {
+		if (last_open_error)
+			*last_open_error = static_cast<int>(count);
+		return nullptr;
+	}
+
+	libusb_device_handle *handle = nullptr;
+	for (ssize_t i = 0; i < count; i++) {
+		libusb_device_descriptor desc;
+		if (libusb_get_device_descriptor(list[i], &desc) != LIBUSB_SUCCESS)
+			continue;
+		if (desc.idVendor != vid || desc.idProduct != pid)
+			continue;
+
+		if (present)
+			*present = true;
+		const int ret = libusb_open(list[i], &handle);
+		if (ret == LIBUSB_SUCCESS && handle != nullptr)
+			break;
+
+		if (last_open_error)
+			*last_open_error = ret;
+		handle = nullptr;
+	}
+
+	libusb_free_device_list(list, 1);
+	return handle;
+}
+
+std::string fx2PresentXilinxPids(libusb_context *ctx)
+{
+	libusb_device **list = nullptr;
+	const ssize_t count = libusb_get_device_list(ctx, &list);
+	if (count < 0)
+		return "<usb enumeration failed>";
+
+	std::ostringstream oss;
+	bool first = true;
+	for (ssize_t i = 0; i < count; i++) {
+		libusb_device_descriptor desc;
+		if (libusb_get_device_descriptor(list[i], &desc) != LIBUSB_SUCCESS)
+			continue;
+		if (desc.idVendor != 0x03fd)
+			continue;
+		if (!first)
+			oss << ", ";
+		char pid[8];
+		snprintf(pid, sizeof(pid), "%04x", desc.idProduct);
+		oss << "03fd:" << pid;
+		first = false;
+	}
+	libusb_free_device_list(list, 1);
+	return first ? "<none>" : oss.str();
+}
+
 } // namespace
 
 FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
@@ -83,7 +171,10 @@ FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
 
 	/* try to open uninitialized device */
 	if (uninit_vid != 0 && uninit_pid != 0) {
-		dev_handle = libusb_open_device_with_vid_pid(usb_ctx, uninit_vid, uninit_pid);
+		int open_error = LIBUSB_SUCCESS;
+		bool present = false;
+		dev_handle = fx2OpenDeviceWithVidPid(usb_ctx, uninit_vid,
+			uninit_pid, &open_error, &present);
 		if (dev_handle) {
 			ret = libusb_claim_interface(dev_handle, 0);
 			if (ret) {
@@ -110,17 +201,43 @@ FX2_ll::FX2_ll(uint16_t uninit_vid, uint16_t uninit_pid, uint16_t vid,
 	 */
 	ProgressBar progress("Waiting reload", 100, 50, false);
 	int timeout = 100;
+	int last_open_error = LIBUSB_SUCCESS;
+	bool expected_seen = false;
 	do {
-		dev_handle = libusb_open_device_with_vid_pid(usb_ctx, vid, pid);
+		bool present = false;
+		dev_handle = fx2OpenDeviceWithVidPid(usb_ctx, vid, pid,
+			&last_open_error, &present);
+		expected_seen = expected_seen || present;
 		timeout--;
 		progress.display(100 - timeout);
 		if (!dev_handle)
 			sleep(1);
-	} while (!dev_handle && timeout > 0 && reenum);
+	} while (!dev_handle && timeout > 0 && (reenum ||
+			(uninit_vid == 0 && uninit_pid == 0)));
 
 	if (!dev_handle) {
 		progress.fail();
-		throw std::runtime_error("FX2: fail to open device");
+		const bool expected_present = expected_seen ||
+			fx2DevicePresent(usb_ctx, vid, pid);
+		char expected[64];
+		snprintf(expected, sizeof(expected), "%04x:%04x", vid, pid);
+		std::string fail_reason = "FX2: fail to open device";
+		if (expected_present) {
+			printError(std::string("FX2: expected device ") + expected +
+				" is present but libusb cannot open it");
+			if (last_open_error != LIBUSB_SUCCESS) {
+				printError("FX2: libusb open error: " +
+					std::string(libusb_error_name(last_open_error)));
+			}
+			printError("FX2: check the Windows driver binding for this post-firmware PID");
+			fail_reason = "FX2: initialized device present but libusb cannot open it";
+		} else {
+			printError(std::string("FX2: expected device ") + expected +
+				" did not appear after firmware load");
+		}
+		printError("FX2: visible Xilinx USB devices: " +
+			fx2PresentXilinxPids(usb_ctx));
+		throw std::runtime_error(fail_reason);
 	}
 	progress.done();
 
