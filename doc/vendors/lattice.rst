@@ -181,3 +181,48 @@ To generate ``.mcs`` file *PROM File* must be checked under *Exports Files* in *
 .. code-block:: bash
 
     openFPGALoader [-b yourBoard] [-c yourCable] project_name/*.mcs
+
+Dumping external SPI flash:
+
+.. code-block:: bash
+
+    openFPGALoader [-b yourBoard] [-c yourCable] --dump-flash flash_dump.bin
+    openFPGALoader [-b yourBoard] [-c yourCable] --dump-flash -o 0x100000 flash_dump_tail.bin
+
+When the SPI flash is known in openFPGALoader's flash database, the dump
+size is calculated automatically. The first command dumps the whole SPI
+flash; the second dumps from offset ``0x100000`` to the end of flash. Use
+``--file-size`` only when a shorter dump is wanted, or when the flash chip
+is unknown and automatic capacity detection is unavailable.
+
+Dumping MachXO2/MachXO3 internal Flash/NVCM:
+
+.. code-block:: bash
+
+    openFPGALoader [-b yourBoard] [-c yourCable] --dump-flash machxo_internal.bin
+    openFPGALoader [-b yourBoard] [-c yourCable] --dump-flash -o 0x1000 --file-size 0x2000 machxo_window.bin
+
+For MachXO2, MachXO3L, and MachXO3LF devices, ``--dump-flash`` reads the
+internal non-volatile configuration memory through the Lattice ISC/JTAG path
+instead of using an external SPI flash bridge. The dump is page based
+(``16`` bytes per page) and contains the CFG area followed by the UFM area.
+When ``--file-size`` is omitted or set to ``0``, openFPGALoader dumps from
+the selected offset to the end of the known internal flash layout. For
+example, an ``LCMXO3LF-9400C`` dump contains ``12539`` CFG pages plus
+``3582`` UFM pages, for ``257936`` bytes total.
+
+Erasing MachXO2/MachXO3 internal Flash/NVCM:
+
+.. code-block:: bash
+
+    openFPGALoader [-b yourBoard] [-c yourCable] --bulk-erase
+    openFPGALoader [-b yourBoard] [-c yourCable] --bulk-erase --flash-sector CFG
+    openFPGALoader [-b yourBoard] [-c yourCable] --bulk-erase --flash-sector UFM
+
+For MachXO2, MachXO3L, and MachXO3LF devices, ``--bulk-erase`` uses the
+Lattice ISC erase flow for internal Flash/NVCM. Without ``--flash-sector``,
+the erase mask is ``ALL``. To reduce accidental damage, select a sector when
+only part of the internal memory should be erased. Supported sector names are
+``CFG``, ``UFM``, ``FEATURE``, ``SRAM``, and ``ALL``. Be careful with
+``FEATURE`` and ``ALL`` because feature bits control configuration behavior
+and port enables.

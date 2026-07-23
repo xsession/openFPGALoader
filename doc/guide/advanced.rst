@@ -100,6 +100,15 @@ To read the primary flash memory:
 
     openFPGALoader -b kcu105 -f --target-flash primary --dump-flash --file-size N_BYTES mydump.bin
 
+When the SPI flash is known in openFPGALoader's flash database,
+``--file-size`` may be omitted. In that case openFPGALoader dumps from
+``--offset`` to the end of the flash:
+
+.. code-block:: bash
+
+    openFPGALoader -b kcu105 -f --target-flash primary --dump-flash mydump.bin
+    openFPGALoader -b kcu105 -f --target-flash primary --dump-flash -o 0x100000 mydump.bin
+
 and the second flash memory:
 
 .. code-block:: bash

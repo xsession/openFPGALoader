@@ -38,6 +38,48 @@ typedef struct {
 } flash_t;
 
 static std::map <uint32_t, flash_t> flash_list = {
+	{0x77b80a, {
+		/* Observed RDID for Macronix MX77L25650F on some targets.
+		 * Public flashrom/Chromium databases list the canonical JEDEC RDID
+		 * as 0xc27519 (Macronix manufacturer 0xc2, model 0x7519), 32 MiB.
+		 * Keep this alias so boards that report 0x77b80a can still use the
+		 * same capacity and basic SPI-NOR command set.
+		 */
+		.manufacturer = "Macronix",
+		.model = "MX77L25650F",
+		.nr_sector = 512,
+		.sector_erase = true,
+		.subsector_erase = true,
+		.has_extended = true,
+		.tb_otp = false,
+		.tb_offset = (1 << 5),
+		.tb_register = STATR,
+		.bp_len = 4,
+		.bp_offset = {(1 << 2), (1 << 3), (1 << 4), (1 << 5)},
+		.quad_register = STATR,
+		.quad_mask = (1 << 6),
+		.global_lock = false,
+	}},
+	{0xc27519, {
+		/* Macronix MX77L25650F Security NOR Flash, 256 Mbit / 32 MiB.
+		 * flashrom added support with total_size=32768 KiB, page_size=256,
+		 * 4 KiB / 32 KiB / 64 KiB erase support, and BP3/SRWD protection.
+		 */
+		.manufacturer = "Macronix",
+		.model = "MX77L25650F",
+		.nr_sector = 512,
+		.sector_erase = true,
+		.subsector_erase = true,
+		.has_extended = true,
+		.tb_otp = false,
+		.tb_offset = (1 << 5),
+		.tb_register = STATR,
+		.bp_len = 4,
+		.bp_offset = {(1 << 2), (1 << 3), (1 << 4), (1 << 5)},
+		.quad_register = STATR,
+		.quad_mask = (1 << 6),
+		.global_lock = false,
+	}},
 	{0x010216, {
 		.manufacturer = "spansion",
 		.model = "S25FL064P / EPCS64",

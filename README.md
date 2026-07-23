@@ -90,8 +90,9 @@ openFPGALoader -- a program to flash FPGA
       --external-flash-type arg force external SPI flash type by JEDEC ID
                                 (for example 0x202013) or model name
                                 (for example M25P40)
-      --file-size arg           provides size in Byte to dump, must be used
-                                with dump-flash
+      --file-size arg           provides size in Byte to dump; with
+                                dump-flash, omitted or 0 means dump from
+                                offset to end of known SPI flash
       --file-type arg           provides file type instead of let's deduced
                                 by using extension
       --flash-sector arg        flash sector (Lattice and Altera MAX10 parts

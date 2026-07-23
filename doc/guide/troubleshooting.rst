@@ -56,6 +56,25 @@ error with a non-empty ``TAG DATA`` section, regenerate the JEDEC from
 Diamond and verify the selected device density/package matches the
 physical FPGA reported by ``openFPGALoader --detect``.
 
+SPI flash RDID 0x77b80a / Macronix MX77L25650F
+===============================================
+
+RDID ``0x77b80a`` has been observed on targets using a Macronix
+MX77L25650F-class flash. Public flashrom/Chromium flash databases list the
+canonical Macronix MX77L25650F JEDEC RDID as ``0xc27519`` and the chip as
+256 Mbit / 32 MiB.
+
+openFPGALoader maps both IDs to the same 32 MiB flash definition, so full
+auto-sized dumps are supported:
+
+.. code:: bash
+
+    openFPGALoader -c ft2232 --dump-flash dump.bin
+
+If possible, verify the physical package marking. A board reporting
+``0x77b80a`` may indicate a transport/readback quirk rather than the
+canonical JEDEC RDID.
+
 
 Tang Primer 20k program slow and stucked (issue `#250 <https://github.com/trabucayre/openFPGALoader/issues/250>`_)
 ==================================================================================================================

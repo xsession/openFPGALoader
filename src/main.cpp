@@ -742,10 +742,10 @@ int main(int argc, char **argv)
 	}
 
 	if (args.prg_type == Device::RD_FLASH) {
-		if (args.file_size == 0) {
-			printError("Error: 0 size for dump");
-		} else {
-			fpga->dumpFlash(args.offset, args.file_size);
+		if (!fpga->dumpFlash(args.offset, args.file_size)) {
+			delete(fpga);
+			delete(jtag);
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -861,11 +861,8 @@ int spi_comm(struct arguments args, const cable_t &cable,
 			return EXIT_FAILURE;
 		}
 		if (args.prg_type == Device::RD_FLASH) {
-			if (args.file_size == 0) {
-				printError("Error: 0 size for dump");
-			} else {
-				target->dumpFlash(args.offset, args.file_size);
-			}
+			if (!target->dumpFlash(args.offset, args.file_size))
+				spi_ret = EXIT_FAILURE;
 		} else if ((args.prg_type == Device::WR_FLASH ||
 					args.prg_type == Device::WR_SRAM) ||
 					!args.bit_file.empty() || !args.file_type.empty()) {
@@ -927,10 +924,8 @@ int spi_comm(struct arguments args, const cable_t &cable,
 
 			delete bit;
 		} else if (args.prg_type == Device::RD_FLASH) {
-			if (args.file_size == 0)
-				printError("Error: 0 size for dump");
-			else
-				flash.dump(args.bit_file, args.offset, args.file_size);
+			if (!flash.dump(args.bit_file, args.offset, args.file_size))
+				spi_ret = EXIT_FAILURE;
 		}
 
 		if (args.unprotect_flash && args.bit_file.empty())
@@ -1059,7 +1054,7 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 				"force external SPI flash type by JEDEC ID (for example 0x202013) or model name (for example M25P40)",
 				cxxopts::value<std::string>(args->external_flash_type))
 			("file-size",
-				"provides size in Byte to dump, must be used with dump-flash",
+				"provides size in Byte to dump; with dump-flash, omitted or 0 means dump from offset to end of known SPI flash",
 				cxxopts::value<unsigned int>(args->file_size))
 			("file-type",
 				"provides file type instead of let's deduced by using extension",

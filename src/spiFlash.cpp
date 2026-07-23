@@ -11,6 +11,9 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cerrno>
+#include <cstring>
+#include <limits>
 #include <map>
 #include <iostream>
 
@@ -301,9 +304,14 @@ bool SPIFlash::force_flash_model(uint32_t detected_jedec)
 		printInfo(content);
 	}
 
-	snprintf(content, sizeof(content), "Detected: %s %s %u sectors size: %uMb",
-			_flash_model->manufacturer.c_str(), _flash_model->model.c_str(),
-			_flash_model->nr_sector, _flash_model->nr_sector * 0x80000 / 1048576);
+	if (_flash_model->nr_sector == 0) {
+		snprintf(content, sizeof(content), "Detected: %s %s, capacity unknown",
+				_flash_model->manufacturer.c_str(), _flash_model->model.c_str());
+	} else {
+		snprintf(content, sizeof(content), "Detected: %s %s %u sectors size: %uMb",
+				_flash_model->manufacturer.c_str(), _flash_model->model.c_str(),
+				_flash_model->nr_sector, _flash_model->nr_sector * 0x80000 / 1048576);
+	}
 	printInfo(content);
 	return true;
 }
@@ -538,8 +546,37 @@ int SPIFlash::read(int base_addr, uint8_t *data, int len)
 bool SPIFlash::dump(const std::string &filename, const int &base_addr,
 		const int &len, int rd_burst)
 {
+	int dump_len = len;
+	if (dump_len == 0) {
+		const uint32_t flash_capacity = capacity();
+		if (flash_capacity == 0) {
+			printError("Error: --file-size is required for unknown SPI flash chips");
+			return false;
+		}
+		if (base_addr < 0 || static_cast<uint32_t>(base_addr) >= flash_capacity) {
+			printError("Error: dump offset is outside SPI flash capacity");
+			return false;
+		}
+		const uint32_t remaining = flash_capacity - base_addr;
+		if (remaining > static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+			printError("Error: auto dump size is too large for this build; use --file-size");
+			return false;
+		}
+		dump_len = remaining;
+		char content[128];
+		snprintf(content, sizeof(content),
+			"Auto dump size: %d bytes (flash capacity %u bytes, offset %d)",
+			dump_len, flash_capacity, base_addr);
+		printInfo(content);
+	}
+
+	if (dump_len <= 0) {
+		printError("Error: invalid dump size");
+		return false;
+	}
+
 	if (rd_burst == 0)
-		rd_burst = len;
+		rd_burst = dump_len;
 
 	/* segfault with buffer > 1M */
 	if (rd_burst > 0x100000)
@@ -559,25 +596,44 @@ bool SPIFlash::dump(const std::string &filename, const int &base_addr,
 		printSuccess("DONE");
 	}
 
-	ProgressBar progress("Read flash ", len, 50, _verbose < 0);
-	for (int i = 0; i < len; i += rd_burst) {
-		if (rd_burst + i > len)
-			rd_burst = len - i;
+	ProgressBar progress("Read flash ", dump_len, 50, _verbose < 0);
+	for (int i = 0; i < dump_len; i += rd_burst) {
+		if (rd_burst + i > dump_len)
+			rd_burst = dump_len - i;
 		if (0 != read(base_addr + i, (uint8_t*)&data[0], rd_burst)) {
 			progress.fail();
 			printError("Failed to read flash");
 			fclose(fd);
+			remove(filename.c_str());
 			return false;
 		}
-		fwrite(data.c_str(), sizeof(uint8_t), rd_burst, fd);
+		const size_t written = fwrite(data.c_str(), sizeof(uint8_t), rd_burst, fd);
+		if (written != static_cast<size_t>(rd_burst)) {
+			progress.fail();
+			printError("Failed to write dump file: " + std::string(strerror(errno)));
+			fclose(fd);
+			remove(filename.c_str());
+			return false;
+		}
 		progress.display(i);
 	}
 
 	progress.done();
 
-	fclose(fd);
+	if (fclose(fd) != 0) {
+		printError("Failed to close dump file: " + std::string(strerror(errno)));
+		remove(filename.c_str());
+		return false;
+	}
 
 	return true;
+}
+
+uint32_t SPIFlash::capacity() const
+{
+	if (!_flash_model)
+		return 0;
+	return _flash_model->nr_sector * 0x10000;
 }
 
 bool SPIFlash::prepare_flash(const int base_addr, const int len)
@@ -599,6 +655,10 @@ bool SPIFlash::prepare_flash(const int base_addr, const int len)
 
 	/* if known chip */
 	if (_flash_model) {
+		if (_flash_model->nr_sector == 0) {
+			printError("Error: SPI flash capacity is unknown; erase/program is disabled for this RDID");
+			return false;
+		}
 		/* microchip SST26VF032B/64B have global lock set
 		 * at powerup. global unlock must be send unconditionally
 		 * with or without block protection
@@ -872,9 +932,14 @@ void SPIFlash::read_id()
 		char content[256];
 		snprintf(content, 256, "JEDEC ID: 0x%06x", _jedec_id >> 8);
 		printInfo(content);
-		snprintf(content, 256, "Detected: %s %s %u sectors size: %uMb",
-				_flash_model->manufacturer.c_str(), _flash_model->model.c_str(),
-				_flash_model->nr_sector, _flash_model->nr_sector * 0x80000 / 1048576);
+		if (_flash_model->nr_sector == 0) {
+			snprintf(content, sizeof(content), "Detected: %s %s, capacity unknown",
+					_flash_model->manufacturer.c_str(), _flash_model->model.c_str());
+		} else {
+			snprintf(content, sizeof(content), "Detected: %s %s %u sectors size: %uMb",
+					_flash_model->manufacturer.c_str(), _flash_model->model.c_str(),
+					_flash_model->nr_sector, _flash_model->nr_sector * 0x80000 / 1048576);
+		}
 		printInfo(content);
 	} else {
 		/* read extended */

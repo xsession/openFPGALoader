@@ -7,6 +7,7 @@
 #define SRC_LATTICE_HPP_
 
 #include <stdint.h>
+#include <stdio.h>
 #include <iostream>
 #include <list>
 #include <string>
@@ -33,9 +34,7 @@ class Lattice: public Device, FlashInterface {
 		bool program_flash(unsigned int offset, bool unprotect_flash);
 		bool Verify(std::vector<std::string> data, bool unlock = false,
 				uint32_t flash_area = 0);
-		bool dumpFlash(uint32_t base_addr, uint32_t len) override {
-			return FlashInterface::dump(base_addr, len);
-		}
+		bool dumpFlash(uint32_t base_addr, uint32_t len) override;
 
 		/*!
 		 * \brief display SPI flash ID and status register
@@ -58,9 +57,7 @@ class Lattice: public Device, FlashInterface {
 		/*!
 		 * \brief bulk erase SPI flash
 		 */
-		bool bulk_erase_flash() override {
-			return FlashInterface::bulk_erase_flash();
-		}
+		bool bulk_erase_flash() override;
 
 		/* spi interface */
 		int spi_put(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
@@ -94,6 +91,11 @@ class Lattice: public Device, FlashInterface {
 		int get_statusreg_size();
 
 		bool program_intFlash(ConfigBitstreamParser *_cbp);
+		bool dump_intFlash(uint32_t base_addr, uint32_t len);
+		bool dump_intFlashPages(FILE *fd, const std::string &name,
+				uint32_t area_base, uint32_t pages, uint32_t dump_base,
+				uint32_t dump_len);
+		void set_flash_sector(const std::string &flash_sector);
 		bool program_extFlash(unsigned int offset, bool unprotect_flash);
 		bool wr_rd(uint8_t cmd, uint8_t *tx, int tx_len,
 				uint8_t *rx, int rx_len, bool verbose = false);
@@ -141,6 +143,11 @@ class Lattice: public Device, FlashInterface {
 		/*********************** MODS FOR MacXO3D *****************************/
 		enum lattice_flash_sector_t {
 			LATTICE_FLASH_UNDEFINED = 0,
+			LATTICE_FLASH_CFG,
+			LATTICE_FLASH_UFM,
+			LATTICE_FLASH_FEATURE,
+			LATTICE_FLASH_SRAM,
+			LATTICE_FLASH_ALL,
 			LATTICE_FLASH_CFG0,
 			LATTICE_FLASH_CFG1,
 			LATTICE_FLASH_UFM0,

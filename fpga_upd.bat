@@ -74,20 +74,13 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 
 .\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc7a35tfgg484 --detect-external-flash -v -v
 
-.\openFPGALoader.exe `
-  -c xilinxPlatformCableUsb_alt `
-  --fpga-part xc6slx45tfgg484 `
-  --external-flash `
-  --dump-flash `
-  --file-size 16777216 `
-  -o 0 `
-  flash_dump.bin `
-  -v
+.\openFPGALoader.exe -c xilinxPlatformCableUsb_alt --fpga-part xc6slx45tfgg484 --external-flash --dump-flash --file-size 16777216 -o 0 flash_dump.bin -v
 
 .\openFPGALoader.exe -c xilinxPlatformCableUsb --fpga-part xc6slx9tqg144 --external-flash -f ..\..\..\..\test_fw\EL-24-02\mcc_servo_fpga_fw-0v3-2024_0620_0922.mcs  
 
 @rem This worked previosly missed flash controller needed M25P40
 .\openFPGALoader.exe -c digilent_hs3 --fpga-part xc6slx9tqg144 --external-flash -f ..\..\..\..\test_fw\EL-24-02\mcc_servo_fpga_fw-0v3-2024_0620_0922.mcs    
 
-.\openFPGALoader.exe -c ft2232 -f ../../../../test_fw\EL-26-38-00_spin_scan\el_27_37_00_el_27_37_00_3V0.jed -v  
+@rem Here the bit file not nessesary because the jed file contain what need for programming
+.\openFPGALoader.exe -c ft2232 -f ../../../../test_fw\EL-26-38-00_spin_scan\el_27_37_00_el_27_37_00_3V0.jed -v --index-chain 0 --verify
 

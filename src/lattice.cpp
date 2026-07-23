@@ -4,6 +4,7 @@
  */
 
 #define __STDC_FORMAT_MACROS
+#include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -163,6 +164,37 @@
 /* Nexus */
 #define REG_NEXUS_STATUS_BSE_ERR_MASK (0x0f << 24)
 
+static bool machxo_internal_flash_layout(const std::string &model,
+		uint32_t *cfg_pages, uint32_t *ufm_pages)
+{
+	if (model.find("9400") != std::string::npos) {
+		*cfg_pages = 12539;
+		*ufm_pages = 3582;
+	} else if (model.find("6900") != std::string::npos) {
+		*cfg_pages = 9212;
+		*ufm_pages = 2046;
+	} else if (model.find("4300") != std::string::npos ||
+			model.find("4000") != std::string::npos) {
+		*cfg_pages = 5758;
+		*ufm_pages = 767;
+	} else if (model.find("2100") != std::string::npos ||
+			model.find("2000") != std::string::npos) {
+		*cfg_pages = 3198;
+		*ufm_pages = 639;
+	} else if (model.find("1300") != std::string::npos ||
+			model.find("1200") != std::string::npos) {
+		*cfg_pages = 2175;
+		*ufm_pages = 511;
+	} else if (model.find("640") != std::string::npos) {
+		*cfg_pages = 1151;
+		*ufm_pages = 191;
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
 Lattice::Lattice(Jtag *jtag, const std::string filename, const std::string &file_type,
 	Device::prog_type_t prg_type, std::string flash_sector, bool verify, int8_t verbose, bool skip_load_bridge, bool skip_reset):
 		Device(jtag, filename, file_type, verify, verbose),
@@ -192,39 +224,13 @@ Lattice::Lattice(Jtag *jtag, const std::string filename, const std::string &file
 	std::string family = fpga_list[idcode].family;
 	if (family == "MachXO2") {
 		_fpga_family = MACHXO2_FAMILY;
+		set_flash_sector(flash_sector);
 	} else if (family == "MachXO3L" || family == "MachXO3LF") {
 		_fpga_family = MACHXO3_FAMILY;
+		set_flash_sector(flash_sector);
 	} else if (family == "MachXO3D") {
 		_fpga_family = MACHXO3D_FAMILY;
-
-		if (flash_sector == "CFG0") {
-			_flash_sector = LATTICE_FLASH_CFG0;
-			printInfo("Flash Sector: CFG0", true);
-		} else if (flash_sector == "CFG1") {
-			_flash_sector = LATTICE_FLASH_CFG1;
-			printInfo("Flash Sector: CFG1", true);
-		} else if (flash_sector == "UFM0") {
-			_flash_sector = LATTICE_FLASH_UFM0;
-			printInfo("Flash Sector: UFM0", true);
-		} else if (flash_sector == "UFM1") {
-			_flash_sector = LATTICE_FLASH_UFM1;
-			printInfo("Flash Sector: UFM1", true);
-		} else if (flash_sector == "UFM2") {
-			_flash_sector = LATTICE_FLASH_UFM2;
-			printInfo("Flash Sector: UFM2", true);
-		} else if (flash_sector == "UFM3") {
-			_flash_sector = LATTICE_FLASH_UFM3;
-			printInfo("Flash Sector: UFM3", true);
-		} else if (flash_sector == "FEA") {
-			_flash_sector = LATTICE_FLASH_FEA;
-			printInfo("Flash Sector: FEA", true);
-		} else if (flash_sector == "PKEY") {
-			_flash_sector = LATTICE_FLASH_PKEY;
-			printInfo("Flash Sector: PKEY", true);
-		} else if (_mode == Device::FLASH_MODE) {
-			printError("Unknown flash sector");
-			throw std::exception();
-		}
+		set_flash_sector(flash_sector);
 	} else if (family == "ECP3") {
 		_fpga_family = ECP3_FAMILY;
 	} else if (family == "ECP5") {
@@ -239,6 +245,236 @@ Lattice::Lattice(Jtag *jtag, const std::string filename, const std::string &file
 		printError("Unknown device family");
 		throw std::exception();
 	}
+}
+
+void Lattice::set_flash_sector(const std::string &flash_sector)
+{
+	if (flash_sector.empty())
+		return;
+
+	if (flash_sector == "CFG") {
+		_flash_sector = LATTICE_FLASH_CFG;
+	} else if (flash_sector == "UFM") {
+		_flash_sector = LATTICE_FLASH_UFM;
+	} else if (flash_sector == "FEATURE" || flash_sector == "FEA") {
+		_flash_sector = LATTICE_FLASH_FEATURE;
+	} else if (flash_sector == "SRAM") {
+		_flash_sector = LATTICE_FLASH_SRAM;
+	} else if (flash_sector == "ALL") {
+		_flash_sector = LATTICE_FLASH_ALL;
+	} else if (flash_sector == "CFG0") {
+		_flash_sector = LATTICE_FLASH_CFG0;
+	} else if (flash_sector == "CFG1") {
+		_flash_sector = LATTICE_FLASH_CFG1;
+	} else if (flash_sector == "UFM0") {
+		_flash_sector = LATTICE_FLASH_UFM0;
+	} else if (flash_sector == "UFM1") {
+		_flash_sector = LATTICE_FLASH_UFM1;
+	} else if (flash_sector == "UFM2") {
+		_flash_sector = LATTICE_FLASH_UFM2;
+	} else if (flash_sector == "UFM3") {
+		_flash_sector = LATTICE_FLASH_UFM3;
+	} else if (flash_sector == "PKEY") {
+		_flash_sector = LATTICE_FLASH_PKEY;
+	} else if (flash_sector == "AKEY") {
+		_flash_sector = LATTICE_FLASH_AKEY;
+	} else {
+		printError("Unknown flash sector");
+		throw std::exception();
+	}
+
+	printInfo("Flash Sector: " + flash_sector, true);
+}
+
+bool Lattice::dumpFlash(uint32_t base_addr, uint32_t len)
+{
+	if (_fpga_family == MACHXO2_FAMILY || _fpga_family == MACHXO3_FAMILY)
+		return dump_intFlash(base_addr, len);
+
+	return FlashInterface::dump(base_addr, len);
+}
+
+bool Lattice::bulk_erase_flash()
+{
+	uint32_t erase_mask = FLASH_ERASE_ALL;
+	std::string area = "ALL";
+
+	if (_fpga_family == MACHXO2_FAMILY || _fpga_family == MACHXO3_FAMILY) {
+		switch (_flash_sector) {
+		case LATTICE_FLASH_UNDEFINED:
+		case LATTICE_FLASH_ALL:
+			erase_mask = FLASH_ERASE_ALL;
+			area = "ALL";
+			break;
+		case LATTICE_FLASH_CFG:
+		case LATTICE_FLASH_CFG0:
+			erase_mask = FLASH_ERASE_CFG;
+			area = "CFG";
+			break;
+		case LATTICE_FLASH_UFM:
+		case LATTICE_FLASH_UFM0:
+			erase_mask = FLASH_ERASE_UFM;
+			area = "UFM";
+			break;
+		case LATTICE_FLASH_FEATURE:
+		case LATTICE_FLASH_FEA:
+			erase_mask = FLASH_ERASE_FEATURE;
+			area = "FEATURE";
+			break;
+		case LATTICE_FLASH_SRAM:
+			erase_mask = FLASH_ERASE_SRAM;
+			area = "SRAM";
+			break;
+		default:
+			printError("Error: selected flash sector is not valid for MachXO2/MachXO3");
+			return false;
+		}
+
+		if (area == "ALL")
+			printWarn("Erasing ALL internal flash also erases feature bits and SRAM");
+
+		if (!EnableISC(ISC_ENABLE_FLASH_MODE)) {
+			printError("Failed to enable ISC flash mode");
+			return false;
+		}
+
+		printInfo("Internal flash erase " + area + ": ", false);
+		const bool ret = flashErase(erase_mask);
+		if (ret)
+			printSuccess("DONE");
+		else
+			printError("FAIL");
+
+		return DisableISC() && ret;
+	}
+
+	return FlashInterface::bulk_erase_flash();
+}
+
+bool Lattice::dump_intFlashPages(FILE *fd, const std::string &name,
+		uint32_t area_base, uint32_t pages, uint32_t dump_base,
+		uint32_t dump_len)
+{
+	const uint32_t page_size = 16;
+	const uint32_t dump_end = dump_base + dump_len;
+	uint8_t tx_buf[page_size], rx_buf[page_size];
+
+	memset(tx_buf, 0, page_size);
+	memset(rx_buf, 0, page_size);
+
+	tx_buf[0] = REG_CFG_FLASH;
+	_jtag->shiftIR(tx_buf, NULL, 8, Jtag::PAUSE_IR);
+
+	ProgressBar progress("Reading " + name, pages, 50, _quiet);
+	for (uint32_t page = 0; page < pages; page++) {
+		const uint32_t page_base = area_base + page * page_size;
+		const uint32_t page_end = page_base + page_size;
+
+		_jtag->set_state(Jtag::RUN_TEST_IDLE);
+		_jtag->toggleClk(2);
+		_jtag->shiftDR(tx_buf, rx_buf, page_size * 8, Jtag::PAUSE_DR);
+
+		if (page_end > dump_base && page_base < dump_end) {
+			const uint32_t first = std::max(page_base, dump_base);
+			const uint32_t last = std::min(page_end, dump_end);
+			const uint32_t page_offset = first - page_base;
+			const uint32_t wr_len = last - first;
+			const size_t written = fwrite(rx_buf + page_offset, 1, wr_len, fd);
+			if (written != wr_len) {
+				progress.fail();
+				printError("Failed to write internal flash dump: " +
+						std::string(strerror(errno)));
+				return false;
+			}
+		}
+
+		progress.display(page);
+	}
+
+	progress.done();
+	return true;
+}
+
+bool Lattice::dump_intFlash(uint32_t base_addr, uint32_t len)
+{
+	const uint32_t page_size = 16;
+	uint32_t cfg_pages = 0;
+	uint32_t ufm_pages = 0;
+	const std::string model = fpga_list[_jtag->get_target_device_id()].model;
+
+	if (!machxo_internal_flash_layout(model, &cfg_pages, &ufm_pages)) {
+		printError("Error: internal flash dump size is unknown for " + model);
+		printError("       use a JEDEC verify flow, or add this device density layout");
+		return false;
+	}
+
+	const uint32_t cfg_bytes = cfg_pages * page_size;
+	const uint32_t ufm_bytes = ufm_pages * page_size;
+	const uint32_t flash_bytes = cfg_bytes + ufm_bytes;
+	if (base_addr >= flash_bytes) {
+		printError("Error: internal flash dump offset is outside device flash");
+		return false;
+	}
+	if (len == 0)
+		len = flash_bytes - base_addr;
+
+	if (len == 0 || len > flash_bytes - base_addr) {
+		printError("Error: internal flash dump range is outside device flash");
+		return false;
+	}
+
+	char content[160];
+	snprintf(content, sizeof(content),
+			"Dump internal Lattice flash: %u bytes (CFG %u pages, UFM %u pages)",
+			len, cfg_pages, ufm_pages);
+	printInfo(content);
+
+	printInfo("Open dump file ", false);
+	FILE *fd = fopen(_filename.c_str(), "wb");
+	if (!fd) {
+		printError("FAIL: " + std::string(strerror(errno)));
+		return false;
+	}
+	printSuccess("DONE");
+
+	bool ret = true;
+	if (!EnableISC(ISC_ENABLE_FLASH_MODE)) {
+		printError("Failed to enable ISC flash mode");
+		fclose(fd);
+		remove(_filename.c_str());
+		return false;
+	}
+
+	wr_rd(RESET_CFG_ADDR, NULL, 0, NULL, 0);
+	_jtag->set_state(Jtag::RUN_TEST_IDLE);
+	_jtag->toggleClk(1000);
+
+	if (base_addr < cfg_bytes)
+		ret = dump_intFlashPages(fd, "CFG", 0, cfg_pages, base_addr, len);
+
+	if (ret && (base_addr + len) > cfg_bytes && ufm_pages > 0) {
+		uint8_t tx[4] = {0, 0, 0, 0x40};
+		wr_rd(LSC_WRITE_ADDRESS, tx, 4, NULL, 0);
+		_jtag->set_state(Jtag::RUN_TEST_IDLE);
+		_jtag->toggleClk(1000);
+
+		ret = dump_intFlashPages(fd, "UFM", cfg_bytes, ufm_pages,
+				base_addr, len);
+	}
+
+	if (!DisableISC())
+		ret = false;
+
+	if (fclose(fd) != 0) {
+		printError("Failed to close internal flash dump: " +
+				std::string(strerror(errno)));
+		ret = false;
+	}
+
+	if (!ret)
+		remove(_filename.c_str());
+
+	return ret;
 }
 
 void displayFeabits(uint16_t _featbits)
