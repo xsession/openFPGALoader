@@ -14,6 +14,7 @@ Comparison baseline:
 ## Highlights
 
 - Added Windows-focused build, packaging, and deployment support.
+- Added Docker-based native Linux deployment support.
 - Added and improved Xilinx Platform Cable USB / XPCU support, including firmware handling and debug controls.
 - Added ISE-derived Xilinx FX2 firmware files and Spartan-6 SPI bridge `.cor` files.
 - Improved Spartan-6 external SPI flash workflows through Xilinx JTAG bridges.
@@ -33,6 +34,16 @@ Comparison baseline:
 - Added GitHub workflow support for binary builds in `.github/workflows/build-binaries.yml`.
 - Added `CMakePresets.json` with Windows debug presets.
 - Updated CMake install logic to package additional bridge and firmware assets.
+
+## Linux Docker Deployment
+
+- Added Alpine-based Docker deployment support for native Linux builds.
+- Added `docker-compose.deploy-linux.yml`.
+- Added `docker/deploy/linux/alpine.Dockerfile`.
+- Added `scripts/docker-linux-deploy.sh`.
+- Added `DOCKER_DEPLOY_LINUX.md`.
+- The Linux deploy package writes artifacts to `dist/docker-linux/`.
+- The Linux tarball includes the installed binary, bridge assets, Spartan-6 `.cor` files, optional Xilinx `.hex` firmware, udev rules, and a build manifest with `file` and `ldd` output.
 
 ## Xilinx Platform Cable USB / XPCU
 

@@ -13,6 +13,22 @@ Pass extra CMake switches after `--`:
 ./scripts/build.sh --package -- -DENABLE_CMSISDAP=OFF -DENABLE_LIBGPIOD=OFF
 ```
 
+## Docker Linux deployment
+
+```bash
+docker compose -f docker-compose.deploy-linux.yml build
+docker compose -f docker-compose.deploy-linux.yml run --rm linux-deploy
+```
+
+Artifacts are written to:
+
+```text
+dist/docker-linux/
+```
+
+See `DOCKER_DEPLOY_LINUX.md` for clean rebuilds, extra CMake flags, and package
+contents.
+
 ## Local Windows
 
 Use MSYS2 UCRT64 or MINGW64 and install the matching packages:

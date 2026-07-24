@@ -3,15 +3,15 @@
  * Copyright (C) 2022 Greg Davill
  */
 
-#if defined(_WIN64) || defined(_WIN32)
-
 #include "pathHelper.hpp"
 
 #include <algorithm>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
+#if defined(_WIN64) || defined(_WIN32)
 #include <windows.h>
+#endif
 
 namespace {
 
@@ -32,6 +32,7 @@ bool isPortableDataPath(const std::string &input_path)
 
 std::filesystem::path executableDirectory()
 {
+#if defined(_WIN64) || defined(_WIN32)
     std::string buffer(MAX_PATH, '\0');
 
     for (;;) {
@@ -52,9 +53,12 @@ std::filesystem::path executableDirectory()
 
         buffer.resize(buffer.size() * 2);
     }
+#else
+    return std::filesystem::current_path();
+#endif
 }
 
-std::string absoluteWindowsPath(const std::filesystem::path &path)
+std::string absoluteFilesystemPath(const std::filesystem::path &path)
 {
     std::error_code ec;
     std::filesystem::path absolute = std::filesystem::absolute(path, ec);
@@ -73,6 +77,7 @@ std::string PathHelper::absolutePath(std::string input_path)
     try {
         std::filesystem::path path(input_path);
 
+#if defined(_WIN64) || defined(_WIN32)
         /*
          * For portable Windows builds, DATA_DIR is compiled as "../share".
          * Resource paths such as:
@@ -84,13 +89,12 @@ std::string PathHelper::absolutePath(std::string input_path)
          * shell working directory and not through MSYS2/cygpath.
          */
         if (path.is_relative() && isPortableDataPath(input_path)) {
-            return absoluteWindowsPath(executableDirectory() / path);
+            return absoluteFilesystemPath(executableDirectory() / path);
         }
+#endif
 
-        return absoluteWindowsPath(path);
+        return absoluteFilesystemPath(path);
     } catch (...) {
         return input_path;
     }
 }
-
-#endif

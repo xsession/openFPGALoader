@@ -3,11 +3,14 @@
  * Copyright (C) 2022 Greg Davill <greg.davill@gmail.com>
  */
 
-#if defined (_WIN64) || defined (_WIN32)
+#ifndef SRC_PATHHELPER_HPP_
+#define SRC_PATHHELPER_HPP_
+
 #include <string>
 
 class PathHelper{
     public:
         static std::string absolutePath(std::string input_path);
 };
-#endif
+
+#endif  // SRC_PATHHELPER_HPP_

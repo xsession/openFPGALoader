@@ -57,3 +57,5 @@ test_fw/
 build-native-xpcu/
 
 build-codex-lattice/
+
+build-docker-linux/
