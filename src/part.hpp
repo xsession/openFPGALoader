@@ -38,6 +38,9 @@ static std::map <uint32_t, fpga_model> fpga_list = {
 	{0x05044093, {"xilinx", "xcf",      "xcf01s",    8}},
 	{0x05045093, {"xilinx", "xcf",      "xcf02s",    8}},
 	{0x05046093, {"xilinx", "xcf",      "xcf04s",    8}},
+	{0x05057093, {"xilinx", "xcf",      "xcf08p",    16}},
+	{0x05058093, {"xilinx", "xcf",      "xcf16p",    16}},
+	{0x05059093, {"xilinx", "xcf",      "xcf32p",    16}},
 
 	/* Xilinx XC2 */
 	{0x06e59093, {"xilinx", "xc2c",     "xc2c64a",   8}},

@@ -84,3 +84,11 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 @rem Here the bit file not nessesary because the jed file contain what need for programming
 .\openFPGALoader.exe -c ft2232 -f ../../../../test_fw\EL-26-38-00_spin_scan\el_27_37_00_el_27_37_00_3V0.jed -v --index-chain 0 --verify
 
+.\openFPGALoader.exe -c digilent_hs3 --detect -v --freq 100000 --misc-device 05059093,8,xilinx_unknown
+
+@rem 
+.\openFPGALoader.exe -c digilent_hs3 --freq 6000000 --misc-device 05059093,8,xilinx_unknown --index-chain 2 -f ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\example\fw_files\application\EL-24-80\FW-24-80-R410.MCS --bridge ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\S320_06_20260703.bit
+
+.\openFPGALoader.exe -c digilent_hs3 --freq 1000000 --index-chain 0 -f path\to\your_prom0.mcs -v
+
+.\openFPGALoader.exe -c digilent_hs3 --index-chain 1 -f -f ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\example\fw_files\application\EL-24-80\FW-24-80-R410.MCS -v

@@ -2121,20 +2121,54 @@ std::string Xilinx::flow_read()
 #define XCF_CONFIG         0xEE
 #define XCF_ISC_READ       0xeF
 #define XCF_ISC_DISABLE    0xF0
+#define XCFP_ISC_READ      0xF8
+
+struct xcf_prom_info {
+	uint16_t pkt_len;
+	uint16_t nb_section;
+	uint32_t capacity;
+	bool xcfp;
+};
+
+static xcf_prom_info get_xcf_prom_info(uint32_t idcode)
+{
+	switch (idcode) {
+	case 0x05044093: /* XCF01S: 1 Mbit */
+		return {2048 / 8, 512, 1 * 1024 * 1024 / 8, false};
+	case 0x05045093: /* XCF02S: 2 Mbit */
+		return {4096 / 8, 512, 2 * 1024 * 1024 / 8, false};
+	case 0x05046093: /* XCF04S: 4 Mbit */
+		return {4096 / 8, 1024, 4 * 1024 * 1024 / 8, false};
+	case 0x05057093: /* XCF08P: 8 Mbit */
+		return {4096 / 8, 2048, 8 * 1024 * 1024 / 8, true};
+	case 0x05058093: /* XCF16P: 16 Mbit */
+		return {4096 / 8, 4096, 16 * 1024 * 1024 / 8, true};
+	case 0x05059093: /* XCF32P: 32 Mbit */
+		return {4096 / 8, 8192, 32 * 1024 * 1024 / 8, true};
+	default:
+		throw std::runtime_error("unsupported XCF PROM IDCODE");
+	}
+}
+
+static void xcf_shift_ir(Jtag *jtag, uint8_t instruction, int irlen)
+{
+	uint8_t ir[2] = {instruction, 0x00};
+	jtag->shiftIR(ir, NULL, irlen);
+}
 
 void Xilinx::xcf_flow_enable(uint8_t mode)
 {
-	_jtag->shiftIR(XCF_ISC_ENABLE, 8);
+	xcf_shift_ir(_jtag, XCF_ISC_ENABLE, _irlen);
 	_jtag->shiftDR(&mode, NULL, 6);
 	_jtag->toggleClk(1);
 }
 
 void Xilinx::xcf_flow_disable()
 {
-	_jtag->shiftIR(XCF_ISC_DISABLE, 8);
+	xcf_shift_ir(_jtag, XCF_ISC_DISABLE, _irlen);
 	_jtag->flush();
 	usleep(110000);
-	_jtag->shiftIR(BYPASS, 8);
+	xcf_shift_ir(_jtag, BYPASS, _irlen);
 	_jtag->toggleClk(1);
 }
 
@@ -2145,17 +2179,17 @@ bool Xilinx::xcf_flow_erase()
 	printInfo("Erase flash ", false);
 	xcf_flow_enable();
 
-	_jtag->shiftIR(XCF_ISC_ADDR_SHIFT, 8);
+	xcf_shift_ir(_jtag, XCF_ISC_ADDR_SHIFT, _irlen);
 	_jtag->shiftDR(xfer_buf, NULL, 16);
 	_jtag->toggleClk(1);
 
-	_jtag->shiftIR(XCF_ISC_ERASE, 8);
+	xcf_shift_ir(_jtag, XCF_ISC_ERASE, _irlen);
 	_jtag->flush();
 	usleep(500000);
 
 	int i;
 	for (i = 0; i < 32; i++) {
-		_jtag->shiftIR(XCF_ISCTESTSTATUS, 8);
+		xcf_shift_ir(_jtag, XCF_ISCTESTSTATUS, _irlen);
 		_jtag->flush();
 		usleep(500000);
 		_jtag->shiftDR(NULL, xfer_buf, 8);
@@ -2178,15 +2212,19 @@ bool Xilinx::xcf_flow_erase()
 bool Xilinx::xcf_program(ConfigBitstreamParser *bitfile)
 {
 	uint8_t tx_buf[4096 / 8];
-	uint16_t pkt_len =
-		((_jtag->get_target_device_id() == 0x05044093) ? 2048 : 4096) / 8;
 	if (!bitfile)
 		throw std::runtime_error("called with null bitstream");
+	const xcf_prom_info prom_info = get_xcf_prom_info(_jtag->get_target_device_id());
+	const uint16_t pkt_len = prom_info.pkt_len;
 	const uint8_t *data = bitfile->getData();
 	uint32_t data_len = bitfile->getLength() / 8;
 	uint32_t xfer_len, offset = 0;
 	uint32_t addr = 0;
 	Jtag::tapState_t xfer_end;
+
+	if (data_len > prom_info.capacity) {
+		throw std::runtime_error("bitstream is larger than selected XCF PROM capacity");
+	}
 
 	/* limit JTAG clock frequency to 15MHz */
 	if (_jtag->getClkFreq() > 15e6)
@@ -2213,7 +2251,7 @@ bool Xilinx::xcf_program(ConfigBitstreamParser *bitfile)
 		}
 
 		/* send data to PROM */
-		_jtag->shiftIR(XCF_ISC_DATA_SHIFT, 8);
+		xcf_shift_ir(_jtag, XCF_ISC_DATA_SHIFT, _irlen);
 		_jtag->shiftDR(data+offset, NULL, xfer_len * 8, xfer_end);
 		if (xfer_len != pkt_len) {
 			uint32_t res = pkt_len - xfer_len;
@@ -2226,19 +2264,19 @@ bool Xilinx::xcf_program(ConfigBitstreamParser *bitfile)
 		/* send address */
 		tx_buf[0] = (addr >> 0) & 0x00ff;
 		tx_buf[1] = (addr >> 8) & 0x00ff;
-		_jtag->shiftIR(XCF_ISC_ADDR_SHIFT, 8);
+		xcf_shift_ir(_jtag, XCF_ISC_ADDR_SHIFT, _irlen);
 		_jtag->shiftDR(tx_buf, NULL, 16);
 		_jtag->toggleClk(1);
 
 		/* send program instruction */
-		_jtag->shiftIR(XCF_ISC_PROGRAM, 8);
+		xcf_shift_ir(_jtag, XCF_ISC_PROGRAM, _irlen);
 		_jtag->flush();
 		usleep((addr == 0) ? 14000: 500);
 
 		/* wait until bit 3 != 1 */
 		int i;
 		for (i = 0; i < 29; i++) {
-			_jtag->shiftIR(XCF_ISCTESTSTATUS, 8);
+			xcf_shift_ir(_jtag, XCF_ISCTESTSTATUS, _irlen);
 			_jtag->flush();
 			usleep(500);
 			_jtag->shiftDR(NULL, tx_buf, 8);
@@ -2260,7 +2298,7 @@ bool Xilinx::xcf_program(ConfigBitstreamParser *bitfile)
 	progress.done();
 
 	/* program done */
-	_jtag->shiftIR(BYPASS, 8);
+	xcf_shift_ir(_jtag, BYPASS, _irlen);
 	_jtag->toggleClk(1);
 
 	if (_verify) {
@@ -2292,9 +2330,9 @@ bool Xilinx::xcf_program(ConfigBitstreamParser *bitfile)
 	xcf_flow_disable();
 
 	/* reconfigure FPGA */
-	_jtag->shiftIR(XCF_CONFIG, 8);
+	xcf_shift_ir(_jtag, XCF_CONFIG, _irlen);
 	_jtag->toggleClk(1);
-	_jtag->shiftIR(BYPASS, 8);
+	xcf_shift_ir(_jtag, BYPASS, _irlen);
 	_jtag->toggleClk(1);
 
 	return true;
@@ -2304,10 +2342,10 @@ std::string Xilinx::xcf_read()
 {
 	uint32_t addr = 0;
 	uint8_t rx_buf[4096 / 8];
-	uint16_t pkt_len =
-		((_jtag->get_target_device_id() == 0x05044093) ? 2048 : 4096) / 8;
-	uint16_t nb_section =
-		((_jtag->get_target_device_id() == 0x05046093) ? 1024 : 512);
+	const xcf_prom_info prom_info = get_xcf_prom_info(_jtag->get_target_device_id());
+	const uint16_t pkt_len = prom_info.pkt_len;
+	const uint16_t nb_section = prom_info.nb_section;
+	const uint8_t read_instruction = prom_info.xcfp ? XCFP_ISC_READ : XCF_ISC_READ;
 
 	std::string buffer;
 
@@ -2321,12 +2359,12 @@ std::string Xilinx::xcf_read()
 		/* send address */
 		rx_buf[0] = (addr >> 0) & 0x00ff;
 		rx_buf[1] = (addr >> 8) & 0x00ff;
-		_jtag->shiftIR(XCF_ISC_ADDR_SHIFT, 8);
+		xcf_shift_ir(_jtag, XCF_ISC_ADDR_SHIFT, _irlen);
 		_jtag->shiftDR(rx_buf, NULL, 16);
 		_jtag->toggleClk(1);
 
 		/* send data to PROM */
-		_jtag->shiftIR(XCF_ISC_READ, 8);
+		xcf_shift_ir(_jtag, read_instruction, _irlen);
 		_jtag->flush();
 		usleep(50);
 		_jtag->shiftDR(NULL, rx_buf, pkt_len * 8);

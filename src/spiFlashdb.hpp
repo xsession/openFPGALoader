@@ -178,6 +178,23 @@ static std::map <uint32_t, flash_t> flash_list = {
 		.quad_mask = 0,
 		.global_lock = false,
 	}},
+	{0x05059093, {
+		/* https://www.digikey.co.uk/htmldatasheets/production/1283198/0/0/1/XCF32P-32Mb-1-8V.pdf */
+		.manufacturer = "Xilinx",
+		.model = "XCF32P",
+		.nr_sector = 64,
+		.sector_erase = true,
+		.subsector_erase = true,
+		.has_extended = false,
+		.tb_otp = false,
+		.tb_offset = (1 << 14),
+		.tb_register = STATR,
+		.bp_len = 4,
+		.bp_offset = {(1 << 2), (1 << 3), (1 << 4), (1 << 5)},
+		.quad_register = NONER,
+		.quad_mask = 0,
+		.global_lock = false,
+	}},
 	{0x0b4016, {
 		/* https://datasheet.lcsc.com/lcsc/2005251035_XTX-XT25F32BSOIGU-S_C558851.pdf */
 		.manufacturer = "XTX",
