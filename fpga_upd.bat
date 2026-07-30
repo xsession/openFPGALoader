@@ -92,3 +92,7 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 .\openFPGALoader.exe -c digilent_hs3 --freq 1000000 --index-chain 0 -f path\to\your_prom0.mcs -v
 
 .\openFPGALoader.exe -c digilent_hs3 --index-chain 1 -f -f ..\..\..\..\test_fw\_IMPACT_BATCH_DCS_FW\_IMPACT_BATCH\example\fw_files\application\EL-24-80\FW-24-80-R410.MCS -v
+
+.\openFPGALoader.exe -c digilent_hs3 --index-chain 1 --dump-flash flash_dump_chain_index_1_1.mcs -v
+
+.\openFPGALoader.exe -c digilent_hs3 --index-chain 1 -f flash_dump_chain_index_1_1.mcs -v
