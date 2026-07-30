@@ -104,6 +104,7 @@ struct arguments {
 	std::string target_flash;
 	bool external_flash;
 	std::string external_flash_type;
+	std::string dump_format;
 	bool spi_flash_type;
 	int16_t altsetting;
 	uint16_t vid;
@@ -233,8 +234,8 @@ int main(int argc, char **argv)
 			-1, 0, false, "-", false, false, false, false, false, Device::PRG_NONE, false,
 			/* spi dfu    file_type fpga_part bridge_path probe_firmware */
 			false, false, "",       "",       "",         "",
-			/* index_chain file_size target_flash external_flash external_flash_type spi_flash_type altsetting */
-			-1,            0,        "primary",   false,         "",                  true,          -1,
+			/* index_chain file_size target_flash external_flash external_flash_type dump_format spi_flash_type altsetting */
+					-1,            0,        "primary",   false,         "",                  "",                  true,          -1,
 			/* vid, pid, index bus_addr, device_addr */
 				0,   0,   -1,     0,         0,
 			"127.0.0.1", 0, false, false, false, false, "", false, false, false, false,
@@ -598,7 +599,7 @@ int main(int argc, char **argv)
 				args.file_type, args.prg_type, args.fpga_part, args.spi_flash_type, args.bridge_path,
 				args.target_flash, args.external_flash_type, args.verify, args.verbose,
 				args.skip_load_bridge, args.skip_reset,
-				args.read_dna, args.read_xadc);
+				args.read_dna, args.read_xadc, args.dump_format);
 #else
 			printError("Support for Xilinx FPGAs was not enabled at compile time");
 			delete(jtag);
@@ -1037,6 +1038,9 @@ int parse_opt(int argc, char **argv, struct arguments *args,
 				cxxopts::value<bool>(args->detect_external_flash))
 			("dfu",   "DFU mode", cxxopts::value<bool>(args->dfu))
 			("dump-flash",  "Dump flash mode")
+		("dump-format",
+			"output format for dump-flash: mcs (Intel HEX, default) or bin (raw binary)",
+			cxxopts::value<std::string>(args->dump_format)->default_value("mcs"))
 			("bulk-erase",   "Bulk erase flash",
 				cxxopts::value<bool>(args->bulk_erase_flash))
 			("enable-quad",   "Enable quad mode for SPI Flash",

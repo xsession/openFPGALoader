@@ -31,7 +31,8 @@ class Xilinx: public Device, FlashInterface {
 				const std::string &external_flash_type,
 				bool verify, int8_t verbose,
 				bool skip_load_bridge, bool skip_reset,
-				bool read_dna, bool read_xadc);
+				bool read_dna, bool read_xadc,
+				const std::string &dump_format = "mcs");
 		~Xilinx();
 
 		void program(unsigned int offset, bool unprotect_flash) override;
@@ -130,13 +131,24 @@ class Xilinx: public Device, FlashInterface {
 		std::string flow_read();
 
 		/* ------------------- */
-		/* XCF JTAG Flash PROM */
-		/* ------------------- */
-		void xcf_flow_enable(uint8_t mode = 0x37);
-		void xcf_flow_disable();
-		bool xcf_flow_erase();
-		bool xcf_program(ConfigBitstreamParser *bitfile);
-		std::string xcf_read();
+			/* XCF JTAG Flash PROM */
+			/* ------------------- */
+			void xcf_flow_enable(uint8_t mode = 0x37);
+			void xcf_flow_disable();
+			bool xcf_flow_erase();
+			bool xcf_program(ConfigBitstreamParser *bitfile);
+			std::string xcf_read();
+			void xcfp_flow_enable();
+			void xcfp_flow_disable();
+			bool xcfp_verify_idcode();
+			bool xcfp_wait_ready(uint32_t polls, uint32_t poll_delay_us,
+					const char *operation);
+			bool xcfp_flow_erase(uint8_t array_mask);
+			bool xcfp_program_register(uint16_t instruction, const uint8_t *value,
+					uint32_t bit_length, const char *name);
+			bool xcfp_verify(const uint8_t *data, uint32_t data_len, uint8_t used_arrays);
+			bool xcfp_program(ConfigBitstreamParser *bitfile);
+			std::string xcfp_read();
 
 		/* -------------------- */
 		/* XC2C (CoolRunner II) */
@@ -285,7 +297,8 @@ class Xilinx: public Device, FlashInterface {
 		bool _soj_is_v2; /* SpiOverJtag version (1.0 or 2.0) */
 		uint32_t _jtag_chain_len; /* Jtag Chain Length */
 		bool _is_bpi_board; /* true if board uses BPI parallel flash */
-		std::unique_ptr<BPIFlash> _bpi_flash; /* BPI flash instance */
+			std::string _dump_format; /* dump output format: mcs or bin */
+			std::unique_ptr<BPIFlash> _bpi_flash; /* BPI flash instance */
 };
 
 #endif  // SRC_XILINX_HPP_
