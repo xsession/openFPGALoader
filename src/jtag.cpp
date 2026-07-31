@@ -108,7 +108,8 @@ Jtag::Jtag(const cable_t &cable, const jtag_pins_conf_t *pin_conf,
 			_tms_buffer_size(128), _num_tms(0),
 			_board_name("nope"), _user_misc_devs(user_misc_devs),
 			device_index(0), _dr_bits_before(0), _dr_bits_after(0),
-			_ir_bits_before(0), _ir_bits_after(0), _curr_tdi(1)
+					_ir_bits_before(0), _ir_bits_after(0), _curr_tdi(1),
+					_dr_bits_after_trailing(0), _trailing_ir_bits(0)
 {
 	switch (cable.type) {
 	case MODE_ANLOGICCABLE:
@@ -256,6 +257,7 @@ int Jtag::detectChain(unsigned max_dev)
 		_devices_list.clear();
 		_irlength_list.clear();
 		_ir_bits_before = _ir_bits_after = _dr_bits_before = _dr_bits_after = 0;
+		_dr_bits_after_trailing = 0;
 		go_test_logic_reset();
 		set_state(SHIFT_DR);
 
@@ -302,6 +304,8 @@ int Jtag::detectChain(unsigned max_dev)
 					snprintf(message, sizeof(message),
 						"ignoring XPCU trailing scan word 0x%08x", tmp);
 					printWarn(message);
+					_dr_bits_after_trailing++;
+					_trailing_ir_bits = 8; /* Xilinx CPLD/XC9500/XLX110 family IR length */
 					break;
 				}
 				uint16_t mfg = IDCODE2MANUFACTURERID(tmp);
@@ -379,7 +383,7 @@ int Jtag::device_select(unsigned index)
 	/* get number of devices in the JTAG chain
 	 * after the selected one
 	 */
-	_dr_bits_after = device_index;
+	_dr_bits_after = device_index + _dr_bits_after_trailing;
 	_dr_bits = std::vector<uint8_t>((std::max(_dr_bits_after, _dr_bits_before) + 7)/8, 0);
 
 	/* when the device is not alone and not
@@ -389,6 +393,9 @@ int Jtag::device_select(unsigned index)
 	_ir_bits_after = 0;
 	for (int i = 0; i < device_index; ++i)
 		_ir_bits_after += _irlength_list[i];
+	/* trailing bypass devices (e.g. CPLD filtered by XPCU) sit between
+	 * target and TDO, so their IR BYPASS must be shifted after */
+	_ir_bits_after += _trailing_ir_bits;
 
 	/* send serie of bypass instructions
 	 * final size depends on number of device

@@ -96,3 +96,5 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 .\openFPGALoader.exe -c digilent_hs3 --index-chain 1 --dump-flash flash_dump_chain_index_1_1.mcs -v
 
 .\openFPGALoader.exe -c digilent_hs3 --index-chain 1 -f flash_dump_chain_index_1_1.mcs -v
+
+

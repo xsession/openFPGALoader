@@ -81,11 +81,16 @@ class Jtag {
 	 */
 	uint32_t get_target_device_id() {return _devices_list[device_index];}
 
-	/*!
+	/*
 	 * \brief return JTAG chain length
 	 * \return number of devices present
 	 */
-	size_t get_chain_len() {return _devices_list.size();}
+	size_t get_chain_len() {return _devices_list.size() + _dr_bits_after_trailing;}
+
+	/*
+	 * \brief return true if trailing BYPASS devices were ignored during detection
+	 */
+	bool has_trailing_bypass() const {return _dr_bits_after_trailing > 0;}
 
 	/*!
 	 * \brief set index for targeted FPGA
@@ -177,8 +182,16 @@ class Jtag {
 	unsigned _ir_bits_before, _ir_bits_after;
 	std::vector<uint8_t> _ir_bits;
 
+	// IR length of trailing bypass devices (default 8 bits per device, JTAG standard)
+	unsigned _trailing_ir_bits;
+
 	std::vector<uint32_t> _devices_list; /*!< ordered list of devices idcode */
 	std::vector<int16_t> _irlength_list; /*!< ordered list of irlength */
 	uint8_t _curr_tdi;
+
+	// When a trailing scan artifact (like an XPCU CPLD in BYPASS) is ignored,
+	// it still contributes 1 bit per device to the physical TDO stream.
+	// Track this so get_chain_len() returns the true physical chain length.
+	unsigned _dr_bits_after_trailing;
 };
 #endif  // SRC_JTAG_HPP_

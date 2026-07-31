@@ -18,7 +18,7 @@ services:
       PREFIX_DIR: /src/dist/docker-windows/install
       PACKAGE_DIR: /out
       CMAKE_BUILD_TYPE: Release
-      CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF"
+      CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF -DENABLE_OPTIM=OFF"
 
 volumes:
   openfpgaloader-cross-cache:

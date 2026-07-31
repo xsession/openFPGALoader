@@ -383,8 +383,10 @@ static std::map <uint32_t, flash_t> flash_list = {
 		.global_lock = false,
 	}},
 	{0x20bb19, {
+		/* Micron N25Q256A / MT25QL256 (1.8V quad-only variant).
+		 * https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-a/mt25q_qlhs_u_256_aba_0.pdf */
 		.manufacturer = "micron",
-		.model = "N25Q256A",
+		.model = "MT25QL256/N25Q256A",
 		.nr_sector = 512,
 		.sector_erase = true,
 		.subsector_erase = true,
