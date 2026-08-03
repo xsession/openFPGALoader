@@ -384,7 +384,6 @@ int Jtag::device_select(unsigned index)
 	 * after the selected one
 	 */
 	_dr_bits_after = device_index + _dr_bits_after_trailing;
-	_dr_bits = std::vector<uint8_t>((std::max(_dr_bits_after, _dr_bits_before) + 7)/8, 0);
 
 	/* when the device is not alone and not
 	 * the first a serie of bypass must be
@@ -393,8 +392,7 @@ int Jtag::device_select(unsigned index)
 	_ir_bits_after = 0;
 	for (int i = 0; i < device_index; ++i)
 		_ir_bits_after += _irlength_list[i];
-	/* trailing bypass devices (e.g. CPLD filtered by XPCU) sit between
-	 * target and TDO, so their IR BYPASS must be shifted after */
+	/* trailing bypass devices (CPLD after target on TDO side) need IR BYPASS */
 	_ir_bits_after += _trailing_ir_bits;
 
 	/* send serie of bypass instructions

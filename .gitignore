@@ -59,3 +59,9 @@ build-native-xpcu/
 build-codex-lattice/
 
 build-docker-linux/
+
+build-docker-windows2/
+
+build-docker-windows3/
+
+tmp_dlls/

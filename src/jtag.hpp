@@ -83,9 +83,9 @@ class Jtag {
 
 	/*
 	 * \brief return JTAG chain length
-	 * \return number of devices present
+	 * \return number of devices present (excluding trailing bypass devices)
 	 */
-	size_t get_chain_len() {return _devices_list.size() + _dr_bits_after_trailing;}
+	size_t get_chain_len() {return _devices_list.size();}
 
 	/*
 	 * \brief return true if trailing BYPASS devices were ignored during detection
