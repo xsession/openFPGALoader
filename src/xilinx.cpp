@@ -1064,6 +1064,8 @@ bool Xilinx::load_bridge()
 	} else {
 		if (_device_package.empty()) {
 			printError("Can't program SPI flash: missing device-package information");
+			printError("SPI-over-JTAG requires a bridge bitstream specific to your FPGA package.");
+			printError("Provide it with --fpga-part (e.g. --fpga-part xc7a200tfbg484) or --board <boardname>.");
 			printError("SPI bridge context: " + debug_context());
 			return false;
 		}
@@ -1127,6 +1129,8 @@ bool Xilinx::load_bpi_bridge()
 
 	if (_device_package.empty()) {
 		printError("Can't program BPI flash: missing device-package information");
+		printError("BPI-over-JTAG requires a bridge bitstream specific to your FPGA package.");
+		printError("Provide it with --fpga-part (e.g. --fpga-part xc7a200tfbg484) or --board <boardname>.");
 		printError("BPI bridge context: " + debug_context());
 		return false;
 	}
@@ -1235,7 +1239,7 @@ float Xilinx::get_spiOverJtag_version()
 		_jtag->shiftIR(get_ircode(_ircode_map, "USER4"), NULL, _irlen,
 			Jtag::UPDATE_IR);
 		if (_verbose > 0)
-			printf("jtag_chain_len: %d\n", _jtag_chain_len);
+			printf("jtag_chain_len: %d\n", _jtag->get_chain_len());
 		if (_jtag_chain_len > 1)
 			_jtag->shiftDR(jtx, NULL, _jtag_chain_len - 1, Jtag::SHIFT_DR);
 		_jtag->shiftDR(jtx, jrx, 6 * 8);
@@ -1258,6 +1262,73 @@ float Xilinx::get_spiOverJtag_version()
 			probe_version();
 			ll->restorePrimaryTdoMask();
 		}
+	}
+
+	/*
+	 * If the v1 version probe returned all zeros, the bridge might be SOJ v2
+	 * (v1 format query -> v2 packet response). Check for genuine v2 evidence.
+	 *
+	 * WARNING: Impact-generated bridge bitstreams for Artix-7/Kintex-7 use
+	 * SOJ v1 (USER4 scan chain). Only assume v2 when the response contains
+	 * multiple non-zero data bytes — a single echoed command byte is NOT
+	 * evidence of v2 bridge operation.
+	 */
+	if (looks_like_invalid_bridge_reply(rx, 5)) {
+		/* Check if raw response looks like a v2 packet header */
+		uint8_t rev0 = McsParser::reverseByte(jrx[0]);
+		if ((rev0 & 0x01) && (_verbose > 0)) {
+			printf("SOJ version probe: raw byte 0 (0x%02x, rev=0x%02x) "
+			       "has v2 start bit set\n",
+			       jrx[0], rev0);
+		}
+
+		/* Try version query in SOJ v2 format to check for genuine v2 bridge */
+		if (_verbose > 0) {
+			printf("Trying SOJ v2 version query...\n");
+		}
+		uint8_t v2_pkt[7];
+		uint8_t v2_jrx[7];
+		uint32_t v2_real_len = 6;  // 1 cmd + 5 padding
+		uint32_t v2_kPktLen = v2_real_len + 2;  // header + extra
+		v2_pkt[0] = ((0x1f & v2_real_len) << 3) | ((0x03 & 0x01) << 1) | 1;
+		v2_pkt[1] = McsParser::reverseByte(0x01);  // version query cmd
+		memset(&v2_pkt[2], 0, 5);
+
+		_jtag->go_test_logic_reset();
+		_jtag->shiftIR(get_ircode(_ircode_map, "USER1"), NULL, _irlen,
+			Jtag::UPDATE_IR);
+		_jtag->shiftDR(v2_pkt, v2_jrx, (v2_kPktLen - 1) * 8 + 8);
+		_jtag->go_test_logic_reset();
+		_jtag->flush();
+
+		if (_verbose > 0) {
+			printf("SOJ v2 version query raw:");
+			for (size_t i = 0; i < sizeof(v2_jrx); i++)
+				printf(" %02x", v2_jrx[i]);
+			printf("\n");
+		}
+
+		/* Decode v2 response: header(2) + reversed data */
+		uint8_t v2_idx = 2;  // skip v2 header for short packets
+		int v2_nonzero_noncmd = 0;  // exclude echoed cmd byte at offset 1
+		for (uint32_t i = 0; i < 5; i++) {
+			uint8_t b = McsParser::reverseByte(v2_jrx[i + v2_idx]);
+			if (b != 0x00 && b != 0xff && i != 1)  // byte 1 = echoed cmd
+				v2_nonzero_noncmd++;
+		}
+
+		/* Only trust v2 if there are 2+ non-zero data bytes beyond the
+		 * echoed command — a single byte is just the query echo */
+		if (v2_nonzero_noncmd >= 2 && (_verbose > 0)) {
+			for (uint32_t i = 0; i < 5; i++)
+				printf(" %02x", McsParser::reverseByte(v2_jrx[i + v2_idx]));
+			printf("\nSOJ v2 version string has %d data bytes — assuming v2\n",
+			       v2_nonzero_noncmd);
+			return 2.0f;
+		}
+
+		if ((rev0 & 0x01) && (_verbose > 0))
+			printf("Raw v2 header bit set, but no version string data — staying v1\n");
 	}
 
 	if (_verbose > 0) {
@@ -1409,28 +1480,21 @@ void Xilinx::program_mem(ConfigBitstreamParser *bitfile)
 		*/
 		_jtag->shiftIR(get_ircode(_ircode_map, "JSTART"), NULL, _irlen, Jtag::UPDATE_IR);
 		/*
-		* 22: Move to the RTI state and clock the
-		*     startup sequence by applying a minimum         X     0   2000
-		*     of 2000 clock cycles to the TCK.
-		*
-		* Spartan-6 can additionally require ISC_DISABLE while in RTI for the
-		* final handoff into user mode, but cutting the startup clocks down to
-		* a tiny value leaves the USER scan chains inactive on some boards.
-		* Keep the long startup clock run, then do an extra ISC_DISABLE pulse
-		* for Spartan-6 as a follow-up.
+		* 22: Move to the RTI state and clock the startup sequence.
+		* Xilinx UG470: min 100ms at 10MHz TCK = ~600k TCK at 6MHz.
 		*/
 		_jtag->set_state(Jtag::RUN_TEST_IDLE);
-		_jtag->toggleClk(2000);
+		_jtag->toggleClk(600000);
 		if (_fpga_family == SPARTAN6_FAMILY) {
 			_jtag->shiftIR(get_ircode(_ircode_map, "ISC_DISABLE"), NULL,
 				_irlen, Jtag::UPDATE_IR);
 			_jtag->set_state(Jtag::RUN_TEST_IDLE);
 			_jtag->toggleClk(64);
 		}
-		/*
-		* 23: Move to the TLR state. The device is
-		* now functional.                                    X     1   3
-		*/
+		/* 23: Move to the TLR state. The device is now functional.
+		 * CRITICAL: TLR is required to activate the SOJ bridge fabric
+		 * (MMCM + USER scan chain SPI forwarding). DONE may never reach 1
+		 * for SOJ bridge bitstreams, but TLR must still happen. */
 		_jtag->go_test_logic_reset();
 		/* Some xc7s50 does not detect correct connected flash w/o this shift*/
 		_jtag->shiftIR(tx_buf, rx_buf, _irlen);
@@ -3138,8 +3202,10 @@ int Xilinx::spi_put(uint8_t cmd,
 	spi_put_v1_on_user(_user_instruction, rx);
 
 	if (rx != NULL) {
-		if (!_soj_is_v2 && _fpga_family == SPARTAN6_FAMILY &&
-				cmd == 0x9F && len >= 3) {
+		/* Try USER instruction fallback and SOJ v2 framing for all families
+		 * when RDID response is not a valid JEDEC reply. Custom bridge
+		 * bitstreams may use a different USER instruction than the default. */
+		if (!_soj_is_v2 && cmd == 0x9F && len >= 3) {
 			const bool v1_valid = looks_like_valid_jedec_reply(rx, len);
 			if (!v1_valid) {
 				const std::string saved_user_instruction =
@@ -3196,8 +3262,11 @@ int Xilinx::spi_put(uint8_t cmd,
 				_soj_is_v2 = true;
 				if (_verbose > 0)
 					printf("SPI RDID selected SOJ v2 framing\n");
-			} else if (!looks_like_valid_jedec_reply(rx, len) &&
+			} else if (_fpga_family == SPARTAN6_FAMILY &&
+					!looks_like_valid_jedec_reply(rx, len) &&
 					!v2_valid) {
+				/* XPCU control-transfer bitbang fallback is only relevant
+				 * for Spartan-6 boards using that cable. */
 				if (auto *ll = _jtag->get_ll_class();
 						ll != nullptr && ll->setPreferControlBitbang(true)) {
 					printWarn("Retrying Spartan-6 RDID probes through XPCU control-transfer JTAG");
@@ -3393,24 +3462,8 @@ int Xilinx::spi_put_v2(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
 			printf("\n");
 		}
 		idx = (mode == 0 ? 3 : 2);
-		const uint8_t shift = _jtag_chain_len;
 		for (uint32_t i = 0; i < len; i++) {
-			rx[i] = McsParser::reverseByte(jrx[i + idx] >> shift);
-			if (shift == 1)
-				rx[i] |= (jrx[i + idx + 1] & 0x01);
-			else
-				rx[i] |= McsParser::reverseByte(jrx[i + idx + 1]) >> (8 - shift);
-		}
-
-		if (_fpga_family == SPARTAN6_FAMILY &&
-				looks_like_invalid_bridge_reply(rx, len) && idx > 0) {
-			for (uint32_t i = 0; i < len; i++) {
-				rx[i] = McsParser::reverseByte(jrx[i + idx - 1] >> shift);
-				if (shift == 1)
-					rx[i] |= (jrx[i + idx] & 0x01);
-				else
-					rx[i] |= McsParser::reverseByte(jrx[i + idx]) >> (8 - shift);
-			}
+			rx[i] = McsParser::reverseByte(jrx[i + idx]);
 		}
 
 		if (_verbose) {

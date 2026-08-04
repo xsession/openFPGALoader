@@ -201,6 +201,8 @@ bool Altera::load_bridge()
 	} else {
 		if (_device_package.empty()) {
 			printError("Can't program SPI flash: missing device-package information");
+			printError("SPI-over-JTAG requires a bridge bitstream specific to your FPGA package.");
+			printError("Provide it with --fpga-part (e.g. --fpga-part 10m50dafg484) or --board <boardname>.");
 			return false;
 		}
 

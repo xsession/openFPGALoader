@@ -436,6 +436,8 @@ bool Efinix::prepare_flash_access()
 	} else {
 		if (_device_package.empty()) {
 			printError("Can't program SPI flash: missing device-package information");
+			printError("SPI-over-JTAG requires a bridge bitstream specific to your FPGA package.");
+			printError("Provide it with --fpga-part (e.g. --fpga-part trion-t120-bga223) or --board <boardname>.");
 			return false;
 		}
 

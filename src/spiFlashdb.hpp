@@ -363,6 +363,28 @@ static std::map <uint32_t, flash_t> flash_list = {
 		//.quad_mask = (1 << 3),
 		.global_lock = false,
 	}},
+	{0xba2119, {
+		/* Micron MT25QL256ABA1EW9 - 256Mb Serial NOR Flash, 3.0V.
+		 * RDID (0x9F): BA 21 19
+		 * Manufacturer: 0xBA (Numonyx/Micron)
+		 * Memory type:  0x21 (Serial NOR)
+		 * Capacity:     0x19 (256Mb / 32MB)
+		 * https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-a/mt25q_qlhs_u_256_aba_0.pdf */
+		.manufacturer = "Micron",
+		.model = "MT25QL256ABA",
+		.nr_sector = 512,
+		.sector_erase = true,
+		.subsector_erase = true,
+		.has_extended = false,
+		.tb_otp = false,
+		.tb_offset = (1 << 5),
+		.tb_register = STATR,
+		.bp_len = 3,
+		.bp_offset = {(1 << 2), (1 << 3), (1 << 4), 0},
+		.quad_register = NONER,
+		.quad_mask = 0,
+		.global_lock = false,
+	}},
 	{0x20bb18, {
 		/* https://www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/n25q/n25q_128mb_1_8v_65nm.pdf */
 		/* MT25QU128ABA has the same JEDEC-standard signature: https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-a/mt25q_qlhs_u_128_aba_0.pdf */
