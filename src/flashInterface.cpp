@@ -251,7 +251,7 @@ bool FlashInterface::read(uint8_t *data, uint32_t base_addr, uint32_t len)
 	return post_flash_access() && ret == 0;
 }
 
-bool FlashInterface::dump(uint32_t base_addr, uint32_t len)
+bool FlashInterface::dump(uint32_t base_addr, uint32_t len, const std::string &dump_format)
 {
 	bool ret = true;
 	/* enable SPI flash access */
@@ -260,7 +260,7 @@ bool FlashInterface::dump(uint32_t base_addr, uint32_t len)
 
 	try {
 		SPIFlash flash(this, false, _spif_verbose, _spif_external_flash_type);
-		ret = flash.dump(_spif_filename, base_addr, len, _spif_rd_burst);
+		ret = flash.dump(_spif_filename, base_addr, len, _spif_rd_burst, dump_format);
 	} catch (std::exception &e) {
 		printError(e.what());
 		ret = false;

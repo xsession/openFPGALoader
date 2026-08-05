@@ -544,7 +544,7 @@ int SPIFlash::read(int base_addr, uint8_t *data, int len)
 }
 
 bool SPIFlash::dump(const std::string &filename, const int &base_addr,
-		const int &len, int rd_burst)
+		const int &len, int rd_burst, const std::string &dump_format)
 {
 	int dump_len = len;
 	if (dump_len == 0) {
@@ -582,10 +582,24 @@ bool SPIFlash::dump(const std::string &filename, const int &base_addr,
 	if (rd_burst > 0x100000)
 		rd_burst = 0x100000;
 
-	std::string data;
-	data.resize(rd_burst);
+	/* Accumulate all data in memory */
+	std::string buffer;
+	buffer.resize(dump_len);
 
 	printInfo("dump flash (May take time)");
+
+	ProgressBar progress("Read flash ", dump_len, 50, _verbose < 0);
+	for (int i = 0; i < dump_len; i += rd_burst) {
+		if (rd_burst + i > dump_len)
+			rd_burst = dump_len - i;
+		if (0 != read(base_addr + i, (uint8_t*)&buffer[i], rd_burst)) {
+			progress.fail();
+			printError("Failed to read flash");
+			return false;
+		}
+		progress.display(i);
+	}
+	progress.done();
 
 	printInfo("Open dump file ", false);
 	FILE *fd = fopen(filename.c_str(), "wb");
@@ -596,29 +610,61 @@ bool SPIFlash::dump(const std::string &filename, const int &base_addr,
 		printSuccess("DONE");
 	}
 
-	ProgressBar progress("Read flash ", dump_len, 50, _verbose < 0);
-	for (int i = 0; i < dump_len; i += rd_burst) {
-		if (rd_burst + i > dump_len)
-			rd_burst = dump_len - i;
-		if (0 != read(base_addr + i, (uint8_t*)&data[0], rd_burst)) {
-			progress.fail();
-			printError("Failed to read flash");
-			fclose(fd);
-			remove(filename.c_str());
-			return false;
+	printInfo("Write flash ", false);
+
+	if (dump_format == "mcs") {
+		/* Write Intel HEX format */
+		size_t offset = 0;
+		const uint8_t *data = reinterpret_cast<const uint8_t *>(buffer.c_str());
+
+		/* Emit Extended Linear Address records at every 64 KB boundary,
+		 * matching Xilinx Impact behavior. Each data segment starts at
+		 * address 0x0000 within the segment base set by the ELA record. */
+		fprintf(fd, ":020000040000FA\n");
+
+		while (offset < buffer.size()) {
+			size_t remaining = buffer.size() - offset;
+			uint8_t count = static_cast<uint8_t>(std::min(remaining, (size_t)16));
+			uint16_t addr = static_cast<uint16_t>(offset);
+
+			uint8_t checksum = 0;
+			checksum = (checksum + count) & 0xff;
+			checksum = (checksum + (addr >> 8)) & 0xff;
+			checksum = (checksum + (addr & 0xff)) & 0xff;
+			checksum = (checksum + 0) & 0xff; /* type 00 = data */
+			for (uint8_t j = 0; j < count; j++) {
+				checksum = (checksum + data[offset + j]) & 0xff;
+			}
+			checksum = (~checksum) + 1;
+
+			fprintf(fd, ":%02X%04X00", count, addr);
+			for (uint8_t j = 0; j < count; j++) {
+				fprintf(fd, "%02X", data[offset + j]);
+			}
+			fprintf(fd, "%02X\n", checksum);
+
+			offset += count;
+
+			if (offset < buffer.size() && (offset & 0xFFFF) == 0) {
+				uint16_t segment = static_cast<uint16_t>(offset >> 16);
+				uint8_t cs = 0;
+				cs = (cs + 2) & 0xff;
+				cs = (cs + 0) & 0xff;
+				cs = (cs + 0) & 0xff;
+				cs = (cs + 4) & 0xff;
+				cs = (cs + (segment >> 8)) & 0xff;
+				cs = (cs + (segment & 0xff)) & 0xff;
+				cs = (~cs) + 1;
+				fprintf(fd, ":02000004%04X%02X\n", segment, cs);
+			}
 		}
-		const size_t written = fwrite(data.c_str(), sizeof(uint8_t), rd_burst, fd);
-		if (written != static_cast<size_t>(rd_burst)) {
-			progress.fail();
-			printError("Failed to write dump file: " + std::string(strerror(errno)));
-			fclose(fd);
-			remove(filename.c_str());
-			return false;
-		}
-		progress.display(i);
+		fprintf(fd, ":00000001FF\n");
+	} else {
+		/* Raw binary format */
+		fwrite(buffer.c_str(), sizeof(uint8_t), buffer.size(), fd);
 	}
 
-	progress.done();
+	printSuccess("DONE");
 
 	if (fclose(fd) != 0) {
 		printError("Failed to close dump file: " + std::string(strerror(errno)));

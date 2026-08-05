@@ -172,8 +172,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra ${CMAKE_CXX_FLAGS_DEBUG}")
 if(ENABLE_OPTIM AND NOT(CMAKE_BUILD_TYPE STREQUAL "Debug"))
-	set(CMAKE_CXX_FLAGS "-O3 ${CMAKE_CXX_FLAGS}")
+	set(CMAKE_CXX_FLAGS "-O2 ${CMAKE_CXX_FLAGS}")
 endif()
+# Always override the built-in Release flags to -O2. GCC -O3 triggers
+# internal compiler errors on mingw-w64 cross-compilation with large
+# static initializers (gowin.cpp, xilinx.cpp, colognechip.cpp).
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 
 if (BUILD_STATIC)
 	set(CMAKE_EXE_LINKER_FLAGS "-static-libstdc++ -static ${CMAKE_EXE_LINKER_FLAGS}")

@@ -1774,8 +1774,8 @@ bool Xilinx::dumpFlash(uint32_t base_addr, uint32_t len)
 
 		printInfo("Read flash ", false);
 
-		if (_fpga_family == XCF_FAMILY && _dump_format == "mcs") {
-			/* Write Intel HEX (.mcs) format for XCF PROM dumps */
+		if (_dump_format == "mcs") {
+			/* Write Intel HEX format for flash dumps */
 			size_t offset = 0;
 			const uint8_t *data = reinterpret_cast<const uint8_t *>(buffer.c_str());
 
@@ -1839,17 +1839,17 @@ bool Xilinx::dumpFlash(uint32_t base_addr, uint32_t len)
 	}
 
 	if (_flash_chips & PRIMARY_FLASH) {
-		select_flash_chip(PRIMARY_FLASH);
-		FlashInterface::set_filename(_filename);
-		if (!FlashInterface::dump(base_addr, len))
-			return false;
-	}
-	if (_flash_chips & SECONDARY_FLASH) {
-		select_flash_chip(SECONDARY_FLASH);
-		FlashInterface::set_filename(_secondary_filename);
-		if (!FlashInterface::dump(base_addr, len))
-			return false;
-	}
+			select_flash_chip(PRIMARY_FLASH);
+			FlashInterface::set_filename(_filename);
+			if (!FlashInterface::dump(base_addr, len, _dump_format))
+				return false;
+		}
+		if (_flash_chips & SECONDARY_FLASH) {
+			select_flash_chip(SECONDARY_FLASH);
+			FlashInterface::set_filename(_secondary_filename);
+			if (!FlashInterface::dump(base_addr, len, _dump_format))
+				return false;
+		}
 
 	return true;
 }

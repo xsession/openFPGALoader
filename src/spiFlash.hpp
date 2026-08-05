@@ -110,7 +110,8 @@ class SPIFlash {
 		 * \return false if read fails or filename can't be open, true otherwise
 		 */
 		bool dump(const std::string &filename, const int &base_addr,
-				const int &len, int rd_burst = 0);
+				const int &len, int rd_burst = 0,
+				const std::string &dump_format = "bin");
 		uint32_t capacity() const;
 		/* combo flash + erase */
 		bool erase_and_prog(const std::vector<FlashDataSection> &sections, bool full_erase=false);

@@ -78,10 +78,10 @@ class FlashInterface {
 	 * \param[in] verbose: verbose level
 	 * \return false when something fails
 	 */
-	bool dump(uint32_t base_addr, uint32_t len);
+	bool dump(uint32_t base_addr, uint32_t len, const std::string &dump_format = "bin");
 
 	/*!
-	 * \brief send a command, followed by len byte.
+	 * \\brief send a command, followed by len byte.
 	 * \param[in] cmd: command/opcode to send
 	 * \param[in] tx: buffer to send
 	 * \param[in] rx: buffer for read access
