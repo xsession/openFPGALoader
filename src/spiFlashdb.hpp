@@ -363,51 +363,6 @@ static std::map <uint32_t, flash_t> flash_list = {
 		//.quad_mask = (1 << 3),
 		.global_lock = false,
 	}},
-	// {0x4000190c, {
-	// 	/* Micron MT25QL256ABA1EW9 - 256Mb Serial NOR Flash, 3.0V.
-	// 	 * Electronic Signature (0xAB): 40 00 19 0C
-	// 	 * Manufacturer: 0x4000 (Numonyx/Micron)
-	// 	 * Memory type:  0x19 (256Mb / 32MB Serial NOR)
-	// 	 * Revision:     0x0C
-	// 	 * https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-a/mt25q_qlhs_u_256_aba_0.pdf */
-	// 	.manufacturer = "Micron",
-	// 	.model = "MT25QL256ABA",
-	// 	.nr_sector = 512,
-	// 	.sector_erase = true,
-	// 	.subsector_erase = true,
-	// 	.has_extended = false,
-	// 	.tb_otp = false,
-	// 	.tb_offset = (1 << 5),
-	// 	.tb_register = STATR,
-	// 	.bp_len = 3,
-	// 	.bp_offset = {(1 << 2), (1 << 3), (1 << 4), 0},
-	// 	.quad_register = NONER,
-	// 	.quad_mask = 0,
-	// 	.global_lock = false,
-	// }},
-	{0x5ffb8c, {
-		/* Micron MT25QL256ABA — alias for SOJ v1 bridge through Xilinx Artix-7.
-		 * The SOJ v1 SPI-over-JTAG bridge transforms RDID (0x9F) into
-		 * Read-Flash-Parameters (0x5F), so the flash responds with its RFP
-		 * reply instead of JEDEC ID. Raw bytes: 5F FB 8C DF.
-		 * Real RDID (0x9F): BA 21 19 → 0xBA2119
-		 * Electronic Signature (0xAB): 40 00 19 0C → 0x4000190C
-		 * https://media-www.micron.com/-/media/client/global/documents/products/data-sheet/nor-flash/serial-nor/mt25q/die-rev-a/mt25q_qlhs_u_256_aba_0.pdf */
-		.manufacturer = "Micron",
-		.model = "MT25QL256ABA",
-		.nr_sector = 512,
-		.sector_erase = true,
-		.subsector_erase = true,
-		.has_extended = false,
-		.tb_otp = false,
-		.tb_offset = (1 << 5),
-		.tb_register = STATR,
-		.bp_len = 3,
-		.bp_offset = {(1 << 2), (1 << 3), (1 << 4), 0},
-		.quad_register = NONER,
-		.quad_mask = 0,
-		.global_lock = false,
-	}},
 	{0xba2119, {
 		/* Micron MT25QL256ABA1EW9 - 256Mb Serial NOR Flash, 3.0V.
 		 * RDID (0x9F): BA 21 19
