@@ -115,6 +115,7 @@ function(setup_libftdi_windows)
 
         set(LIBFTDI_CMAKE_ARGS
             -DCMAKE_SYSTEM_NAME=Windows
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
             -DCMAKE_INSTALL_PREFIX=${CROSS_DEPS_INSTALL_DIR}

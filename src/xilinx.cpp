@@ -1342,57 +1342,6 @@ float Xilinx::get_spiOverJtag_version()
 	}
 
 	float version = atof((const char *)rx);
-
-	/* If the shifted decode produced garbage, check whether the raw JTAG
-	 * response already contains a plain-ASCII version string (some SOJ v2
-	 * bridges on multi-device chains return "X.YY" without any bit
-	 * reversal). A valid pattern is: a digit, another digit, '.', a digit,
-	 * a digit, followed by a null byte.
-	 *
-	 * IMPORTANT: This fallback is restricted to SOJ v2-capable families
-	 * (UltraScale+ / ZynqMP). On 7-series and earlier, the raw jrx bytes
-	 * may contain ASCII "02.00" or similar — but that is the BSCAN_SPIM
-	 * SPI protocol version in USER4, NOT the bridge version. Treating it
-	 * as an SOJ v2 bridge would force v2 framing on v1-only hardware and
-	 * corrupt all SPI transfers (garbled JEDEC IDs, etc.). */
-	bool family_supports_soj_v2 = false;
-	switch (_fpga_family) {
-	case KINTEXUSP_FAMILY:
-	case ZYNQMP_FAMILY:
-	case ARTIXUSP_FAMILY:
-	case SPARTANUSP_FAMILY:
-	case VIRTEXUS_FAMILY:
-	case VIRTEXUSP_FAMILY:
-		family_supports_soj_v2 = true;
-		break;
-	default:
-		break;
-	}
-
-	if (version == 0.0f && family_supports_soj_v2) {
-		for (size_t off = 1; off + 5 < sizeof(jrx); off++) {
-			if (jrx[off] >= '0' && jrx[off] <= '9' &&
-			    jrx[off+1] >= '0' && jrx[off+1] <= '9' &&
-			    jrx[off+2] == '.' &&
-			    jrx[off+3] >= '0' && jrx[off+3] <= '9' &&
-			    jrx[off+4] >= '0' && jrx[off+4] <= '9' &&
-			    jrx[off+5] == '\0') {
-				char asciiVer[6] = {0};
-				memcpy(asciiVer, &jrx[off], 5);
-				if (_verbose > 0)
-					printf("SOJ version from raw ASCII: '%s'\n",
-					       asciiVer);
-				version = atof(asciiVer);
-				if (version >= 2.0f) {
-					if (_verbose > 0)
-						printf("Detected SOJ v2 from raw "
-						       "ASCII version string\n");
-				}
-				break;
-			}
-		}
-	}
-
 	if (version == 0.0f)  // not supported => 1.0
 		return 1.0f;
 	return version;
@@ -3223,69 +3172,38 @@ int Xilinx::spi_put(uint8_t cmd,
 		return spi_put_v2(cmd, tx, rx, len);
 
 	int xfer_len = len + 1 + ((rx == NULL) ? 0 : 1);
-		/* SOJ v1: even for command-only (rx=NULL, len=0) we must shift
-		 * out the flash's response byte, otherwise the SPI line state
-		 * is corrupted for the next transaction. Bump xfer_len so the
-		 * jrx buffer and shiftDR cover cmd + drain byte. */
-		const bool need_drain = !_soj_is_v2 && len == 0 && rx == NULL;
-		if (need_drain)
-			xfer_len = 2;  /* cmd + 1 drain byte */
-		auto spi_put_v1_on_user = [&](const std::string &user_instruction,
+	auto spi_put_v1_on_user = [&](const std::string &user_instruction,
 			uint8_t *out) {
-			uint8_t jtx[xfer_len];
-			jtx[0] = McsParser::reverseByte(cmd);
-			if (need_drain)
-				jtx[1] = 0;  /* dummy byte to drain flash response */
-			/* uint8_t jtx[xfer_len] = {McsParser::reverseByte(cmd)}; */
-			uint8_t jrx[xfer_len];
-			if (tx != NULL) {
-				for (uint32_t i=0; i < len; i++)
-					jtx[i+1] = McsParser::reverseByte(tx[i]);
-			} else {
-				// Initialize dummy bytes to 0xFF (standard SPI read pattern)
-				// Prevents stack garbage from corrupting SPI bridge response
-				for (uint32_t i=1; i < xfer_len; i++)
-					jtx[i] = 0xFF;
-			}
-			/* addr BSCAN user1 */
-			_jtag->shiftIR(get_ircode(_ircode_map, user_instruction), NULL,
-				_irlen);
-			/* send first already stored cmd,
-			 * in the same time store each byte
-			 * to next
-			 */
-			_jtag->shiftDR(jtx, jrx, 8*xfer_len);
-			_jtag->flush();
+		uint8_t jtx[xfer_len];
+		jtx[0] = McsParser::reverseByte(cmd);
+		/* uint8_t jtx[xfer_len] = {McsParser::reverseByte(cmd)}; */
+		uint8_t jrx[xfer_len];
+		if (tx != NULL) {
+			for (uint32_t i=0; i < len; i++)
+				jtx[i+1] = McsParser::reverseByte(tx[i]);
+		}
+		/* addr BSCAN user1 */
+		_jtag->shiftIR(get_ircode(_ircode_map, user_instruction), NULL,
+			_irlen);
+		/* send first already stored cmd,
+		 * in the same time store each byte
+		 * to next
+		 */
+		_jtag->shiftDR(jtx, (out == NULL)? NULL: jrx, 8*xfer_len);
+		_jtag->flush();
 
-
-			if (_verbose > 0 && out != NULL) {
-				printf("v1 RAW jtx[%s]:", user_instruction.c_str());
-				for (uint32_t i = 0; i < xfer_len; i++)
-					printf(" %02x", jtx[i]);
-				printf("\nv1 RAW jrx[%s]:", user_instruction.c_str());
-				for (uint32_t i = 0; i < xfer_len; i++)
-					printf(" %02x", jrx[i]);
-				printf("\n");
-			}
-
-			if (out != NULL) {
-				for (uint32_t i=0; i < len; i++)
-					out[i] = McsParser::reverseByte(jrx[i+1] >> 1) |
-						(jrx[i+2] & 0x01);
-			}
-		};
+		if (out != NULL) {
+			for (uint32_t i=0; i < len; i++)
+				out[i] = McsParser::reverseByte(jrx[i+1] >> 1) |
+					(jrx[i+2] & 0x01);
+		}
+	};
 
 	spi_put_v1_on_user(_user_instruction, rx);
 
-	if (_verbose > 0) {
-		printf("SPI RDID probe %s:", _user_instruction.c_str());
-		for (uint32_t i = 0; i < len; i++)
-			printf(" %02x", rx[i]);
-		printf("\n");
-	}
-
 	if (rx != NULL) {
 		/* Try USER instruction fallback and SOJ v2 framing for all families
+		 * when RDID response is not a valid JEDEC reply. Custom bridge
 		 * bitstreams may use a different USER instruction than the default. */
 		if (!_soj_is_v2 && cmd == 0x9F && len >= 3) {
 			const bool v1_valid = looks_like_valid_jedec_reply(rx, len);
@@ -3293,12 +3211,8 @@ int Xilinx::spi_put(uint8_t cmd,
 				const std::string saved_user_instruction =
 					_user_instruction;
 				const char *user_candidates[] = {
-					"USER1", "USER2", "USER3"
+					"USER1", "USER2", "USER3", "USER4"
 				};
-				/* NOTE: USER4 is the SPI-over-JTAG version register,
-				 * not an SPI access instruction. Including it in the
-				 * probe list causes stale version data to be
-				 * accepted as a valid JEDEC ID. */
 				for (const char *candidate : user_candidates) {
 					if (saved_user_instruction == candidate)
 						continue;
@@ -3324,44 +3238,26 @@ int Xilinx::spi_put(uint8_t cmd,
 				_user_instruction = saved_user_instruction;
 			}
 
-			/* Some Spartan-6/UltraScale+ bridges answer correctly only to the v2
-					 * packet format even when version probing did not decode to "2.0".
-					 * Only probe v2 framing for families that actually support it —
-					 * on 7-series, v2 packets produce garbage that passes JEDEC
-					 * validation (e.g. 90 5D 0C 88) while the real JEDEC ID is lost. */
-					bool try_v2_fallback = false;
-					switch (_fpga_family) {
-					case KINTEXUS_FAMILY:
-					case ZYNQUS_FAMILY:
-					case KINTEXUSP_FAMILY:
-					case ZYNQMP_FAMILY:
-					case ARTIXUSP_FAMILY:
-					case SPARTANUSP_FAMILY:
-					case VIRTEXUS_FAMILY:
-					case VIRTEXUSP_FAMILY:
-						try_v2_fallback = true;
-						break;
-					default:
-						break;
-					}
+			/* Some Spartan-6 bridges answer correctly only to the v2 packet
+			 * format even when USER4 version probing did not decode to "2.0".
+			 * Probe both framings for RDID and promote the session when v2 is
+			 * the sane one. */
+			std::vector<uint8_t> rx_v2(len, 0x00);
+			_jtag->go_test_logic_reset();
+			spi_put_v2(cmd, tx, rx_v2.data(), len);
+			const bool v2_valid = looks_like_valid_jedec_reply(rx_v2.data(), len);
 
-					if (try_v2_fallback) {
-						std::vector<uint8_t> rx_v2(len, 0x00);
-						_jtag->go_test_logic_reset();
-						spi_put_v2(cmd, tx, rx_v2.data(), len);
-						const bool v2_valid = looks_like_valid_jedec_reply(rx_v2.data(), len);
+			if (_verbose > 0) {
+				printf("SPI RDID probe v1:");
+				for (uint32_t i = 0; i < len; i++)
+					printf(" %02x", rx[i]);
+				printf("\nSPI RDID probe v2:");
+				for (uint32_t i = 0; i < len; i++)
+					printf(" %02x", rx_v2[i]);
+				printf("\n");
+			}
 
-						if (_verbose > 0) {
-							printf("SPI RDID probe v1:");
-							for (uint32_t i = 0; i < len; i++)
-								printf(" %02x", rx[i]);
-							printf("\nSPI RDID probe v2:");
-							for (uint32_t i = 0; i < len; i++)
-								printf(" %02x", rx_v2[i]);
-							printf("\n");
-						}
-
-						if (!v1_valid && v2_valid) {
+			if (!v1_valid && v2_valid) {
 				memcpy(rx, rx_v2.data(), len);
 				_soj_is_v2 = true;
 				if (_verbose > 0)
@@ -3377,7 +3273,7 @@ int Xilinx::spi_put(uint8_t cmd,
 					const std::string saved_user_instruction =
 						_user_instruction;
 					const char *user_candidates[] = {
-						"USER1", "USER2", "USER3"
+						"USER1", "USER2", "USER3", "USER4"
 					};
 
 					_jtag->go_test_logic_reset();
@@ -3451,10 +3347,6 @@ int Xilinx::spi_put(const uint8_t *tx, uint8_t *rx, uint32_t len)
 	if (tx != NULL) {
 		for (uint32_t i=0; i < len; i++)
 			jtx[i] = McsParser::reverseByte(tx[i]);
-	} else {
-		// Initialize dummy bytes to 0xFF (standard SPI read pattern)
-		for (uint32_t i=0; i < xfer_len; i++)
-			jtx[i] = 0xFF;
 	}
 	/* addr BSCAN user1 */
 	_jtag->shiftIR(get_ircode(_ircode_map, _user_instruction), NULL, _irlen);
@@ -3473,36 +3365,8 @@ int Xilinx::spi_put(const uint8_t *tx, uint8_t *rx, uint32_t len)
 }
 
 int Xilinx::spi_wait(uint8_t cmd, uint8_t mask, uint8_t cond,
-		uint32_t timeout, bool verbose)
+			uint32_t timeout, bool verbose)
 {
-	/* For SOJ v1 with custom bridges, the raw DR shift loop doesn't
-	 * route through the SPI bridge correctly — it echoes the reversed
-	 * command byte instead of the flash response. Use spi_put() for
-	 * polling which handles the bridge framing properly. */
-	if (!_soj_is_v2) {
-		uint8_t rx[1];
-		uint32_t count = 0;
-
-		do {
-			spi_put(cmd, NULL, rx, 1);
-			count++;
-			if (count == timeout) {
-				printf("timeout: %x %x %x\n", rx[0], rx[0], rx[0]);
-				break;
-			}
-			if (verbose) {
-				printf("%x %x %x %u %02x\n", rx[0], mask, cond, count, rx[0]);
-			}
-		} while ((rx[0] & mask) != cond);
-
-		if (count == timeout) {
-			printf("%x\n", rx[0]);
-			std::cout << "wait: Error" << std::endl;
-			return -ETIME;
-		}
-		return 0;
-	}
-
 	uint8_t rx[2];
 	uint8_t tx[2];
 	uint8_t tmp;

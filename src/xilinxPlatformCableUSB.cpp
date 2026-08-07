@@ -531,7 +531,9 @@ XilinxPlatformCableUSB::XilinxPlatformCableUSB(const uint16_t vid,
 	waitForXpcuControlReady(fx2.get());
 
 	const uint16_t fx2_firmware_version = displayCableVersion();
-	if (fx2_firmware_version != 0x0404 && !xpcuExplicitControlBitbang())
+	if (!xpcuForceControlBitbang() &&
+			fx2_firmware_version != 0x0404 &&
+			!xpcuExplicitControlBitbang())
 		_use_control_bitbang = false;
 
 	/* Write GPIO bit */
