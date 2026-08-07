@@ -357,6 +357,9 @@ endif()
 list(APPEND OPENFPGALOADER_SOURCE
 	src/protocols/bpiFlash.cpp
 	src/protocols/spiFlash.cpp
+	src/protocols/spiFlash_erase.cpp
+	src/protocols/spiFlash_dump.cpp
+	src/protocols/spiFlash_prog.cpp
 	src/protocols/flashInterface.cpp
 	src/protocols/jtag.cpp
 )
@@ -499,10 +502,14 @@ endif(ENABLE_GOWIN_SUPPORT)
 # Xilinx Drivers / Files parsers.
 if (ENABLE_XILINX_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/vendors/bitparser.cpp
-		src/vendors/xilinx.cpp
-		src/vendors/xilinxMapParser.cpp
-	)
+			src/vendors/bitparser.cpp
+			src/vendors/xilinx.cpp
+			src/vendors/xilinxMapParser.cpp
+			src/vendors/xilinx_xc3s.cpp
+			src/vendors/xilinx_xcfp.cpp
+			src/vendors/xilinx_xcf.cpp
+			src/vendors/xilinx_xc2c.cpp
+		)
 
 	list(APPEND OPENFPGALOADER_HEADERS
 		src/vendors/bitparser.hpp
@@ -518,10 +525,14 @@ endif(ENABLE_XILINX_SUPPORT)
 # Lattice Drivers / Files parsers.
 if (ENABLE_LATTICE_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/vendors/lattice.cpp
-		src/vendors/feaparser.cpp
-		src/vendors/latticeBitParser.cpp
-	)
+			src/vendors/lattice.cpp
+			src/vendors/feaparser.cpp
+			src/vendors/latticeBitParser.cpp
+			src/vendors/lattice_flash.cpp
+			src/vendors/lattice_intflash.cpp
+			src/vendors/lattice_register.cpp
+			src/vendors/lattice_machxo3d.cpp
+		)
 
 	list(APPEND OPENFPGALOADER_HEADERS
 		src/vendors/lattice.hpp

@@ -11,6 +11,44 @@
 
 #include "protocols/flashInterface.hpp"
 #include "protocols/spiFlashdb.hpp"
+#define FLASH_WRSR     0x01
+#define FLASH_RDSR     0x05
+#	define FLASH_RDSR_WIP	(0x01)
+#	define FLASH_RDSR_WEL	(0x02)
+#define FLASH_PP       0x02
+#define FLASH_4PP      0x12
+#define FLASH_READ     0x03
+#define FLASH_4READ    0x13
+#define FLASH_WRDIS    0x04
+#define FLASH_WREN     0x06
+#define FLASH_SE       0x20
+#define FLASH_4SE      0x21
+#define FLASH_RDCR     0x35
+#define FLASH_WRFR     0x42
+#define FLASH_RDFR     0x48
+#define FLASH_ROTP     0x4B
+#define FLASH_BE32     0x52
+#define FLASH_4BE32    0x5C
+#define FLASH_POWER_UP 0xAB
+#define FLASH_POWER_DOWN 0xB9
+#define FLASH_RDNVCR   0xB5
+#define FLASH_WRNVCR   0xB1
+#define FLASH_RDVCR    0x85
+#define FLASH_WRVCR    0x81
+#define FLASH_CE       0xC7
+#define FLASH_BE64     0xD8
+#define FLASH_4BE64    0xDC
+#define FLASH_WRLR     0xE5
+#define FLASH_RDLR     0xE8
+#define FLASH_CLFSR    0x50
+#define FLASH_RFSR     0x70
+#define FLASH_WRVECR   0x61
+#define FLASH_RDVECR   0x65
+#define FLASH_RSTEN   0x66
+#define FLASH_RST      0x99
+#define FLASH_RBPR 0x72
+#define FLASH_ULBPR 0x98
+
 
 /* Flash memory section record
  * one instance per section when the bitstream contains gap
