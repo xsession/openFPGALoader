@@ -1,0 +1,19 @@
+Package: openfpgaloader
+Version: 1.1.2
+Section: electronics
+Priority: optional
+Architecture: amd64
+Depends: libusb-1.0-0, libhidapi-libusb0, libftdi1-2, zlib1g
+Recommends: udev
+Maintainer: openFPGALoader <https://github.com/xsession/openFPGALoader>
+Description: FPGA programmer supporting multiple vendors
+ openFPGALoader is a command-line tool for programming FPGAs from various
+ manufacturers including Xilinx, Lattice, Microchip, Gowin, and Efinix.
+ .
+ Supported interfaces:
+  - FT2232/FT4232 (FTDI)
+  - Digilent HS2/HS3
+  - Xilinx Platform Cable USB
+  - USB Blaster
+  - J-Link
+  - CMSIS-DAP

@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    purge)
+        # Remove udev rules symlinks
+        rm -f /etc/udev/rules.d/70-openfpgaloader.rules
+        rm -f /etc/udev/rules.d/99-openfpgaloader.rules
+
+        # Reload udev rules if service is running
+        if command -v udevadm &> /dev/null; then
+            udevadm control --reload-rules 2>/dev/null || true
+        fi
+        ;;
+esac
+
+exit 0
