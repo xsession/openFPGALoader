@@ -373,6 +373,15 @@ list(APPEND OPENFPGALOADER_HEADERS
 	src/protocols/flashInterface.hpp
 )
 
+# SPI Debug diagnostic tool (optional)
+option(ENABLE_SPI_DEBUG "Build SPI debug diagnostic tool" OFF)
+if(ENABLE_SPI_DEBUG)
+    list(APPEND OPENFPGALOADER_SOURCE src/tools/spi_debug.cpp)
+    list(APPEND OPENFPGALOADER_HEADERS src/tools/spi_debug.hpp)
+    add_definitions(-DENABLE_SPI_DEBUG=1)
+    message("SPI debug diagnostic tool enabled")
+endif()
+
 # FTDI Based cables
 if (${USE_LIBFTDI})
 	add_definitions(-DUSE_LIBFTDI)

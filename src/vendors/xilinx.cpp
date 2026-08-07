@@ -1271,15 +1271,6 @@ float Xilinx::get_spiOverJtag_version()
 	 * valid JEDEC ID). */
 	_jtag->go_test_logic_reset();
 
-	/*
-	 * If the v1 version probe returned all zeros, the bridge might be SOJ v2
-	 * (v1 format query -> v2 packet response). Check for genuine v2 evidence.
-	 *
-	 * WARNING: Impact-generated bridge bitstreams for Artix-7/Kintex-7 use
-	 * SOJ v1 (USER4 scan chain). Only assume v2 when the response contains
-	 * multiple non-zero data bytes — a single echoed command byte is NOT
-	 * evidence of v2 bridge operation.
-	 */
 	if (looks_like_invalid_bridge_reply(rx, 5)) {
 		/* Check if raw response looks like a v2 packet header */
 		uint8_t rev0 = McsParser::reverseByte(jrx[0]);
@@ -2281,8 +2272,12 @@ int Xilinx::spi_put_v2(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
 				printf("%02x ", McsParser::reverseByte(jrx[i]));
 			printf("\n");
 		}
-		idx = (mode == 0 ? 3 : 2);
-		for (uint32_t i = 0; i < len; i++) {
+		/* SOJ v2 RX header: 2 status bytes + 1 bridge status byte.
+				 * Data extraction starts at byte 3 for all packet sizes.
+				 * Mode 0 (long packets) and mode 1 (short packets) both have
+				 * the same 3-byte RX header on Artix-7 / HS3 bridges. */
+				idx = 3;
+				for (uint32_t i = 0; i < len; i++) {
 			rx[i] = McsParser::reverseByte(jrx[i + idx]);
 		}
 
