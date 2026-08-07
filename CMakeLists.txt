@@ -313,41 +313,41 @@ endif()
 # Core Classes
 # ===========================
 set(OPENFPGALOADER_SOURCE
-	src/common.cpp
-	src/configBitstreamParser.cpp
-	src/device.cpp
-	src/display.cpp
+	src/utils/common.cpp
+	src/parsers/configBitstreamParser.cpp
+	src/utils/device.cpp
+	src/utils/display.cpp
 	src/main.cpp
-	src/progressBar.cpp
+	src/utils/progressBar.cpp
 )
 
 set(OPENFPGALOADER_HEADERS
-	src/board.hpp
-	src/cable.hpp
-	src/common.hpp
-	src/configBitstreamParser.hpp
+	src/utils/board.hpp
+	src/utils/cable.hpp
+	src/utils/common.hpp
+	src/parsers/configBitstreamParser.hpp
 	src/cxxopts.hpp
-	src/device.hpp
-	src/display.hpp
-	src/part.hpp
-	src/progressBar.hpp
+	src/utils/device.hpp
+	src/utils/display.hpp
+	src/utils/part.hpp
+	src/utils/progressBar.hpp
 )
 
 # ===========================
 # Parsers classes
 # ===========================
-list(APPEND OPENFPGALOADER_SOURCE  src/rawParser.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/rawParser.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/parsers/rawParser.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/parsers/rawParser.hpp)
 
 if (${ENABLE_LATTICE_SUPPORT} OR ${ENABLE_XILINX_SUPPORT})
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/jedParser.cpp
-		src/mcsParser.cpp
+		src/parsers/jedParser.cpp
+		src/parsers/mcsParser.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/jedParser.hpp
-		src/mcsParser.hpp
+		src/parsers/jedParser.hpp
+		src/parsers/mcsParser.hpp
 	)
 endif()
 
@@ -355,19 +355,19 @@ endif()
 # To be sorted
 # ===========================
 list(APPEND OPENFPGALOADER_SOURCE
-	src/bpiFlash.cpp
-	src/spiFlash.cpp
-	src/flashInterface.cpp
-	src/jtag.cpp
+	src/protocols/bpiFlash.cpp
+	src/protocols/spiFlash.cpp
+	src/protocols/flashInterface.cpp
+	src/protocols/jtag.cpp
 )
 
 list(APPEND OPENFPGALOADER_HEADERS
-	src/bpiFlash.hpp
-	src/jtag.hpp
-	src/jtagInterface.hpp
-	src/spiFlash.hpp
-	src/spiFlashdb.hpp
-	src/flashInterface.hpp
+	src/protocols/bpiFlash.hpp
+	src/protocols/jtag.hpp
+	src/protocols/jtagInterface.hpp
+	src/protocols/spiFlash.hpp
+	src/protocols/spiFlashdb.hpp
+	src/protocols/flashInterface.hpp
 )
 
 # FTDI Based cables
@@ -375,31 +375,31 @@ if (${USE_LIBFTDI})
 	add_definitions(-DUSE_LIBFTDI)
 
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/ch552_jtag.cpp
-		src/ftdiJtagBitbang.cpp
-		src/ftdiJtagMPSSE.cpp
-		src/ftdipp_mpsse.cpp
-		src/ftdispi.cpp
+		src/cables/ch552_jtag.cpp
+		src/cables/ftdiJtagBitbang.cpp
+		src/cables/ftdiJtagMPSSE.cpp
+		src/cables/ftdipp_mpsse.cpp
+		src/cables/ftdispi.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/ch552_jtag.hpp
-		src/ftdiJtagBitbang.hpp
-		src/ftdiJtagMPSSE.hpp
-		src/ftdipp_mpsse.hpp
-		src/ftdispi.hpp
+		src/cables/ch552_jtag.hpp
+		src/cables/ftdiJtagBitbang.hpp
+		src/cables/ftdiJtagMPSSE.hpp
+		src/cables/ftdipp_mpsse.hpp
+		src/cables/ftdispi.hpp
 	)
 
 	# CologneChip Drivers / Files parsers.
 	if (ENABLE_COLOGNECHIP_SUPPORT)
 		list(APPEND OPENFPGALOADER_SOURCE
-			src/colognechip.cpp
-			src/colognechipCfgParser.cpp
+			src/vendors/colognechip.cpp
+			src/vendors/colognechipCfgParser.cpp
 		)
 
 		list(APPEND OPENFPGALOADER_HEADERS
-			src/colognechip.hpp
-			src/colognechipCfgParser.hpp
+			src/vendors/colognechip.hpp
+			src/vendors/colognechipCfgParser.hpp
 		)
 		add_definitions(-DENABLE_COLOGNECHIP_SUPPORT=1)
 		message("CologneChip support enabled")
@@ -410,13 +410,13 @@ if (${USE_LIBFTDI})
 	# Efinix Drivers / Files parsers.
 	if (ENABLE_EFINIX_SUPPORT)
 		list(APPEND OPENFPGALOADER_SOURCE
-			src/efinix.cpp
-			src/efinixHexParser.cpp
+			src/vendors/efinix.cpp
+			src/vendors/efinixHexParser.cpp
 		)
 
 		list(APPEND OPENFPGALOADER_HEADERS
-			src/efinix.hpp
-			src/efinixHexParser.hpp
+			src/vendors/efinix.hpp
+			src/vendors/efinixHexParser.hpp
 		)
 		add_definitions(-DENABLE_EFINIX_SUPPORT=1)
 		message("Efinix support enabled")
@@ -426,8 +426,8 @@ if (${USE_LIBFTDI})
 
 	# ICE40 Driver.
 	if (ENABLE_ICE40_SUPPORT)
-		list(APPEND OPENFPGALOADER_SOURCE  src/ice40.cpp)
-		list(APPEND OPENFPGALOADER_HEADERS src/ice40.hpp)
+		list(APPEND OPENFPGALOADER_SOURCE  src/vendors/ice40.cpp)
+		list(APPEND OPENFPGALOADER_HEADERS src/vendors/ice40.hpp)
 		add_definitions(-DENABLE_ICE40_SUPPORT=1)
 		message("ICE40 support enabled")
 	else()
@@ -436,8 +436,8 @@ if (${USE_LIBFTDI})
 
 	# Lattice SSPI Driver.
 	if (ENABLE_LATTICESSPI_SUPPORT)
-		list(APPEND OPENFPGALOADER_SOURCE  src/latticeSSPI.cpp)
-		list(APPEND OPENFPGALOADER_HEADERS src/latticeSSPI.hpp)
+		list(APPEND OPENFPGALOADER_SOURCE  src/vendors/latticeSSPI.cpp)
+		list(APPEND OPENFPGALOADER_HEADERS src/vendors/latticeSSPI.hpp)
 		add_definitions(-DENABLE_LATTICESSPI_SUPPORT=1)
 		message("Lattice SSPI support enabled")
 	else()
@@ -448,13 +448,13 @@ endif()
 # Altera Drivers / Files parsers.
 if (ENABLE_ALTERA_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/altera.cpp
-		src/pofParser.cpp
+		src/vendors/altera.cpp
+		src/parsers/pofParser.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/altera.hpp
-		src/pofParser.hpp
+		src/vendors/altera.hpp
+		src/parsers/pofParser.hpp
 	)
 	add_definitions(-DENABLE_ALTERA_SUPPORT=1)
 	message("Altera support enabled")
@@ -465,13 +465,13 @@ endif(ENABLE_ALTERA_SUPPORT)
 # Anlogic Drivers / Files parsers.
 if (ENABLE_ANLOGIC_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/anlogic.cpp
-		src/anlogicBitParser.cpp
+		src/vendors/anlogic.cpp
+		src/vendors/anlogicBitParser.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/anlogic.hpp
-		src/anlogicBitParser.hpp
+		src/vendors/anlogic.hpp
+		src/vendors/anlogicBitParser.hpp
 	)
 	add_definitions(-DENABLE_ANLOGIC_SUPPORT=1)
 	message("Anlogic support enabled")
@@ -482,13 +482,13 @@ endif(ENABLE_ANLOGIC_SUPPORT)
 # Gowin Drivers / Files parsers.
 if (ENABLE_GOWIN_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/gowin.cpp
-		src/fsparser.cpp
+		src/vendors/gowin.cpp
+		src/vendors/fsparser.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/gowin.hpp
-		src/fsparser.hpp
+		src/vendors/gowin.hpp
+		src/vendors/fsparser.hpp
 	)
 	add_definitions(-DENABLE_GOWIN_SUPPORT=1)
 	message("Gowin support enabled")
@@ -499,15 +499,15 @@ endif(ENABLE_GOWIN_SUPPORT)
 # Xilinx Drivers / Files parsers.
 if (ENABLE_XILINX_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/bitparser.cpp
-		src/xilinx.cpp
-		src/xilinxMapParser.cpp
+		src/vendors/bitparser.cpp
+		src/vendors/xilinx.cpp
+		src/vendors/xilinxMapParser.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/bitparser.hpp
-		src/xilinx.hpp
-		src/xilinxMapParser.hpp
+		src/vendors/bitparser.hpp
+		src/vendors/xilinx.hpp
+		src/vendors/xilinxMapParser.hpp
 	)
 	add_definitions(-DENABLE_XILINX_SUPPORT=1)
 	message("Xilinx support enabled")
@@ -518,15 +518,15 @@ endif(ENABLE_XILINX_SUPPORT)
 # Lattice Drivers / Files parsers.
 if (ENABLE_LATTICE_SUPPORT)
 	list(APPEND OPENFPGALOADER_SOURCE
-		src/lattice.cpp
-		src/feaparser.cpp
-		src/latticeBitParser.cpp
+		src/vendors/lattice.cpp
+		src/vendors/feaparser.cpp
+		src/vendors/latticeBitParser.cpp
 	)
 
 	list(APPEND OPENFPGALOADER_HEADERS
-		src/lattice.hpp
-		src/feaparser.hpp
-		src/latticeBitParser.hpp
+		src/vendors/lattice.hpp
+		src/vendors/feaparser.hpp
+		src/vendors/latticeBitParser.hpp
 	)
 	add_definitions(-DENABLE_LATTICE_SUPPORT=1)
 	message("Lattice support enabled")
@@ -539,91 +539,91 @@ endif(ENABLE_LATTICE_SUPPORT)
 # DFU
 if (ENABLE_DFU)
 list(APPEND OPENFPGALOADER_SOURCE
-	src/dfu.cpp
-	src/dfuFileParser.cpp
+	src/cables/dfu.cpp
+	src/cables/dfuFileParser.cpp
 )
 
 list(APPEND OPENFPGALOADER_HEADERS
-	src/dfu.hpp
-	src/dfuFileParser.hpp
+	src/cables/dfu.hpp
+	src/cables/dfuFileParser.hpp
 )
 endif(ENABLE_DFU)
 
 # Anlogic Cable
 if (ENABLE_ANLOGIC_CABLE)
-list(APPEND OPENFPGALOADER_SOURCE  src/anlogicCable.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/anlogicCable.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/anlogicCable.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/anlogicCable.hpp)
 endif()
 
 # CH347
 if (ENABLE_CH347)
-list(APPEND OPENFPGALOADER_SOURCE  src/ch347jtag.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/ch347jtag.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/ch347jtag.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/ch347jtag.hpp)
 endif()
 
 # dirtyJtag
 if (ENABLE_DIRTYJTAG)
-list(APPEND OPENFPGALOADER_SOURCE  src/dirtyJtag.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/dirtyJtag.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/dirtyJtag.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/dirtyJtag.hpp)
 endif()
 
 # ESP32S3
 if (ENABLE_ESP_USB)
-list(APPEND OPENFPGALOADER_SOURCE  src/esp_usb_jtag.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/esp_usb_jtag.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/esp_usb_jtag.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/esp_usb_jtag.hpp)
 endif()
 
 # Gowin GWU2X JTAG interface
 if(ENABLE_GOWIN_GWU2X)
-list(APPEND OPENFPGALOADER_SOURCE  src/gwu2x_jtag.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/gwu2x_jtag.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/gwu2x_jtag.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/gwu2x_jtag.hpp)
 endif()
 
 # Jetson Nano (libGPIO based)
 if (ENABLE_JETSONNANOGPIO)
-list(APPEND OPENFPGALOADER_SOURCE  src/jetsonNanoJtagBitbang.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/jetsonNanoJtagBitbang.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/jetsonNanoJtagBitbang.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/jetsonNanoJtagBitbang.hpp)
 endif()
 
 # JLINK
 if (ENABLE_JLINK)
-list(APPEND OPENFPGALOADER_SOURCE  src/jlink.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/jlink.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/jlink.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/jlink.hpp)
 endif()
 
 # libGPIOD support
 if (ENABLE_LIBGPIOD)
-list(APPEND OPENFPGALOADER_SOURCE  src/libgpiodJtagBitbang.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/libgpiodJtagBitbang.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/libgpiodJtagBitbang.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/libgpiodJtagBitbang.hpp)
 endif()
 
 # RemoteBitbang
 if (ENABLE_REMOTEBITBANG)
-list (APPEND OPENFPGALOADER_SOURCE  src/remoteBitbang_client.cpp)
-list (APPEND OPENFPGALOADER_HEADERS src/remoteBitbang_client.hpp)
+list (APPEND OPENFPGALOADER_SOURCE  src/cables/remoteBitbang_client.cpp)
+list (APPEND OPENFPGALOADER_HEADERS src/cables/remoteBitbang_client.hpp)
 endif()
 
 # SVF JTAG file type support
 if (ENABLE_SVF_JTAG)
-list (APPEND OPENFPGALOADER_SOURCE  src/svf_jtag.cpp)
-list (APPEND OPENFPGALOADER_HEADERS src/svf_jtag.hpp)
+list (APPEND OPENFPGALOADER_SOURCE  src/cables/svf_jtag.cpp)
+list (APPEND OPENFPGALOADER_HEADERS src/cables/svf_jtag.hpp)
 add_definitions(-DENABLE_SVF_JTAG)
 endif()
 
 # Xilinx Platform Cable USB
 if (ENABLE_XILINX_PLATFORM_CABLE_USB)
-	list(APPEND OPENFPGALOADER_SOURCE  src/xilinxPlatformCableUSB.cpp)
-	list(APPEND OPENFPGALOADER_HEADERS src/xilinxPlatformCableUSB.hpp)
+	list(APPEND OPENFPGALOADER_SOURCE  src/cables/xilinxPlatformCableUSB.cpp)
+	list(APPEND OPENFPGALOADER_HEADERS src/cables/xilinxPlatformCableUSB.hpp)
 endif()
 
 # Xilinx Virtual Cable
 if (ENABLE_XILINX_VIRTUAL_CABLE_CLIENT)
-list (APPEND OPENFPGALOADER_SOURCE  src/xvc_client.cpp)
-list (APPEND OPENFPGALOADER_HEADERS src/xvc_client.hpp)
+list (APPEND OPENFPGALOADER_SOURCE  src/cables/xvc_client.cpp)
+list (APPEND OPENFPGALOADER_HEADERS src/cables/xvc_client.hpp)
 endif()
 if (ENABLE_XILINX_VIRTUAL_CABLE_SERVER)
-list (APPEND OPENFPGALOADER_SOURCE  src/xvc_server.cpp)
-list (APPEND OPENFPGALOADER_HEADERS src/xvc_server.hpp)
+list (APPEND OPENFPGALOADER_SOURCE  src/cables/xvc_server.cpp)
+list (APPEND OPENFPGALOADER_HEADERS src/cables/xvc_server.hpp)
 endif()
 
 # Altera USB Blaster (I & II).
@@ -639,8 +639,8 @@ if (ENABLE_USB_BLASTERI OR ENABLE_USB_BLASTERII)
 		add_definitions(-DENABLE_USB_BLASTERII)
 	endif (ENABLE_USB_BLASTERII)
 
-	list(APPEND OPENFPGALOADER_SOURCE  src/usbBlaster.cpp)
-	list(APPEND OPENFPGALOADER_HEADERS src/usbBlaster.hpp)
+	list(APPEND OPENFPGALOADER_SOURCE  src/cables/usbBlaster.cpp)
+	list(APPEND OPENFPGALOADER_HEADERS src/cables/usbBlaster.hpp)
 endif(ENABLE_USB_BLASTERI OR ENABLE_USB_BLASTERII)
 
 link_directories(
@@ -657,19 +657,21 @@ if (ENABLE_CMSISDAP_V1 AND HIDAPI_FOUND)
 endif()
 
 if (USE_LIBUSB_LL)
-list(APPEND OPENFPGALOADER_SOURCE  src/libusb_ll.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/libusb_ll.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/libusb_ll.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/libusb_ll.hpp)
 endif()
 
 if (USE_FX2_LL)
-list(APPEND OPENFPGALOADER_SOURCE  src/fx2_ll.cpp src/ihexParser.cpp)
-list(APPEND OPENFPGALOADER_HEADERS src/fx2_ll.hpp src/ihexParser.hpp)
+list(APPEND OPENFPGALOADER_SOURCE  src/cables/fx2_ll.cpp src/parsers/ihexParser.cpp)
+list(APPEND OPENFPGALOADER_HEADERS src/cables/fx2_ll.hpp src/parsers/ihexParser.hpp)
 endif()
 
 add_executable(openFPGALoader
 	${OPENFPGALOADER_SOURCE}
 	${OPENFPGALOADER_HEADERS}
 )
+
+target_include_directories(openFPGALoader PRIVATE src)
 
 include_directories(
 	${LIBUSB_INCLUDE_DIRS}
@@ -691,13 +693,13 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		target_link_libraries(openFPGALoader stdc++fs)
 	endif()
 
-	target_sources(openFPGALoader PRIVATE src/pathHelper.cpp)
-	list(APPEND OPENFPGALOADER_HEADERS src/pathHelper.hpp)
+	target_sources(openFPGALoader PRIVATE src/utils/pathHelper.cpp)
+	list(APPEND OPENFPGALOADER_HEADERS src/utils/pathHelper.hpp)
 endif()
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_sources(openFPGALoader PRIVATE src/pathHelper.cpp)
-	list(APPEND OPENFPGALOADER_HEADERS src/pathHelper.hpp)
+	target_sources(openFPGALoader PRIVATE src/utils/pathHelper.cpp)
+	list(APPEND OPENFPGALOADER_HEADERS src/utils/pathHelper.hpp)
 endif()
 
 # libusb_attach_kernel_driver is only available on Linux.
@@ -755,8 +757,8 @@ endif (ENABLE_CMSISDAP_V2)
 
 if (ENABLE_CMSISDAP OR ENABLE_CMSISDAP_V1 OR ENABLE_CMSISDAP_V2)
 	add_definitions(-DENABLE_CMSISDAP=1)
-	target_sources(openFPGALoader PRIVATE src/cmsisDAP.cpp)
-	list (APPEND OPENFPGALOADER_HEADERS src/cmsisDAP.hpp)
+	target_sources(openFPGALoader PRIVATE src/cables/cmsisDAP.cpp)
+	list (APPEND OPENFPGALOADER_HEADERS src/cables/cmsisDAP.hpp)
 endif()
 
 # DFU

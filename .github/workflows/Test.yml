@@ -73,41 +73,38 @@ jobs:
           tree \
           zlib1g-dev
 
-    - name: '🚧 Build tarball'
+    - name: '🚧 Build'
       run: |
-        mkdir build
-        cd build
-        cmake ..
-        cmake --build .
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        cmake --build build --parallel
 
-        make DESTDIR=$(pwd)/dist install
-        _rulesdir='dist/etc/udev/rules.d/'
-        mkdir -p "${_rulesdir}"
-        cp ../99-openfpgaloader.rules "${_rulesdir}"
-        _licenses="dist/usr/local/share/licenses/openFPGALoader"
-        mkdir -p "${_licenses}"
-        install -m 644 ../LICENSE "${_licenses}"
-
-        tar -cvzf ../ubtuntu${{ matrix.os }}.04-openFPGALoader.tgz -C dist .
+    - name: '📦 Create package'
+      run: |
+        cmake --install build --prefix "$PWD/pkg/usr/local"
+        mkdir -p "$PWD/pkg/etc/udev/rules.d"
+        cp 99-openfpgaloader.rules "$PWD/pkg/etc/udev/rules.d/"
+        cp 70-openfpgaloader.rules "$PWD/pkg/etc/udev/rules.d/"
+        mkdir -p "$PWD/pkg/usr/local/share/licenses/openFPGALoader"
+        install -m 644 LICENSE "$PWD/pkg/usr/local/share/licenses/openFPGALoader/LICENSE"
+        tar -C pkg -czf "ubuntu${{ matrix.os }}.04-openFPGALoader.tgz" .
 
     - name: '📤 Upload artifact: tarball'
       uses: actions/upload-artifact@v4
       with:
-        name: ubtuntu${{ matrix.os }}.04-openFPGALoader
-        path: ubtuntu${{ matrix.os }}.04-openFPGALoader.tgz
+        name: ubuntu${{ matrix.os }}.04-openFPGALoader
+        path: ubuntu${{ matrix.os }}.04-openFPGALoader.tgz
 
     - name: '🔍 Show package content'
       run: |
-        mkdir tmp
-        cd tmp
-        tar -xf ../ubtuntu${{ matrix.os }}.04-openFPGALoader.tgz
+        mkdir tmp && cd tmp
+        tar -xf ../ubuntu${{ matrix.os }}.04-openFPGALoader.tgz
         tree .
 
 
   mac-build:
     strategy:
       fail-fast: false
-    name: '🚧🐧 macOS latest | build'
+    name: '🚧🍎 macOS latest | build'
     runs-on: macos-latest
     steps:
 
@@ -116,16 +113,26 @@ jobs:
 
     - name: '⚙️ Install dependencies'
       run: |
-        #brew update
         brew install --only-dependencies openFPGALoader
         brew install hidapi
 
-    - name: '🚧 Build tarball'
+    - name: '🚧 Build'
       run: |
-        mkdir build
-        cd build
-        cmake ..
-        cmake --build .
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        cmake --build build --parallel
+
+    - name: '📦 Create package'
+      run: |
+        cmake --install build --prefix "$PWD/pkg/usr/local"
+        mkdir -p "$PWD/pkg/usr/local/share/licenses/openFPGALoader"
+        cp LICENSE "$PWD/pkg/usr/local/share/licenses/openFPGALoader/LICENSE"
+        tar -C pkg -czf "macos-openFPGALoader.tgz" .
+
+    - name: '📤 Upload artifact'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-openFPGALoader
+        path: macos-openFPGALoader.tgz
 
 
   lin-test:
@@ -150,17 +157,18 @@ jobs:
           zlib1g
 
     - name: '📥 Download artifact: package'
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
-        name: ubtuntu${{ matrix.os }}.04-openFPGALoader
+        name: ubuntu${{ matrix.os }}.04-openFPGALoader
 
-    - name: '🛠️ Install package'
-      run: sudo tar -xvzf *.tgz -C /
+    - name: '🛠️ Extract package'
+      run: |
+        tar -xvzf ubuntu${{ matrix.os }}.04-openFPGALoader.tgz -C /tmp/pkg/
 
     - name: '🚦 Test package'
       run: |
-        openFPGALoader --help
-        openFPGALoader --detect || true
+        /tmp/pkg/usr/local/bin/openFPGALoader --help
+        /tmp/pkg/usr/local/bin/openFPGALoader --detect || true
 
 
   win-jobs:
@@ -199,7 +207,7 @@ jobs:
     steps:
 
     - name: '📥 Download artifacts'
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
         path: artifact
 

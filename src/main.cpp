@@ -14,58 +14,58 @@
 #include <vector>
 
 #ifdef ENABLE_ALTERA_SUPPORT
-#include "altera.hpp"
+#include "vendors/altera.hpp"
 #endif
 #ifdef ENABLE_ANLOGIC_SUPPORT
-#include "anlogic.hpp"
+#include "vendors/anlogic.hpp"
 #endif
-#include "board.hpp"
-#include "cable.hpp"
+#include "utils/board.hpp"
+#include "utils/cable.hpp"
 #ifdef ENABLE_COLOGNECHIP_SUPPORT
-#include "colognechip.hpp"
+#include "vendors/colognechip.hpp"
 #endif
-#include "common.hpp"
+#include "utils/common.hpp"
 #include "cxxopts.hpp"
-#include "device.hpp"
+#include "utils/device.hpp"
 #ifdef ENABLE_DFU
-#include "dfu.hpp"
+#include "cables/dfu.hpp"
 #endif
-#include "display.hpp"
+#include "utils/display.hpp"
 #ifdef ENABLE_EFINIX_SUPPORT
-#include "efinix.hpp"
+#include "vendors/efinix.hpp"
 #endif
 #ifdef USE_LIBFTDI
-#include "ftdispi.hpp"
+#include "cables/ftdispi.hpp"
 #endif
 #ifdef ENABLE_GOWIN_SUPPORT
-#include "gowin.hpp"
+#include "vendors/gowin.hpp"
 #endif
 #ifdef ENABLE_LATTICE_SUPPORT
-#include "lattice.hpp"
+#include "vendors/lattice.hpp"
 #endif
 #ifdef ENABLE_ICE40_SUPPORT
-#include "ice40.hpp"
+#include "vendors/ice40.hpp"
 #endif
 #ifdef ENABLE_LATTICESSPI_SUPPORT
-#include "latticeSSPI.hpp"
+#include "vendors/latticeSSPI.hpp"
 #endif
 #ifdef ENABLE_USB_SCAN
-#include "libusb_ll.hpp"
+#include "cables/libusb_ll.hpp"
 #endif
-#include "jtag.hpp"
-#include "part.hpp"
-#include "progressBar.hpp"
-#include "spiFlash.hpp"
-#include "spiFlashdb.hpp"
-#include "rawParser.hpp"
+#include "protocols/jtag.hpp"
+#include "utils/part.hpp"
+#include "utils/progressBar.hpp"
+#include "protocols/spiFlash.hpp"
+#include "protocols/spiFlashdb.hpp"
+#include "parsers/rawParser.hpp"
 #ifdef ENABLE_XILINX_SUPPORT
-#include "xilinx.hpp"
+#include "vendors/xilinx.hpp"
 #endif
 #ifdef ENABLE_SVF_JTAG
-#include "svf_jtag.hpp"
+#include "cables/svf_jtag.hpp"
 #endif
 #ifdef ENABLE_XVC_SERVER
-#include "xvc_server.hpp"
+#include "cables/xvc_server.hpp"
 #endif
 
 #define DEFAULT_FREQ 	6000000
