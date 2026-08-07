@@ -18,4 +18,4 @@ RUN set -eux; \
     rm -f /tmp/is.exe
 
 WORKDIR /src
-CMD ["/src/scripts/build-windows-installer.sh"]
+CMD ["/src/deploy/scripts/build-windows-installer.sh"]

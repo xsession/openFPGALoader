@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build-docker-linux}"
 PREFIX_DIR="${PREFIX_DIR:-${ROOT_DIR}/dist/docker-linux/install}"
 PACKAGE_DIR="${PACKAGE_DIR:-${ROOT_DIR}/dist/docker-linux}"

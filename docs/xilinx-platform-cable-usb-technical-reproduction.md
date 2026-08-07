@@ -131,15 +131,15 @@ The executable is installed at:
 dist/docker-windows/install/bin/openFPGALoader.exe
 ```
 
-Firmware must be copied in `scripts/docker-cross-windows.sh`, while the
+Firmware must be copied in `deploy/scripts/docker-cross-windows.sh`, while the
 container is running. The Compose `/src` bind mount does not exist during a
 Dockerfile `RUN` layer, so this does not work in `alpine.Dockerfile`:
 
 ```dockerfile
-RUN cp /src/ise_programmer_bins/*.hex ...
+RUN cp /src/deploy/ise_programmer_bins/*.hex ...
 ```
 
-The runtime script instead copies `ise_programmer_bins/*.hex` to:
+The runtime script instead copies `deploy/ise_programmer_bins/*.hex` to:
 
 ```text
 dist/docker-windows/install/share/openFPGALoader/
@@ -175,7 +175,7 @@ Run the repository extractor:
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\scripts\extract-xusb-loader-from-sys.ps1 `
   -DriverPath 'E:\Xilinx\14.7\ISE_DS\common\bin\nt64\xusb_xp2.sys' `
-  -OutputPath '.\ise_programmer_bins\xusb_xp2_loader.hex'
+  -OutputPath '.\deploy\ise_programmer_bins\xusb_xp2_loader.hex'
 ```
 
 The explicit process-scoped execution-policy override is needed on hosts which

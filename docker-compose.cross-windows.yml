@@ -2,7 +2,7 @@ services:
   windows-cross:
     build:
       context: .
-      dockerfile: docker/cross/windows/alpine.Dockerfile
+      dockerfile: deploy/docker/cross/windows/alpine.Dockerfile
       args:
         ALPINE_VERSION: edge
         TARGET_TRIPLE: x86_64-w64-mingw32

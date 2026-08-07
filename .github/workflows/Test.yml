@@ -191,7 +191,7 @@ jobs:
     with:
       name: openFPGALoader
       matrix: ${{ needs.win-jobs.outputs.jobs }}
-      path: scripts/msys2
+      path: deploy/scripts/msys2
       test: |
         uname -a
         which openFPGALoader

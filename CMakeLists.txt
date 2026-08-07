@@ -882,8 +882,8 @@ install(TARGETS openFPGALoader DESTINATION bin)
 # SPIOverJtag bitstreams install
 ####################################################################################################
 
-file(GLOB GZ_FILES spiOverJtag/spiOverJtag_*.*.gz)
-file(GLOB BPI_GZ_FILES bpiOverJtag/bpiOverJtag_*.bit.gz)
+file(GLOB GZ_FILES src/transport_db/spiOverJtag/spiOverJtag_*.*.gz)
+file(GLOB BPI_GZ_FILES src/transport_db/bpiOverJtag/bpiOverJtag_*.bit.gz)
 list(APPEND GZ_FILES ${BPI_GZ_FILES})
 
 # Compress rbf and bit files present into repository
@@ -892,9 +892,9 @@ list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/Modules)
 include(FindGZIP)
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND GZIP_PRG)
-	set(SPIOVERJTAG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/spiOverJtag")
-	file(GLOB BITS_FILES RELATIVE ${SPIOVERJTAG_DIR} spiOverJtag/spiOverJtag_*.bit)
-	file(GLOB RBF_FILES RELATIVE ${SPIOVERJTAG_DIR} spiOverJtag/spiOverJtag_*.rbf)
+	set(SPIOVERJTAG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/transport_db/spiOverJtag")
+	file(GLOB BITS_FILES RELATIVE ${SPIOVERJTAG_DIR} src/transport_db/spiOverJtag/spiOverJtag_*.bit)
+	file(GLOB RBF_FILES RELATIVE ${SPIOVERJTAG_DIR} src/transport_db/spiOverJtag/spiOverJtag_*.rbf)
 
 	STRING(REGEX REPLACE ".bit" ".bit.gz" BIT_GZ_FILES "${BITS_FILES}")
 	STRING(REGEX REPLACE ".rbf" ".rbf.gz" RBF_GZ_FILES "${RBF_FILES}")
@@ -910,8 +910,8 @@ if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND GZIP_PRG)
 
 	ADD_CUSTOM_TARGET(bit ALL DEPENDS ${BIT_GZ_FILES} ${RBF_GZ_FILES})
 else()
-	file(GLOB BITS_FILES spiOverJtag/spiOverJtag_*.bit)
-	file(GLOB RBF_FILES spiOverJtag/spiOverJtag_*.rbf)
+	file(GLOB BITS_FILES src/transport_db/spiOverJtag/spiOverJtag_*.bit)
+	file(GLOB RBF_FILES src/transport_db/spiOverJtag/spiOverJtag_*.rbf)
 	install(FILES
 		${BITS_FILES}
 		${RBF_FILES}
@@ -924,7 +924,7 @@ install(FILES
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openFPGALoader
 )
 
-file(GLOB SPARTAN6_ISE_COR_FILES spiOverJtag/from_ise/spartan-6/*.cor)
+file(GLOB SPARTAN6_ISE_COR_FILES src/transport_db/spiOverJtag/from_ise/spartan-6/*.cor)
 install(FILES
 	${SPARTAN6_ISE_COR_FILES}
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openFPGALoader/from_ise/spartan-6

@@ -45,7 +45,7 @@ RUN set -eux; \
     update-ca-certificates; \
     mkdir -p "${CROSS_PREFIX}" /build-deps /src /out
 
-COPY docker/cross/windows/toolchain-mingw64.cmake /opt/toolchain-mingw64.cmake
+COPY deploy/docker/cross/windows/toolchain-mingw64.cmake /opt/toolchain-mingw64.cmake
 
 RUN set -eux; \
     cd /build-deps; \
@@ -116,11 +116,11 @@ RUN set -eux; \
     cmake --build libftdi-build; \
     cmake --install libftdi-build
 
-# Local Xilinx firmware is copied by scripts/docker-cross-windows.sh at
+# Local Xilinx firmware is copied by deploy/scripts/docker-cross-windows.sh at
 # container runtime. The Compose bind mount at /src does not exist while this
-# image is being built, so /src/ise_programmer_bins cannot be read in a RUN
+# image is being built, so /src/deploy/ise_programmer_bins cannot be read in a RUN
 # instruction here.
 
 WORKDIR /src
 
-CMD ["/src/scripts/docker-cross-windows.sh"]
+CMD ["/src/deploy/scripts/docker-cross-windows.sh"]

@@ -23,4 +23,4 @@ RUN apk add --no-cache \
 
 WORKDIR /src
 
-CMD ["bash", "/src/scripts/docker-linux-deploy.sh"]
+CMD ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]

@@ -951,7 +951,7 @@ share/openFPGALoader/
 
 Windows builds use MinGW-w64 cross-compilation:
 - Toolchain: `cmake/Toolchain-x86_64-w64-mingw32.cmake`
-- Docker: `docker/cross/windows/alpine.Dockerfile`
+- Docker: `deploy/docker/cross/windows/alpine.Dockerfile`
 
 **Compilation note:** On Alpine with mingw-w64 GCC, `-O3` can cause ICE (Internal Compiler Error) on large static initializers. The CMake release flags use `-O2 -DNDEBUG`.
 

@@ -276,7 +276,7 @@ jobs:
           mkdir -p pkg/bin pkg/share/openFPGALoader pkg/share/licenses/openFPGALoader
           cp build-win64/openFPGALoader.exe pkg/bin/
           cp LICENSE pkg/share/licenses/openFPGALoader/LICENSE
-          find spiOverJtag bpiOverJtag -type f \( -name '*.gz' -o -name '*.bit' -o -name '*.rbf' \) -exec cp {} pkg/share/openFPGALoader/ \;
+          find src/transport_db/spiOverJtag src/transport_db/bpiOverJtag -type f \( -name '*.gz' -o -name '*.bit' -o -name '*.rbf' \) -exec cp {} pkg/share/openFPGALoader/ \;
           name="openFPGALoader-windows-cross-x86_64"
           (cd pkg && 7z a "../${name}.zip" .)
           sha256sum "${name}.zip" > "${name}.zip.sha256"

@@ -27,7 +27,7 @@ The package contains the install tree plus any non-system DLLs imported by the E
 ## Clean rebuild
 
 ```bash
-docker compose -f docker-compose.cross-windows.yml run --rm windows-cross /src/scripts/docker-cross-windows.sh --clean
+docker compose -f docker-compose.cross-windows.yml run --rm windows-cross /src/deploy/scripts/docker-cross-windows.sh --clean
 ```
 
 ## Pass extra CMake flags
