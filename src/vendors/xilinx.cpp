@@ -2272,11 +2272,7 @@ int Xilinx::spi_put_v2(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
 				printf("%02x ", McsParser::reverseByte(jrx[i]));
 			printf("\n");
 		}
-		/* SOJ v2 RX header: 2 status bytes + 1 bridge status byte.
-				 * Data extraction starts at byte 3 for all packet sizes.
-				 * Mode 0 (long packets) and mode 1 (short packets) both have
-				 * the same 3-byte RX header on Artix-7 / HS3 bridges. */
-				idx = 3;
+		idx = (mode == 0 ? 3 : 2);
 				for (uint32_t i = 0; i < len; i++) {
 			rx[i] = McsParser::reverseByte(jrx[i + idx]);
 		}
