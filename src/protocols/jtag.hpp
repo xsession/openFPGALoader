@@ -80,6 +80,7 @@ class Jtag {
 	 * \return device idcode
 	 */
 	uint32_t get_target_device_id() {return _devices_list[device_index];}
+	int get_target_ir_length() const {return _irlength_list.at(device_index);}
 
 	/*
 	 * \brief return JTAG chain length

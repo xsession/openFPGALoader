@@ -1231,8 +1231,8 @@ bool Xilinx::dumpFlash_bpi(uint32_t base_addr, uint32_t len)
 float Xilinx::get_spiOverJtag_version()
 {
 	uint8_t jtx[6] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
-	uint8_t jrx[7];
-	uint8_t rx[6];
+	uint8_t jrx[7] = {};
+	uint8_t rx[6] = {};
 	const uint8_t shift = _jtag_chain_len;
 
 	auto probe_version = [&]() {
@@ -1240,8 +1240,6 @@ float Xilinx::get_spiOverJtag_version()
 			Jtag::UPDATE_IR);
 		if (_verbose > 0)
 			printf("jtag_chain_len: %d\n", _jtag->get_chain_len());
-		if (_jtag_chain_len > 1)
-			_jtag->shiftDR(jtx, NULL, _jtag_chain_len - 1, Jtag::SHIFT_DR);
 		_jtag->shiftDR(jtx, jrx, 6 * 8);
 		_jtag->flush();
 
@@ -1284,24 +1282,23 @@ float Xilinx::get_spiOverJtag_version()
 		if (_verbose > 0) {
 			printf("Trying SOJ v2 version query...\n");
 		}
-		uint8_t v2_pkt[7];
-		uint8_t v2_jrx[7];
 		uint32_t v2_real_len = 6;  // 1 cmd + 5 padding
 		uint32_t v2_kPktLen = v2_real_len + 2;  // header + extra
+		std::vector<uint8_t> v2_pkt(v2_kPktLen, 0);
+		std::vector<uint8_t> v2_jrx(v2_kPktLen, 0);
 		v2_pkt[0] = ((0x1f & v2_real_len) << 3) | ((0x03 & 0x01) << 1) | 1;
 		v2_pkt[1] = McsParser::reverseByte(0x01);  // version query cmd
-		memset(&v2_pkt[2], 0, 5);
 
 		_jtag->go_test_logic_reset();
 		_jtag->shiftIR(get_ircode(_ircode_map, "USER1"), NULL, _irlen,
 			Jtag::UPDATE_IR);
-		_jtag->shiftDR(v2_pkt, v2_jrx, (v2_kPktLen - 1) * 8 + 8);
+		_jtag->shiftDR(v2_pkt.data(), v2_jrx.data(), (v2_kPktLen - 1) * 8 + 8);
 		_jtag->go_test_logic_reset();
 		_jtag->flush();
 
 		if (_verbose > 0) {
 			printf("SOJ v2 version query raw:");
-			for (size_t i = 0; i < sizeof(v2_jrx); i++)
+			for (size_t i = 0; i < v2_jrx.size(); i++)
 				printf(" %02x", v2_jrx[i]);
 			printf("\n");
 		}
@@ -1317,11 +1314,14 @@ float Xilinx::get_spiOverJtag_version()
 
 		/* Only trust v2 if there are 2+ non-zero data bytes beyond the
 		 * echoed command — a single byte is just the query echo */
-		if (v2_nonzero_noncmd >= 2 && (_verbose > 0)) {
-			for (uint32_t i = 0; i < 5; i++)
-				printf(" %02x", McsParser::reverseByte(v2_jrx[i + v2_idx]));
-			printf("\nSOJ v2 version string has %d data bytes — assuming v2\n",
-			       v2_nonzero_noncmd);
+		if (v2_nonzero_noncmd >= 2) {
+			if (_verbose > 0) {
+				printf("SOJ v2 version data:");
+				for (uint32_t i = 0; i < 5; i++)
+					printf(" %02x", McsParser::reverseByte(v2_jrx[i + v2_idx]));
+				printf("\nSOJ v2 version string has %d data bytes — assuming v2\n",
+				       v2_nonzero_noncmd);
+			}
 			return 2.0f;
 		}
 
@@ -1985,7 +1985,7 @@ int Xilinx::spi_put(uint8_t cmd,
 	int xfer_len = len + 1 + ((rx == NULL) ? 0 : 1);
 	auto spi_put_v1_on_user = [&](const std::string &user_instruction,
 			uint8_t *out) {
-		uint8_t jtx[xfer_len];
+		uint8_t jtx[xfer_len] = {};
 		jtx[0] = McsParser::reverseByte(cmd);
 		/* uint8_t jtx[xfer_len] = {McsParser::reverseByte(cmd)}; */
 		uint8_t jrx[xfer_len];
@@ -2021,8 +2021,11 @@ int Xilinx::spi_put(uint8_t cmd,
 			if (!v1_valid) {
 				const std::string saved_user_instruction =
 					_user_instruction;
+				/* USER4 is the bridge-version register in the bundled SOJ
+				 * wrapper, not an SPI data path. Never accept it as an RDID
+				 * fallback based on a weak non-zero heuristic. */
 				const char *user_candidates[] = {
-					"USER1", "USER2", "USER3", "USER4"
+					"USER1", "USER2", "USER3"
 				};
 				for (const char *candidate : user_candidates) {
 					if (saved_user_instruction == candidate)
@@ -2084,7 +2087,7 @@ int Xilinx::spi_put(uint8_t cmd,
 					const std::string saved_user_instruction =
 						_user_instruction;
 					const char *user_candidates[] = {
-						"USER1", "USER2", "USER3", "USER4"
+						"USER1", "USER2", "USER3"
 					};
 
 					_jtag->go_test_logic_reset();
@@ -2153,8 +2156,8 @@ int Xilinx::spi_put(uint8_t cmd,
 int Xilinx::spi_put(const uint8_t *tx, uint8_t *rx, uint32_t len)
 {
 	int xfer_len = len + ((rx == NULL) ? 0 : 1);
-	uint8_t jtx[xfer_len];
-	uint8_t jrx[xfer_len];
+	uint8_t jtx[xfer_len] = {};
+	uint8_t jrx[xfer_len] = {};
 	if (tx != NULL) {
 		for (uint32_t i=0; i < len; i++)
 			jtx[i] = McsParser::reverseByte(tx[i]);
@@ -2178,22 +2181,25 @@ int Xilinx::spi_put(const uint8_t *tx, uint8_t *rx, uint32_t len)
 int Xilinx::spi_wait(uint8_t cmd, uint8_t mask, uint8_t cond,
 			uint32_t timeout, bool verbose)
 {
-	uint8_t rx[2];
-	uint8_t tx[2];
+	uint8_t rx[2] = {};
+	uint8_t tx[2] = {0xff, 0xff};
+	uint8_t dummy[2] = {0xff, 0xff};
 	uint8_t tmp;
 	uint32_t count = 0;
 	const uint8_t shift = _jtag_chain_len;
-	uint8_t idx = 0;
+	const uint8_t initial_len = _soj_is_v2 ? 2 : 1;
 
 	if (_soj_is_v2)
-		tx[idx++] = (0x2 << 1) | 1;
-	tx[idx++] = McsParser::reverseByte(cmd);
+		tx[0] = (0x2 << 1) | 1;
+	tx[initial_len - 1] = McsParser::reverseByte(cmd);
 
 	_jtag->shiftIR(get_ircode(_ircode_map, _user_instruction), NULL, _irlen, Jtag::UPDATE_IR);
-	_jtag->shiftDR(tx, NULL, 8 * idx, Jtag::SHIFT_DR);
+	_jtag->shiftDR(tx, NULL, 8 * initial_len, Jtag::SHIFT_DR);
 
 	do {
-		_jtag->shiftDR(tx, rx, 8*2, Jtag::SHIFT_DR);
+		/* The command/header is sent once. Subsequent scans must clock the
+		 * flash with dummy bytes; resending tx issues the command repeatedly. */
+		_jtag->shiftDR(dummy, rx, 8*2, Jtag::SHIFT_DR);
 		tmp = McsParser::reverseByte(rx[0 ]>> shift);
 		if (shift == 1)
 			tmp |= (0x01 & rx[1]);
@@ -2209,7 +2215,7 @@ int Xilinx::spi_wait(uint8_t cmd, uint8_t mask, uint8_t cond,
 			printf("%x %x %x %u %02x %02x\n", tmp, mask, cond, count, rx[0], rx[1]);
 		}
 	} while ((tmp & mask) != cond);
-	_jtag->shiftDR(tx, rx, 8 * 2, Jtag::EXIT1_DR);
+	_jtag->shiftDR(dummy, rx, 8 * 2, Jtag::EXIT1_DR);
 	_jtag->go_test_logic_reset();
 
 	if (count == timeout) {
@@ -2227,15 +2233,15 @@ int Xilinx::spi_put_v2(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
 	const uint32_t real_len = len + 1;  // rx/tx length + cmd
 	uint32_t kPktLen = real_len + 2;  // One header and +1 due to the needs of an additional bit/byte
 	uint8_t mode = 0x01;
-	if (real_len > 32) {
+	if (real_len >= 32) {
 		kPktLen++;  // Additional header
 		mode = 0x00;
 	}
 
 	const uint32_t xfer_bit_len = (kPktLen - 1) * 8 + (rx ? 8 : 1);
 
-	uint8_t jrx[kPktLen];
-	uint8_t pkt[kPktLen];
+	uint8_t jrx[kPktLen] = {};
+	uint8_t pkt[kPktLen] = {};
 	uint32_t idx = 0;
 
 	pkt[idx++] = ((0x1f & real_len) << 3) | ((0x03 & mode) << 1) | 1;

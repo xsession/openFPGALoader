@@ -19,7 +19,6 @@
 
 #include "utils/common.hpp"
 #include "utils/display.hpp"
-#include "utils/part.hpp"
 #include "parsers/mcsParser.hpp"
 #include "protocols/jtag.hpp"
 
@@ -42,12 +41,8 @@ int run_spi_debug(Jtag *jtag, const std::string &fpga_part)
     uint32_t idcode = jtag->get_target_device_id();
     printf("Target IDCODE: 0x%08x\n", idcode);
 
-    Part part;
-    if (!part.open(fpga_part)) {
-        printError("Unknown part: " + fpga_part);
-        return 1;
-    }
-    int irlen = part.getIRLength();
+    printf("FPGA part: %s\n", fpga_part.c_str());
+    int irlen = jtag->get_target_ir_length();
     printf("IR length: %d\n", irlen);
 
     /*
@@ -67,8 +62,8 @@ int run_spi_debug(Jtag *jtag, const std::string &fpga_part)
     uint32_t kPktLen = real_len + 2;
     uint8_t mode = 0x01;
 
-    uint8_t pkt[kPktLen];
-    uint8_t jrx[kPktLen];
+    std::vector<uint8_t> pkt(kPktLen, 0);
+    std::vector<uint8_t> jrx(kPktLen, 0);
     uint32_t idx = 0;
 
     pkt[idx++] = ((0x1f & real_len) << 3) | ((0x03 & mode) << 1) | 1;
@@ -86,9 +81,11 @@ int run_spi_debug(Jtag *jtag, const std::string &fpga_part)
         printf("  [%lu] 0x%02x (bit-rev: 0x%02x)\n",
                (unsigned long)i, pkt[i], McsParser::reverseByte(pkt[i]));
 
-    uint8_t user1_ir = 0x1E;
+    // USER1 is 0x02 for the Xilinx 7-series/Spartan-6 devices this
+    // diagnostic documents. 0x1E is not USER1 on those parts.
+    uint8_t user1_ir = 0x02;
     jtag->shiftIR(&user1_ir, NULL, irlen);
-    jtag->shiftDR(pkt, jrx, xfer_bit_len);
+    jtag->shiftDR(pkt.data(), jrx.data(), xfer_bit_len);
     jtag->go_test_logic_reset();
     jtag->flush();
 

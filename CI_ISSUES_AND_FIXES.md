@@ -51,3 +51,11 @@ A full CMake build could not be executed in this environment because CMake is no
 ## Remaining external limitation
 
 The original macOS artifact failure could not be rerun from this session: GitHub returned HTTP 403 (`Resource not accessible by integration`) for the rerun request. No remote branch or pull request was created; all fixes are included in this local repository and in the accompanying archive.
+
+## SOJ source review
+
+The SPI-over-JTAG review and source-level fixes are documented in
+[`docs/SOJ_REVIEW.md`](docs/SOJ_REVIEW.md). The highest-risk defects were an
+8-byte SOJ v2 probe written into 7-byte buffers, v2 detection that only worked
+with verbose logging, duplicated multi-device JTAG padding, command bytes being
+resent during status polling, and USER4 being accepted as an SPI fallback.
