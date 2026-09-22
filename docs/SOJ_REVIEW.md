@@ -16,9 +16,10 @@ chain wrapper, the SOJ RTL, and the optional diagnostic tool.
 | High | USER fallback | RDID fallback probed and could select USER4. In the bundled wrapper USER4 is the bridge version interface, not the SPI path. | Restrict fallback candidates to USER1–USER3. |
 | Medium | v2 length boundary | `real_len == 32` was encoded in short mode even though the 5-bit short length field cannot represent 32. | Select extended mode for `real_len >= 32`. |
 | Medium | diagnostic tool | The tool used a nonexistent `Part` type, hardcoded `0x1e` as USER1, and allocated VLAs. | Read IR length from the selected `Jtag` device, use Xilinx USER1 `0x02` for its documented 7-series/Spartan-6 scope, and use vectors. |
+| Medium | JTAG target selection | `device_select()` and the CLI accepted an index equal to the device count, leading to an out-of-range target lookup. | Reject `index >= device_count` before selecting the target. |
 
 The bundled RTL assigns USER4 to the version interface in
-[`xilinx_spiOverJtag.v`](../src/transport_db/spiOverJtag/xilinx_spiOverJtag.v).
+[`xilinx_spiOverJtag.v`](https://github.com/xsession/openFPGALoader/blob/master/src/transport_db/spiOverJtag/xilinx_spiOverJtag.v).
 This is also consistent with AMD's [BSCANE2 documentation](https://docs.amd.com/r/en-US/ug953-vivado-7series-libraries/BSCANE2),
 which defines USER1–USER4 as separate JTAG user chains.
 
@@ -43,8 +44,8 @@ Required next test:
    golden-vector test.
 
 The relevant implementation is in
-[`xilinx.cpp`](../src/vendors/xilinx.cpp), and the chain behavior is in
-[`jtag.cpp`](../src/protocols/jtag.cpp).
+[`xilinx.cpp`](https://github.com/xsession/openFPGALoader/blob/master/src/vendors/xilinx.cpp), and the chain behavior is in
+[`jtag.cpp`](https://github.com/xsession/openFPGALoader/blob/master/src/protocols/jtag.cpp).
 
 ### Detection heuristics are permissive
 
@@ -77,6 +78,6 @@ and a long read/write, including USER4 version capture.
 - Full CMake build, RTL simulation, and physical HS3/XPCU transfers were not available because CMake/Verilog simulators and JTAG hardware are absent in this runtime.
 
 For comparison with the upstream implementation, see the
-[SOJ implementation at commit `24e46d1`](https://github.com/trabucayre/openFPGALoader/blob/24e46d13bb8f2bc9371e9ca8443ece2fafc4b20d/src/xilinx.cpp)
+[SOJ implementation at commit `24e46d1`](https://github.com/xsession/openFPGALoader/blob/24e46d13bb8f2bc9371e9ca8443ece2fafc4b20d/src/xilinx.cpp)
 and the upstream
-[SOJ RTL](https://github.com/trabucayre/openFPGALoader/blob/master/spiOverJtag/spiOverJtag_core.v).
+[SOJ RTL](https://github.com/xsession/openFPGALoader/blob/master/spiOverJtag/spiOverJtag_core.v).

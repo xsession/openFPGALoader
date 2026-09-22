@@ -1,46 +1,46 @@
 # openFPGALoader
 
 <p align="right">
-  <a title="Documentation" href="https://trabucayre.github.io/openFPGALoader"><img src="https://img.shields.io/website.svg?label=trabucayre.github.io%2FopenFPGALoader&longCache=true&style=flat-square&url=http%3A%2F%2Ftrabucayre.github.io%2FopenFPGALoader%2Findex.html&logo=GitHub"></a><!--
+  <a title="Documentation" href="https://xsession.github.io/openFPGALoader"><img src="https://img.shields.io/website.svg?label=xsession.github.io%2FopenFPGALoader&longCache=true&style=flat-square&url=https%3A%2F%2Fxsession.github.io%2FopenFPGALoader%2F&logo=GitHub"></a><!--
   -->
-  <a title="'Test' workflow Status" href="https://github.com/trabucayre/openFPGALoader/actions/workflows/Test.yml"><img alt="'Test' workflow Status" src="https://img.shields.io/github/actions/workflow/status/trabucayre/openFPGALoader/Test.yml?branch=master&longCache=true&style=flat-square&label=Test&logo=github%20actions&logoColor=fff"></a><!--
+  <a title="'Test' workflow Status" href="https://github.com/xsession/openFPGALoader/actions/workflows/Test.yml"><img alt="'Test' workflow Status" src="https://img.shields.io/github/actions/workflow/status/xsession/openFPGALoader/Test.yml?branch=master&longCache=true&style=flat-square&label=Test&logo=github%20actions&logoColor=fff"></a><!--
   -->
-  <a title="Releases" href="https://github.com/trabucayre/openFPGALoader/releases"><img src="https://img.shields.io/github/commits-since/trabucayre/openFPGALoader/latest.svg?longCache=true&style=flat-square&logo=git&logoColor=fff"></a>
+  <a title="Releases" href="https://github.com/xsession/openFPGALoader/releases"><img src="https://img.shields.io/github/commits-since/xsession/openFPGALoader/latest.svg?longCache=true&style=flat-square&logo=git&logoColor=fff"></a>
 </p>
 
 <p align="center">
-  <strong><a href="https://trabucayre.github.io/openFPGALoader/guide/first-steps.html">First steps</a> • <a href="https://trabucayre.github.io/openFPGALoader/guide/install.html">Install</a> • <a href="https://trabucayre.github.io/openFPGALoader/guide/troubleshooting.html">Troubleshooting</a></strong> • <a href="https://trabucayre.github.io/openFPGALoader/guide/advanced.html">Advanced usage</a>
+  <strong><a href="https://xsession.github.io/openFPGALoader/guide/first-steps/">First steps</a> • <a href="https://xsession.github.io/openFPGALoader/guide/install/">Install</a> • <a href="https://xsession.github.io/openFPGALoader/guide/troubleshooting/">Troubleshooting</a></strong> • <a href="https://xsession.github.io/openFPGALoader/guide/advanced/">Advanced usage</a>
 </p>
 
 Universal utility for programming FPGAs. Compatible with many boards, cables and FPGA from major manufacturers (Xilinx, Altera/Intel, Lattice, Gowin, Efinix, Anlogic, Cologne Chip). openFPGALoader works on Linux, Windows, macOS and OpenBSD.
 
 Not sure if your hardware is supported? Check the hardware compatibility lists:
 
- * [FPGA compatibility list](https://trabucayre.github.io/openFPGALoader/compatibility/fpga.html)
- * [Board compatibility list](https://trabucayre.github.io/openFPGALoader/compatibility/board.html)
- * [Cable compatibility list](https://trabucayre.github.io/openFPGALoader/compatibility/cable.html)
+ * [FPGA compatibility list](https://xsession.github.io/openFPGALoader/compatibility/fpga/)
+ * [Board compatibility list](https://xsession.github.io/openFPGALoader/compatibility/board/)
+ * [Cable compatibility list](https://xsession.github.io/openFPGALoader/compatibility/cable/)
 
 Also checkout the vendor-specific documentation:
-[Anlogic](https://trabucayre.github.io/openFPGALoader/vendors/anlogic.html),
-[Cologne Chip](https://trabucayre.github.io/openFPGALoader/vendors/colognechip.html),
-[Efinix](https://trabucayre.github.io/openFPGALoader/vendors/efinix.html),
-[Gowin](https://trabucayre.github.io/openFPGALoader/vendors/gowin.html),
-[Intel/Altera](https://trabucayre.github.io/openFPGALoader/vendors/intel.html),
-[Lattice](https://trabucayre.github.io/openFPGALoader/vendors/lattice.html),
-[Xilinx](https://trabucayre.github.io/openFPGALoader/vendors/xilinx.html).
+[Anlogic](https://xsession.github.io/openFPGALoader/vendors/anlogic/),
+[Cologne Chip](https://xsession.github.io/openFPGALoader/vendors/colognechip/),
+[Efinix](https://xsession.github.io/openFPGALoader/vendors/efinix/),
+[Gowin](https://xsession.github.io/openFPGALoader/vendors/gowin/),
+[Intel/Altera](https://xsession.github.io/openFPGALoader/vendors/intel/),
+[Lattice](https://xsession.github.io/openFPGALoader/vendors/lattice/),
+[Xilinx](https://xsession.github.io/openFPGALoader/vendors/xilinx/).
 
 OpenFPGALoader has a dedicated channel: [#openFPGALoader at libera.chat](https://web.libera.chat/#openFPGALoader).
 
 ## Quick Usage
 
-`arty` in the example below is one of the many FPGA board configurations listed [here](https://trabucayre.github.io/openFPGALoader/compatibility/board.html).
+`arty` in the example below is one of the many FPGA board configurations listed [here](https://xsession.github.io/openFPGALoader/compatibility/board/).
 
 ```bash
 openFPGALoader -b arty arty_bitstream.bit # Loading in SRAM
 openFPGALoader -b arty -f arty_bitstream.bit # Writing in flash
 ```
 
-You can also specify a JTAG cable model (complete list [here](https://trabucayre.github.io/openFPGALoader/compatibility/cable.html)) instead of the board model:
+You can also specify a JTAG cable model (complete list [here](https://xsession.github.io/openFPGALoader/compatibility/cable/)) instead of the board model:
 
 ```bash
 openFPGALoader -c cmsisdap fpga_bitstream.bit

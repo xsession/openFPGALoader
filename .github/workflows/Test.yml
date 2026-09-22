@@ -26,19 +26,23 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: '📦 Install dependencies'
+      - name: '📦 Install MkDocs dependencies'
         run: |
-          pip install sphinx PyYAML tabulate
+          python -m pip install --upgrade pip
+          python -m pip install -r docs/requirements-mkdocs.txt
 
-      - name: '📓 Build docs'
+      - name: '🧾 Generate compatibility tables'
+        run: python docs/generate_compatibility.py
+
+      - name: '📓 Build MkDocs site'
         run: |
-          sphinx-build -b html docs/doc docs/doc/_build/html
+          mkdocs build --strict --site-dir site
 
       - name: '⬆️ Deploy to gh-pages'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/doc/_build/html
+          publish_dir: site
           publish_branch: gh-pages
           keep_files: false
 
@@ -46,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-Documentation
-          path: docs/doc/_build/html
+          path: site
 
 
   lin-build:

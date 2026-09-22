@@ -283,11 +283,11 @@ Interpretation:
 
 Files touched significantly during this work:
 
-- [src/xilinx.cpp](/abs/path/C:/Users/livanyi/Desktop/WORK/GIT/openFPGALoader/src/xilinx.cpp:1)
-- [src/xilinxPlatformCableUSB.cpp](/abs/path/C:/Users/livanyi/Desktop/WORK/GIT/openFPGALoader/src/xilinxPlatformCableUSB.cpp:1)
-- [src/xilinxPlatformCableUSB.hpp](/abs/path/C:/Users/livanyi/Desktop/WORK/GIT/openFPGALoader/src/xilinxPlatformCableUSB.hpp:1)
-- [src/jtagInterface.hpp](/abs/path/C:/Users/livanyi/Desktop/WORK/GIT/openFPGALoader/src/jtagInterface.hpp:1)
-- [src/spiFlash.cpp](/abs/path/C:/Users/livanyi/Desktop/WORK/GIT/openFPGALoader/src/spiFlash.cpp:1)
+- [src/vendors/xilinx.cpp](https://github.com/xsession/openFPGALoader/blob/master/src/vendors/xilinx.cpp)
+- [src/cables/xilinxPlatformCableUSB.cpp](https://github.com/xsession/openFPGALoader/blob/master/src/cables/xilinxPlatformCableUSB.cpp)
+- [src/cables/xilinxPlatformCableUSB.hpp](https://github.com/xsession/openFPGALoader/blob/master/src/cables/xilinxPlatformCableUSB.hpp)
+- [src/protocols/jtagInterface.hpp](https://github.com/xsession/openFPGALoader/blob/master/src/protocols/jtagInterface.hpp)
+- [src/protocols/spiFlash.cpp](https://github.com/xsession/openFPGALoader/blob/master/src/protocols/spiFlash.cpp)
 
 At the time this note was written, these files contained local uncommitted changes related to the investigation.
 
@@ -312,4 +312,3 @@ Useful links:
 
 - https://docs.amd.com/v/u/en-US/ug380
 - https://manualzz.com/doc/27686281/xilinx-spartan-6-fpga-user-guide
-

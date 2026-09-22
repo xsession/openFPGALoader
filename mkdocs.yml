@@ -1,0 +1,79 @@
+site_name: openFPGALoader
+site_description: Universal utility for programming FPGAs
+site_url: https://xsession.github.io/openFPGALoader/
+repo_name: xsession/openFPGALoader
+repo_url: https://github.com/xsession/openFPGALoader
+edit_uri: edit/master/docs/
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+  - tables
+  - toc:
+      permalink: true
+plugins:
+  - search
+nav:
+  - Home: index.md
+  - User guide:
+      - First steps: guide/first-steps.md
+      - Installation: guide/install.md
+      - Advanced usage: guide/advanced.md
+      - Troubleshooting: guide/troubleshooting.md
+  - Compatibility:
+      - Boards: compatibility/board.md
+      - FPGAs: compatibility/fpga.md
+      - Cables: compatibility/cable.md
+  - Vendors:
+      - Anlogic: vendors/anlogic.md
+      - Cologne Chip: vendors/colognechip.md
+      - Efinix: vendors/efinix.md
+      - Gowin: vendors/gowin.md
+      - Intel/Altera: vendors/intel.md
+      - Lattice: vendors/lattice.md
+      - Xilinx: vendors/xilinx.md
+  - Hardware and debugging:
+      - SOJ review: SOJ_REVIEW.md
+      - Digilent HS3 vs XPCU: digilent-hs3-vs-xpcu-dump-flash-codepath.md
+      - Spartan-6 XPCU debug: spartan6-xpcu-spi-debug-log.md
+      - Spartan-6 HS3 write stall: spartan6-hs3-m25p40-write-stall.md
+      - Xilinx Platform Cable USB: xilinx-platform-cable-usb-technical-reproduction.md
+      - Windows Platform Cable USB: xilinx-platform-cable-usb-windows-debug.md
+      - MachXO3 recovery: machxo3-recovery-after-bulk-erase.md
+      - XCF platform flash: XCF_PLATFORM_FLASH.md
+      - Windows cable notes: XILINX_PLATFORM_CABLE_USB_WINDOWS.md
+  - Project documentation:
+      - Device support: DEVICE_SUPPORT_CHAT.md
+      - Adding a flash: adding-new-flash.md
+      - Adding FPGA and flash support: adding-new-fpga-and-flash-guide.md
+      - Deployment: DEPLOYMENT.md
+      - Docker cross-Windows: DOCKER_CROSS_WINDOWS.md
+      - Docker Linux deployment: DOCKER_DEPLOY_LINUX.md
+      - CI issue report: development/ci-issues.md
+      - Todo: todo.md

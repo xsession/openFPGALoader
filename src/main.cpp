@@ -541,7 +541,7 @@ int main(int argc, char **argv)
 			}
 		} else {
 			index = args.index_chain;
-			if (index > found) {
+			if (index >= found) {
 				printError("wrong index for device in JTAG chain");
 				printError("Requested index: " + std::to_string(args.index_chain) +
 					", detected devices: " + std::to_string(found));

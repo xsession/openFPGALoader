@@ -76,8 +76,8 @@ openFPGALoader opens it directly instead of attempting another firmware upload.
 
 Relevant source:
 
-- [`src/cable.hpp`](../src/cable.hpp)
-- [`src/xilinxPlatformCableUSB.cpp`](../src/xilinxPlatformCableUSB.cpp)
+- [`src/utils/cable.hpp`](https://github.com/xsession/openFPGALoader/blob/master/src/utils/cable.hpp)
+- [`src/cables/xilinxPlatformCableUSB.cpp`](https://github.com/xsession/openFPGALoader/blob/master/src/cables/xilinxPlatformCableUSB.cpp)
 
 ### 3. Select the external JTAG chain
 
@@ -130,7 +130,7 @@ detections against initialized PID `0008` without unplugging between them.
 
 Relevant source:
 
-- [`src/fx2_ll.cpp`](../src/fx2_ll.cpp)
+- [`src/cables/fx2_ll.cpp`](https://github.com/xsession/openFPGALoader/blob/master/src/cables/fx2_ll.cpp)
 
 ## Verification results
 
@@ -233,5 +233,5 @@ That is a healthy initialized state, not an error.
 - [Complete technical reproduction guide](xilinx-platform-cable-usb-technical-reproduction.md)
 
 - [XPCU reverse-engineering notes](https://diamondman.github.io/Adapt/cable_xilinx_PCU.html)
-- [Driver deployment guide](../externals/xilinx-usb-driver/DEPLOYMENT.md)
-- [Practical troubleshooting guide](../externals/xilinx-usb-driver/TROUBLESHOOTING.md)
+- [Driver deployment guide](https://github.com/xsession/xilinx-usb-driver/blob/master/DEPLOYMENT.md)
+- [Practical troubleshooting guide](https://github.com/xsession/xilinx-usb-driver/blob/master/TROUBLESHOOTING.md)

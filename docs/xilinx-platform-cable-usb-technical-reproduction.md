@@ -28,9 +28,9 @@ standalone result. This is an explicit boundary of the current implementation,
 not a target-board failure.
 
 The state diagram is available as editable
-[`diagrams/xpcu-firmware-state-machine.mmd`](diagrams/xpcu-firmware-state-machine.mmd)
+[`diagrams/xpcu-firmware-state-machine.mmd`](https://github.com/xsession/openFPGALoader/blob/master/docs/diagrams/xpcu-firmware-state-machine.mmd)
 and rendered
-[`diagrams/xpcu-firmware-state-machine.svg`](diagrams/xpcu-firmware-state-machine.svg).
+[`diagrams/xpcu-firmware-state-machine.svg`](https://github.com/xsession/openFPGALoader/blob/master/docs/diagrams/xpcu-firmware-state-machine.svg).
 
 ## 2. Hardware and software architecture
 
@@ -508,8 +508,8 @@ allowed to proceed.
 ## 15. Related project documentation
 
 - [Windows debug-session summary](xilinx-platform-cable-usb-windows-debug.md)
-- [Driver deployment guide](../externals/xilinx-usb-driver/DEPLOYMENT.md)
-- [Driver troubleshooting guide](../externals/xilinx-usb-driver/TROUBLESHOOTING.md)
-- [DLC10 loader extractor](../deploy/scripts/extract-xusb-loader-from-sys.ps1)
+- [Driver deployment guide](https://github.com/xsession/xilinx-usb-driver/blob/master/DEPLOYMENT.md)
+- [Driver troubleshooting guide](https://github.com/xsession/xilinx-usb-driver/blob/master/TROUBLESHOOTING.md)
+- [DLC10 loader extractor](https://github.com/xsession/openFPGALoader/blob/master/deploy/scripts/extract-xusb-loader-from-sys.ps1)
 - [AMD Platform Cable USB II Data Sheet, DS593](https://docs.amd.com/v/u/en-US/ds593)
 - [AMD SVF and XSVF Formats, XAPP503](https://docs.amd.com/v/u/en-US/xapp503)
