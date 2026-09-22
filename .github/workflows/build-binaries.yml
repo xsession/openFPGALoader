@@ -87,6 +87,16 @@ jobs:
           tar -C pkg -czf "${name}.tar.gz" .
           sha256sum "${name}.tar.gz" > "${name}.tar.gz.sha256"
 
+      - name: Build Debian installer
+        env:
+          INSTALL_DIR: ${{ github.workspace }}/pkg/usr/local
+          DIST_DIR: ${{ github.workspace }}/dist
+          OUTPUT_DIR: ${{ github.workspace }}/dist
+          PACKAGE_NAME: openFPGALoader-${{ matrix.name }}
+        run: |
+          bash ./deploy/scripts/build-linux-deb.sh
+          dpkg-deb --info dist/openFPGALoader-${{ matrix.name }}_*.deb
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
@@ -94,6 +104,8 @@ jobs:
           path: |
             openFPGALoader-${{ matrix.name }}.tar.gz
             openFPGALoader-${{ matrix.name }}.tar.gz.sha256
+            dist/openFPGALoader-${{ matrix.name }}_*.deb
+            dist/openFPGALoader-${{ matrix.name }}_*.deb.sha256
 
   macos:
     name: macOS universal-ish ${{ matrix.runner }}
@@ -241,45 +253,22 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential \
-            ca-certificates \
-            clang \
-            cmake \
-            lld \
-            mingw-w64 \
-            libz-mingw-w64-dev \
-            ninja-build \
-            p7zip-full \
-            pkg-config
+      - name: Build Linux cross-build image
+        run: docker compose -f docker-compose.cross-windows.yml build windows-cross
 
-      - name: Configure
+      - name: Build Windows package with Compose
         run: |
-          cmake -S . -B build-win64 -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchain-x86_64-w64-mingw32.cmake \
-            -DWINDOWS_CROSSCOMPILE=ON \
-            -DCROSS_COMPILE_DEPS=ON \
-            -DENABLE_CMSISDAP=OFF \
-            -DENABLE_LIBGPIOD=OFF \
-            -DENABLE_UDEV=OFF \
-            -DBUILD_STATIC=ON
-
-      - name: Build
-        run: cmake --build build-win64 --parallel 2
-
-      - name: Package
-        run: |
-          mkdir -p pkg/bin pkg/share/openFPGALoader pkg/share/licenses/openFPGALoader
-          cp build-win64/openFPGALoader.exe pkg/bin/
-          cp LICENSE pkg/share/licenses/openFPGALoader/LICENSE
-          find src/transport_db/spiOverJtag src/transport_db/bpiOverJtag -type f \( -name '*.gz' -o -name '*.bit' -o -name '*.rbf' \) -exec cp {} pkg/share/openFPGALoader/ \;
-          name="openFPGALoader-windows-cross-x86_64"
-          (cd pkg && 7z a "../${name}.zip" .)
-          sha256sum "${name}.zip" > "${name}.zip.sha256"
+          docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
+          shopt -s nullglob
+          packages=(dist/docker-windows/*.zip)
+          if (( ${#packages[@]} != 1 )); then
+            echo "Expected exactly one cross-compiled Windows ZIP, found ${#packages[@]}" >&2
+            printf '%s\n' "${packages[@]}" >&2
+            exit 1
+          fi
+          cp "${packages[0]}" openFPGALoader-windows-cross-x86_64.zip
+          sha256sum openFPGALoader-windows-cross-x86_64.zip > openFPGALoader-windows-cross-x86_64.zip.sha256
+          unzip -l openFPGALoader-windows-cross-x86_64.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
@@ -289,9 +278,93 @@ jobs:
             openFPGALoader-windows-cross-x86_64.zip
             openFPGALoader-windows-cross-x86_64.zip.sha256
 
+  windows-xpcu-drivers:
+    name: Build Xilinx Platform Cable driver package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Build libwdi and XPCU driver package
+        run: bash ./externals/xilinx-usb-driver/docker-build.sh
+
+      - name: Verify Windows driver artifact
+        run: |
+          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
+          unzip -l externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+
+      - name: Upload XPCU driver artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: xilinx-platform-cable-windows
+          path: |
+            externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+            externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
+
+  windows-installer:
+    name: Build Windows installer
+    needs: [ windows-cross, windows-xpcu-drivers ]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Download portable Windows package
+        uses: actions/download-artifact@v8
+        with:
+          name: openFPGALoader-windows-cross-x86_64
+          path: cross-package
+
+      - name: Download XPCU driver package
+        uses: actions/download-artifact@v8
+        with:
+          name: xilinx-platform-cable-windows
+          path: xpcu-driver
+
+      - name: Assemble installer inputs
+        run: |
+          (cd cross-package && sha256sum -c openFPGALoader-windows-cross-x86_64.zip.sha256)
+          (cd xpcu-driver && sha256sum -c xilinx-platform-cable-windows.zip.sha256)
+          mkdir -p dist/docker-windows/install
+          unzip -q cross-package/openFPGALoader-windows-cross-x86_64.zip \
+            -d dist/docker-windows/install
+          test -f dist/docker-windows/install/bin/openFPGALoader.exe
+          test -s xpcu-driver/xilinx-platform-cable-windows.zip
+
+      - name: Build Inno Setup installer
+        env:
+          DIST_DIR: ${{ github.workspace }}/dist/docker-windows
+          INSTALL_DIR: ${{ github.workspace }}/dist/docker-windows/install
+          OUTPUT_DIR: ${{ github.workspace }}/dist/docker-windows
+          XPCU_DRIVER_ARCHIVE: ${{ github.workspace }}/xpcu-driver/xilinx-platform-cable-windows.zip
+        run: bash ./deploy/scripts/build-windows-installer.sh
+
+      - name: Verify installer artifact
+        run: |
+          shopt -s nullglob
+          installers=(dist/docker-windows/*-win64-setup.exe)
+          if (( ${#installers[@]} != 1 )); then
+            echo "Expected exactly one Windows installer, found ${#installers[@]}" >&2
+            exit 1
+          fi
+          sha256sum "${installers[0]}" > "${installers[0]}.sha256"
+          file "${installers[0]}"
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: openFPGALoader-windows-installer
+          path: |
+            dist/docker-windows/*-win64-setup.exe
+            dist/docker-windows/*-win64-setup.exe.sha256
+
   release:
     name: Publish GitHub release
-    needs: [ linux, macos, windows-msys2, windows-cross ]
+    needs: [ linux, macos, windows-msys2, windows-cross, windows-xpcu-drivers, windows-installer ]
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.event.inputs.release_tag != '')
     steps:

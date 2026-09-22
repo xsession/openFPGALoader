@@ -74,7 +74,8 @@ The workflows intentionally test different contracts:
 | MkDocs job | Generated compatibility tables, strict documentation build, published site artifact. |
 | Linux/macOS build | Native compilation and package staging. |
 | Windows MSYS2 matrix | Windows-native toolchain variants and executable smoke tests. |
-| Windows cross build | MinGW packaging, PE/DLL checks, portable data layout, and ZIP artifact. |
+| Windows cross build | Compose MinGW packaging, PE/DLL checks, portable data layout, and ZIP artifact. |
+| Windows installer | External `libwdi`/XPCU driver build, Inno Setup packaging, and installer checksum. |
 | Source regression | Deterministic parser/writer behavior without hardware. |
 | Package tests | Installed executable can show help/list devices and attempt detection. |
 
@@ -84,14 +85,18 @@ physical fixtures or captured traces.
 
 ## Release risks to watch
 
-- The project version has historically appeared in more than one place. Check
-  the CMake project version, package naming, tags, and release notes together
-  before cutting a release.
+- CMake resolves the nearest `v*` semantic Git tag when building a checkout and
+  falls back to its source-archive version when `.git` is unavailable. Package
+  scripts then derive their names from the built executable. Check tags and
+  release notes together before cutting a release.
 - A source file can compile in a full Linux build but be absent from a smaller
   platform feature set. Test the intended matrix, not only the developer's
   default configuration.
 - An archive can contain a working executable but omit the SOJ/BPI data or a
   required DLL. Inspect archive contents and run the executable from the
   extracted tree.
+- The Windows installer must be built after the external XPCU driver package;
+  it embeds the PowerShell helper and `wdi-simple.exe`, not a guessed or stale
+  collection of generated INF files.
 - The Windows cross-build must run with Docker's Linux container engine because
   its build image is Alpine Linux with a MinGW toolchain.

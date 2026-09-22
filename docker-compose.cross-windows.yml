@@ -1,5 +1,8 @@
 services:
   windows-cross:
+    # The image is Alpine Linux with a MinGW cross-toolchain. Docker Desktop
+    # must therefore be running its Linux container engine.
+    platform: linux/amd64
     build:
       context: .
       dockerfile: deploy/docker/cross/windows/alpine.Dockerfile

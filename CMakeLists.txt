@@ -1,7 +1,31 @@
 cmake_minimum_required(VERSION 3.10)
 
-# set the project name
-project(openFPGALoader VERSION "1.1.2" LANGUAGES CXX)
+# Keep source archives buildable without Git, but use the nearest semantic
+# release tag in a checkout so binary/package versions do not drift from the
+# release being built. An explicit -DOPENFPGALOADER_VERSION=... always wins.
+set(_openfpgaloader_fallback_version "1.1.2")
+if(NOT DEFINED OPENFPGALOADER_VERSION)
+	set(OPENFPGALOADER_VERSION "${_openfpgaloader_fallback_version}")
+	find_program(GIT_EXECUTABLE git)
+	if(GIT_EXECUTABLE AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
+		execute_process(
+			COMMAND "${GIT_EXECUTABLE}" describe --tags --match "v[0-9]*" --abbrev=0
+			WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+			OUTPUT_VARIABLE _openfpgaloader_git_tag
+			OUTPUT_STRIP_TRAILING_WHITESPACE
+			ERROR_QUIET
+			RESULT_VARIABLE _openfpgaloader_git_result
+		)
+		if(_openfpgaloader_git_result EQUAL 0 AND
+			_openfpgaloader_git_tag MATCHES "^v([0-9]+(\\.[0-9]+){1,3})$")
+			set(OPENFPGALOADER_VERSION "${CMAKE_MATCH_1}")
+		endif()
+	endif()
+	set(OPENFPGALOADER_VERSION "${OPENFPGALOADER_VERSION}" CACHE STRING
+		"openFPGALoader semantic version" FORCE)
+endif()
+
+project(openFPGALoader VERSION "${OPENFPGALOADER_VERSION}" LANGUAGES CXX)
 add_definitions(-DVERSION=\"v${PROJECT_VERSION}\")
 
 #if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")

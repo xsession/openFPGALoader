@@ -2,7 +2,9 @@
 ; SPDX-License-Identifier: Apache-2.0
 
 #define MyAppName "openFPGALoader"
-#define MyAppVersion "1.1.2"
+#ifndef MyAppVersion
+#define MyAppVersion "0.0.0"
+#endif
 #define MyAppPublisher "openFPGALoader"
 #define MyAppURL "https://github.com/xsession/openFPGALoader"
 #define MyAppExeName "openFPGALoader.exe"
@@ -35,12 +37,12 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "addpath"; Description: "Add openFPGALoader to system PATH"; GroupDescription: "Installation options:"; Flags: unchecked
-Name: "installdrivers"; Description: "Install USB device drivers (Xilinx Platform Cable, Digilent HS3)"; GroupDescription: "Driver installation:"; Flags: unchecked
+Name: "installdrivers"; Description: "Install Xilinx Platform Cable USB drivers"; GroupDescription: "Driver installation:"; Flags: unchecked
 
 [Files]
 Source: "Z:\dist\install\bin\openFPGALoader.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Z:\dist\install\share\openFPGALoader\*"; DestDir: "{app}\share\openFPGALoader"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "Z:\externals\xilinx-usb-driver\dist\xpcu-driver\xilinx-platform-cable-windows\driver\*"; DestDir: "{app}\drivers\xilinx"; Flags: ignoreversion recursesubdirs createallsubdirs; Tasks: installdrivers
+Source: "Z:\dist\installer\xilinx-platform-cable-windows\*"; DestDir: "{app}\drivers\xilinx"; Flags: ignoreversion recursesubdirs createallsubdirs; Tasks: installdrivers
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -48,10 +50,9 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-; Install Xilinx USB drivers using pnputil
-Filename: "pnputil.exe"; Parameters: "-i -a ""{app}\drivers\xilinx\03fd_0008\xpcu_0008.inf"""; StatusMsg: "Installing Xilinx Platform Cable USB driver..."; Tasks: installdrivers; Flags: runhidden
-Filename: "pnputil.exe"; Parameters: "-i -a ""{app}\drivers\xilinx\03fd_000d\xpcu_000d.inf"""; StatusMsg: "Installing Xilinx Platform Cable USB driver (alt)..."; Tasks: installdrivers; Flags: runhidden
-Filename: "pnputil.exe"; Parameters: "-i -a ""{app}\drivers\xilinx\03fd_0013\xpcu_0013.inf"""; StatusMsg: "Installing Xilinx Platform Cable USB driver (alt)..."; Tasks: installdrivers; Flags: runhidden
+; libwdi generates the signed-driver-compatible INF/CAT payload for each live
+; XPCU identity, then installs it through the elevated PowerShell helper.
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\drivers\xilinx\install.ps1"" -Silent"; StatusMsg: "Installing Xilinx Platform Cable USB drivers..."; Tasks: installdrivers; Flags: runhidden waituntilterminated
 
 [Code]
 function AddToPath(Path: string): Boolean;

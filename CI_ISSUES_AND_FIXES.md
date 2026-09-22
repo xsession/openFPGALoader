@@ -12,6 +12,7 @@ This report documents the failures observed in [GitHub Actions run 35693337542](
 | Linux package test | Extraction target `/tmp/pkg/` was not created | `tar -C /tmp/pkg/` was used without creating the directory | Added `mkdir -p /tmp/pkg` |
 | Windows MSYS2 clang64/ucrt64/mingw64 | CMake searched `.../deploy` and reported no `CMakeLists.txt` | The MSYS2 packaging files moved one directory deeper under `deploy/`, but the relative paths were unchanged | Updated the CMake source and license paths in `deploy/scripts/msys2/PKGBUILD` |
 | macOS artifact upload | `ArtifactService/CreateArtifact` timed out after five retries | The build and archive creation succeeded; the failure was in GitHub's artifact service | Updated the artifact action major version; remote rerun still requires repository Actions write access |
+| Windows Docker cross-build | `no matching manifest for windows(10.0.19045)/amd64` while pulling `alpine:edge` | Docker Desktop was running the Windows-container engine, but this cross-build is an Alpine Linux image | Declared `platform: linux/amd64`, added a PowerShell engine preflight, reduced the Docker context with `.dockerignore`, and documented the WSL2/Linux-container requirement |
 
 ## Follow-up failures from the latest Actions run
 
@@ -49,6 +50,29 @@ The first-party Actions references were updated to the currently available major
 
 A dedicated `source-test` job now runs the Intel HEX regression test and gates releases.
 
+## Deployment packaging review
+
+The deployment scripts had three packaging gaps beyond the original workflow
+failures:
+
+- `build-linux-deb.sh` was tied to the Docker staging directory and hard-coded
+  version `1.1.2`, so the workflow could not produce matrix-safe Debian
+  installers from its native staging tree.
+- `build-windows-installer.sh` expected an obsolete generated XPCU driver path
+  and invoked Inno Setup without first building the `libwdi` and
+  `xilinx-usb-driver` submodules.
+- The binary workflow's Windows cross job used a second, incomplete native
+  MinGW packaging path instead of the tested Linux-container Compose build.
+
+The repaired pipeline now derives package versions from the built executable,
+uses Git release tags in CMake when available, creates matrix-unique `.deb`
+names, builds the Windows executable through
+`docker-compose.cross-windows.yml`, builds the external XPCU package through
+the submodules' Docker workflow, verifies checksums, and produces a complete
+Inno Setup installer. MkDocs deployment is isolated in
+`.github/workflows/deploy-docs.yml` and publishes the generated `site/` tree to
+`gh-pages`.
+
 ## Validation performed
 
 The following checks passed in the available runtime:
@@ -59,6 +83,8 @@ The following checks passed in the available runtime:
 - Both formerly failing Xilinx translation units pass GNU C++17 `-Wall -Wextra -Wpedantic -fsyntax-only`; the source no longer contains the Clang-rejected SOJ VLAs.
 - Intel HEX regression tests pass.
 - Moved-directory path consistency checks pass.
+- Workflow packaging definitions include Linux `.deb`, Windows portable ZIP,
+  XPCU driver ZIP, and Windows installer artifacts.
 
 A full CMake build could not be executed in this environment because CMake is not installed and the managed runtime blocks package installation. The corrected workflow should therefore be validated by a new push or pull request run.
 
