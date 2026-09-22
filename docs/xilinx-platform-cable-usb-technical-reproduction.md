@@ -121,9 +121,13 @@ WinUSB intentionally replaces that binding.
 From the repository root:
 
 ```powershell
+.\deploy\scripts\verify-docker-linux-engine.ps1
 docker compose -f docker-compose.cross-windows.yml build windows-cross
 docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
 ```
+
+The cross-build uses an Alpine Linux image. Docker Desktop must use its WSL2
+Linux-container engine; Windows-container mode cannot pull `alpine:edge`.
 
 The executable is installed at:
 

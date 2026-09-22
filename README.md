@@ -12,6 +12,10 @@
   <strong><a href="https://xsession.github.io/openFPGALoader/guide/first-steps/">First steps</a> • <a href="https://xsession.github.io/openFPGALoader/guide/install/">Install</a> • <a href="https://xsession.github.io/openFPGALoader/guide/troubleshooting/">Troubleshooting</a></strong> • <a href="https://xsession.github.io/openFPGALoader/guide/advanced/">Advanced usage</a>
 </p>
 
+<p align="center">
+  <a href="https://xsession.github.io/openFPGALoader/architecture/">Architecture</a> • <a href="https://xsession.github.io/openFPGALoader/architecture/c4/context/">C4 model</a> • <a href="https://xsession.github.io/openFPGALoader/contributing/architecture-rules/">Contributor architecture rules</a>
+</p>
+
 Universal utility for programming FPGAs. Compatible with many boards, cables and FPGA from major manufacturers (Xilinx, Altera/Intel, Lattice, Gowin, Efinix, Anlogic, Cologne Chip). openFPGALoader works on Linux, Windows, macOS and OpenBSD.
 
 Not sure if your hardware is supported? Check the hardware compatibility lists:

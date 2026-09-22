@@ -31,7 +31,11 @@ markdown_extensions:
   - def_list
   - pymdownx.details
   - pymdownx.highlight
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed
   - pymdownx.tasklist
   - tables
@@ -39,6 +43,9 @@ markdown_extensions:
       permalink: true
 plugins:
   - search
+extra_javascript:
+  - https://unpkg.com/mermaid@11/dist/mermaid.min.js
+  - javascripts/mermaid.js
 nav:
   - Home: index.md
   - User guide:
@@ -68,6 +75,20 @@ nav:
       - MachXO3 recovery: machxo3-recovery-after-bulk-erase.md
       - XCF platform flash: XCF_PLATFORM_FLASH.md
       - Windows cable notes: XILINX_PLATFORM_CABLE_USB_WINDOWS.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - Visual guide: architecture/visual-guide.md
+      - Source map: architecture/source-map.md
+      - Runtime flows: architecture/runtime-flows.md
+      - Build and release: architecture/build-and-release.md
+      - Architecture decisions: architecture/decisions.md
+      - C4 context: architecture/c4/context.md
+      - C4 containers: architecture/c4/containers.md
+      - C4 components: architecture/c4/components.md
+      - C4 deployment: architecture/c4/deployment.md
+  - Contributing:
+      - Architecture rules: contributing/architecture-rules.md
+      - API and code reference: development/api-reference.md
   - Project documentation:
       - Device support: DEVICE_SUPPORT_CHAT.md
       - Adding a flash: adding-new-flash.md

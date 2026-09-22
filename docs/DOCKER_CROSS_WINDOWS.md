@@ -4,6 +4,30 @@ This builds a Windows `openFPGALoader.exe` from Linux using an Alpine-based Dock
 The image installs Alpine's MinGW-w64 compiler and builds the Windows target dependencies
 `zlib`, `libusb`, `hidapi`, and `libftdi1` into `/opt/x86_64-w64-mingw32`.
 
+## Windows host prerequisite
+
+This is a **Linux-container** build. It cannot run while Docker Desktop is in
+Windows-container mode because `alpine:edge` has no Windows image manifest.
+
+Use Docker Desktop with the WSL2 backend and Linux containers. From PowerShell,
+verify the engine before building:
+
+```powershell
+.\deploy\scripts\verify-docker-linux-engine.ps1
+```
+
+The expected output starts with:
+
+```text
+Docker engine: linux/amd64
+```
+
+If the check reports `windows/amd64`, enable **Use the WSL 2 based engine** in
+Docker Desktop Settings > General, then choose **Switch to Linux containers**
+from the Docker Desktop tray menu. The Compose service also declares
+`platform: linux/amd64` so an incompatible engine fails early with a clear
+platform error.
+
 ## Build
 
 ```bash
