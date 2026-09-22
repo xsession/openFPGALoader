@@ -26,14 +26,14 @@ The package contains:
 - `bin/openFPGALoader`
 - installed `spiOverJtag` / `bpiOverJtag` assets
 - Spartan-6 ISE `.cor` bridge files
-- Xilinx USB firmware `.hex` files when present in `ise_programmer_bins/`
+- Xilinx USB firmware `.hex` files when present in `deploy/ise_programmer_bins/`
 - Linux udev rules under `lib/udev/rules.d/`
 - a build manifest with `file` and `ldd` output
 
 ## Clean rebuild
 
 ```bash
-docker compose -f docker-compose.deploy-linux.yml run --rm linux-deploy /src/scripts/docker-linux-deploy.sh --clean
+docker compose -f docker-compose.deploy-linux.yml run --rm linux-deploy /src/deploy/scripts/docker-linux-deploy.sh --clean
 ```
 
 ## Pass extra CMake flags

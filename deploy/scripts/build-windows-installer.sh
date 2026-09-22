@@ -15,7 +15,7 @@ echo "Building Windows installer..."
 
 # Run Inno Setup via Docker (Wine maps Docker volumes to Z: drive)
 docker run --rm \
-  -v "${ROOT_DIR}/packaging/windows:/script" \
+  -v "${ROOT_DIR}/deploy/packaging/windows:/script" \
   -v "${DIST_DIR}:/dist" \
   -v "${ROOT_DIR}/externals:/externals" \
   -v "${ROOT_DIR}/LICENSE:/license" \

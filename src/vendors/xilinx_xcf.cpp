@@ -1,6 +1,7 @@
 // Xilinx XCF flow programming
 #include "vendors/xilinx.hpp"
 #include "utils/progressBar.hpp"
+#include <cstring>
 #include <unistd.h>
 #define XCF_FVFY3          0xE2
 #define XCF_ISCTESTSTATUS  0xE3

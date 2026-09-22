@@ -61,17 +61,17 @@ Comparison baseline:
 - Added packaged Xilinx USB firmware files:
 
 ```text
-ise_programmer_bins/xusb_emb.hex
-ise_programmer_bins/xusb_xlp.hex
-ise_programmer_bins/xusb_xp2.hex
-ise_programmer_bins/xusb_xp2_loader.hex
-ise_programmer_bins/xusb_xpr.hex
-ise_programmer_bins/xusb_xse.hex
-ise_programmer_bins/xusb_xup.hex
-ise_programmer_bins/xusbdfwu.hex
+deploy/ise_programmer_bins/xusb_emb.hex
+deploy/ise_programmer_bins/xusb_xlp.hex
+deploy/ise_programmer_bins/xusb_xp2.hex
+deploy/ise_programmer_bins/xusb_xp2_loader.hex
+deploy/ise_programmer_bins/xusb_xpr.hex
+deploy/ise_programmer_bins/xusb_xse.hex
+deploy/ise_programmer_bins/xusb_xup.hex
+deploy/ise_programmer_bins/xusbdfwu.hex
 ```
 
-- Added `scripts/extract-xusb-loader-from-sys.ps1` for extracting loader firmware from the Xilinx driver.
+- Added `deploy/scripts/extract-xusb-loader-from-sys.ps1` for extracting loader firmware from the Xilinx driver.
 - Added firmware lookup through packaged share data and environment/configurable paths.
 - Added retry and recovery handling for XPCU USB control and bulk transfers.
 - Added XPCU endpoint discovery and environment override support.
@@ -93,7 +93,7 @@ docs/diagrams/xpcu-firmware-state-machine.svg
 - Added ISE-derived Spartan-6 SPI bridge `.cor` files under:
 
 ```text
-spiOverJtag/from_ise/spartan-6/
+src/transport_db/spiOverJtag/from_ise/spartan-6/
 ```
 
 - Added automatic Spartan-6 `.cor` bridge lookup by FPGA model.

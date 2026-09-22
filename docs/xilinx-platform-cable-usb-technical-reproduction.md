@@ -510,6 +510,6 @@ allowed to proceed.
 - [Windows debug-session summary](xilinx-platform-cable-usb-windows-debug.md)
 - [Driver deployment guide](../externals/xilinx-usb-driver/DEPLOYMENT.md)
 - [Driver troubleshooting guide](../externals/xilinx-usb-driver/TROUBLESHOOTING.md)
-- [DLC10 loader extractor](../scripts/extract-xusb-loader-from-sys.ps1)
+- [DLC10 loader extractor](../deploy/scripts/extract-xusb-loader-from-sys.ps1)
 - [AMD Platform Cable USB II Data Sheet, DS593](https://docs.amd.com/v/u/en-US/ds593)
 - [AMD SVF and XSVF Formats, XAPP503](https://docs.amd.com/v/u/en-US/xapp503)

@@ -1,6 +1,7 @@
 // Xilinx XCFP flow programming
 #include "vendors/xilinx.hpp"
 #include "utils/progressBar.hpp"
+#include <cstring>
 #include <unistd.h>
 #include <iomanip>
 #define XCFP_ISC_READ      0xF8

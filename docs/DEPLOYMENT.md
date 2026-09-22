@@ -4,13 +4,17 @@
 
 ```bash
 sudo apt-get install cmake pkg-config g++ gzip libftdi1-dev libhidapi-dev libudev-dev zlib1g-dev
-./scripts/build.sh --ninja --package
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+cmake --install build --prefix "$PWD/dist/local"
 ```
 
 Pass extra CMake switches after `--`:
 
 ```bash
-./scripts/build.sh --package -- -DENABLE_CMSISDAP=OFF -DENABLE_LIBGPIOD=OFF
+cmake -S . -B build -G Ninja \
+  -DENABLE_CMSISDAP=OFF -DENABLE_LIBGPIOD=OFF
+cmake --build build --parallel
 ```
 
 ## Docker Linux deployment
@@ -35,20 +39,26 @@ Use MSYS2 UCRT64 or MINGW64 and install the matching packages:
 
 ```bash
 pacman -S --needed git base-devel mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-cc mingw-w64-ucrt-x86_64-pkgconf mingw-w64-ucrt-x86_64-libusb mingw-w64-ucrt-x86_64-libftdi mingw-w64-ucrt-x86_64-hidapi mingw-w64-ucrt-x86_64-zlib
-./scripts/build.sh --ninja --package -- -DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF
+cmake -S . -B build -G Ninja -DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF
+cmake --build build --parallel
 ```
 
 Or from PowerShell when CMake and a compiler are already installed:
 
 ```powershell
-.\scripts\build.ps1 -Package -Ninja
+cmake -S . -B build -G Ninja -DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF
+cmake --build build --parallel
 ```
 
 ## Local Windows cross-compile from Linux
 
 ```bash
 sudo apt-get install mingw-w64 libz-mingw-w64-dev cmake ninja-build pkg-config p7zip-full
-./scripts/build.sh --windows-cross --ninja --package
+cmake -S . -B build-win64 -G Ninja \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/Toolchain-x86_64-w64-mingw32.cmake \
+  -DWINDOWS_CROSSCOMPILE=ON -DCROSS_COMPILE_DEPS=ON \
+  -DENABLE_CMSISDAP=OFF -DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF
+cmake --build build-win64 --parallel
 ```
 
 ## GitHub Actions release

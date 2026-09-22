@@ -414,7 +414,7 @@ The XPCU uses a Cypress FX2 microcontroller that requires firmware upload. Multi
 
 ==== 5.4 Spartan-6 SPI Bridge ====
 
-Spartan-6 devices require a bridge bitstream to enable SPI flash access over JTAG. This fork includes ISE-derived `.cor` bridge files for multiple Spartan-6 device families, with automatic lookup by FPGA model name. The bridge files are stored in `spiOverJtag/from_ise/spartan-6/`.
+Spartan-6 devices require a bridge bitstream to enable SPI flash access over JTAG. This fork includes ISE-derived `.cor` bridge files for multiple Spartan-6 device families, with automatic lookup by FPGA model name. The bridge files are stored in `src/transport_db/spiOverJtag/from_ise/spartan-6/`.
 
 Supported bridge formats: `.bit`, `.bit.gz`, `.cor`
 
@@ -883,8 +883,8 @@ This fork diverges from the upstream `trabucayre/openFPGALoader` at merge base `
 
 - `src/xilinxPlatformCableUSB.cpp` (new -- XPCU driver)
 - `src/pathHelper.cpp` (new -- cross-platform path resolution)
-- `ise_programmer_bins/` (new -- XPCU firmware files)
-- `spiOverJtag/from_ise/spartan-6/` (new -- SPI bridge `.cor` files)
+- `deploy/ise_programmer_bins/` (new -- XPCU firmware files)
+- `src/transport_db/spiOverJtag/from_ise/spartan-6/` (new -- SPI bridge `.cor` files)
 - `externals/libwdi/` (new submodule)
 - `externals/xilinx-usb-driver/` (new submodule)
 - `docker/cross/windows/` (new -- cross-compile Dockerfiles)

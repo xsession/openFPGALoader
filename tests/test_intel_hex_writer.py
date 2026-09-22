@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Ad-hoc verification: Intel HEX writer matches the C++ implementation in dumpFlash()."""
 
+from pathlib import Path
+
 def write_intel_hex(data):
     """Replicate the FIXED C++ Intel HEX writer from xilinx.cpp dumpFlash()."""
     lines = []
@@ -155,14 +157,16 @@ def test_roundtrip():
 
 def test_matches_reference_format():
     """Verify reference file format and line count."""
-    REF = "C:/Users/livanyi/Desktop/WORK/GIT/openFPGALoader/dist/docker-windows/install/bin/rb_1.mcs"
-    with open(REF, "rb") as f:
-        ref_bytes = f.read(500)
-    ref_str = ref_bytes.decode("ascii")
+    # Use a repository-local reference when one is available, but keep the
+    # test runnable on CI and on other developers' machines.
+    reference = Path(__file__).resolve().parents[1] / "dist/docker-windows/install/bin/rb_1.mcs"
+    if reference.is_file():
+        ref_bytes = reference.read_bytes()[:500]
+        ref_str = ref_bytes.decode("ascii")
 
-    assert ref_str.startswith(":020000040000FA\n"), "Reference should start with ELA record + LF"
-    assert b"\r" not in ref_bytes, "Reference should use LF-only, not CRLF"
-    assert b"\n\n" not in ref_bytes, "Reference should not have blank lines between records"
+        assert ref_str.startswith(":020000040000FA\n"), "Reference should start with ELA record + LF"
+        assert b"\r" not in ref_bytes, "Reference should use LF-only, not CRLF"
+        assert b"\n\n" not in ref_bytes, "Reference should not have blank lines between records"
 
     # Verify our output uses same format
     sample = write_intel_hex(bytes([0xFF] * 16))

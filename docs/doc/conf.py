@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from sys import path as sys_path
-from os.path import abspath
 from pathlib import Path
 from json import loads
 
 
 ROOT = Path(__file__).resolve().parent
 
-sys_path.insert(0, abspath("."))
+# Resolve the helper module relative to this configuration file rather than
+# relying on the caller's working directory.
+sys_path.insert(0, str(ROOT))
 
 
 from data import (

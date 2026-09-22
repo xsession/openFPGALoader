@@ -27,7 +27,7 @@ build() {
   MSYS2_ARG_CONV_EXCL=- cmake \
     -G "MSYS Makefiles" \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
-    ../../../..
+    ../../../../../
   MSYS2_ARG_CONV_EXCL="-DDATA_DIR=" cmake --build .
 }
 
@@ -41,5 +41,5 @@ package() {
 
   _licenses="${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
   mkdir -p "${_licenses}"
-  install -m 644 ../../../../LICENSE "${_licenses}"
+  install -m 644 ../../../../../LICENSE "${_licenses}"
 }

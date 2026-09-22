@@ -32,7 +32,7 @@ jobs:
           - name: ubuntu-24.04-x86_64
             runner: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -88,7 +88,7 @@ jobs:
           sha256sum "${name}.tar.gz" > "${name}.tar.gz.sha256"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-${{ matrix.name }}
           path: |
@@ -103,7 +103,7 @@ jobs:
       matrix:
         runner: [ macos-13, macos-14 ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -146,7 +146,7 @@ jobs:
           shasum -a 256 "${name}.tar.gz" > "${name}.tar.gz.sha256"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-${{ matrix.runner }}
           path: |
@@ -168,7 +168,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -225,7 +225,7 @@ jobs:
           sha256sum "${name}.zip" > "${name}.zip.sha256"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-windows-${{ matrix.sys }}-x86_64
           path: |
@@ -236,7 +236,7 @@ jobs:
     name: Windows cross-compile from Ubuntu
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           fetch-depth: 0
@@ -282,7 +282,7 @@ jobs:
           sha256sum "${name}.zip" > "${name}.zip.sha256"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-windows-cross-x86_64
           path: |
@@ -296,7 +296,7 @@ jobs:
     if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.event.inputs.release_tag != '')
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true

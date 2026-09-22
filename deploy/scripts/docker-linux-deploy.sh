@@ -34,7 +34,7 @@ fi
 
 mkdir -p "${PREFIX_DIR}/share/openFPGALoader"
 
-LOCAL_FIRMWARE_DIR="${ROOT_DIR}/ise_programmer_bins"
+LOCAL_FIRMWARE_DIR="${ROOT_DIR}/deploy/ise_programmer_bins"
 
 if compgen -G "${LOCAL_FIRMWARE_DIR}/*.hex" >/dev/null; then
   cp -f "${LOCAL_FIRMWARE_DIR}/"*.hex \

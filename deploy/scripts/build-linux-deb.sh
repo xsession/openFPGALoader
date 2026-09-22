@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PACKAGING_DIR="${ROOT_DIR}/packaging/linux"
+PACKAGING_DIR="${ROOT_DIR}/deploy/packaging/linux/debian"
 DIST_DIR="${ROOT_DIR}/dist/docker-linux"
 INSTALL_DIR="${DIST_DIR}/install"
 BUILD_DIR="${ROOT_DIR}/build-linux-deb"
@@ -37,8 +37,8 @@ if [[ -f "${ROOT_DIR}/99-openfpgaloader.rules" ]]; then
   cp "${ROOT_DIR}/99-openfpgaloader.rules" "${BUILD_DIR}/usr/lib/udev/rules.d/"
 fi
 
-# Copy DEBIAN control files
-cp -r "${PACKAGING_DIR}/DEBIAN" "${BUILD_DIR}/"
+# Copy Debian control files into dpkg's required DEBIAN directory.
+cp -r "${PACKAGING_DIR}" "${BUILD_DIR}/DEBIAN"
 chmod 755 "${BUILD_DIR}/DEBIAN/postinst"
 chmod 755 "${BUILD_DIR}/DEBIAN/postrm"
 

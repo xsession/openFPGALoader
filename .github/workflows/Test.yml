@@ -5,19 +5,24 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
 
   doc:
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/'))
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     name: '📓 Docs'
 
     steps:
       - name: '🧰 Checkout'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: '🐍 Setup Python'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v7
         with:
           python-version: "3.x"
 
@@ -27,21 +32,21 @@ jobs:
 
       - name: '📓 Build docs'
         run: |
-          sphinx-build -b html doc doc/_build/html
+          sphinx-build -b html docs/doc docs/doc/_build/html
 
       - name: '⬆️ Deploy to gh-pages'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: doc/_build/html
+          publish_dir: docs/doc/_build/html
           publish_branch: gh-pages
           keep_files: false
 
       - name: 'Upload docs artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-Documentation
-          path: doc/_build/html
+          path: docs/doc/_build/html
 
 
   lin-build:
@@ -56,7 +61,7 @@ jobs:
     steps:
 
     - name: '🧰 Checkout'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: '⚙️ Install dependencies'
       run: |
@@ -89,7 +94,7 @@ jobs:
         tar -C pkg -czf "ubuntu${{ matrix.os }}.04-openFPGALoader.tgz" .
 
     - name: '📤 Upload artifact: tarball'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ubuntu${{ matrix.os }}.04-openFPGALoader
         path: ubuntu${{ matrix.os }}.04-openFPGALoader.tgz
@@ -109,7 +114,7 @@ jobs:
     steps:
 
     - name: '🧰 Checkout'
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: '⚙️ Install dependencies'
       run: |
@@ -129,10 +134,21 @@ jobs:
         tar -C pkg -czf "macos-openFPGALoader.tgz" .
 
     - name: '📤 Upload artifact'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: macos-openFPGALoader
         path: macos-openFPGALoader.tgz
+
+
+  source-test:
+    name: '🧪 Source regression tests'
+    runs-on: ubuntu-latest
+    steps:
+    - name: '🧰 Checkout'
+      uses: actions/checkout@v7
+
+    - name: '🧪 Intel HEX regression tests'
+      run: python3 tests/test_intel_hex_writer.py
 
 
   lin-test:
@@ -157,12 +173,13 @@ jobs:
           zlib1g
 
     - name: '📥 Download artifact: package'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         name: ubuntu${{ matrix.os }}.04-openFPGALoader
 
     - name: '🛠️ Extract package'
       run: |
+        mkdir -p /tmp/pkg
         tar -xvzf ubuntu${{ matrix.os }}.04-openFPGALoader.tgz -C /tmp/pkg/
 
     - name: '🚦 Test package'
@@ -201,13 +218,15 @@ jobs:
 
   Release:
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || contains(github.ref, 'refs/tags/'))
-    needs: [ doc, lin-test, win ]
+    permissions:
+      contents: write
+    needs: [ doc, lin-test, source-test, win ]
     runs-on: ubuntu-latest
     name: '📦 Release'
     steps:
 
     - name: '📥 Download artifacts'
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v8
       with:
         path: artifact
 
