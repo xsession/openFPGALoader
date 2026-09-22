@@ -1,0 +1,2905 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Universal utility for programming FPGAs">
+      
+      
+      
+        <link rel="canonical" href="https://xsession.github.io/openFPGALoader/digilent-hs3-vs-xpcu-dump-flash-codepath/">
+      
+      
+        <link rel="prev" href="../SOJ_REVIEW/">
+      
+      
+        <link rel="next" href="../spartan6-xpcu-spi-debug-log/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Digilent HS3 vs XPCU - openFPGALoader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#short-conclusion" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="openFPGALoader" class="md-header__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            openFPGALoader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Digilent HS3 vs XPCU
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guide/first-steps/" class="md-tabs__link">
+          
+  
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../compatibility/board/" class="md-tabs__link">
+          
+  
+  
+  Compatibility
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../vendors/anlogic/" class="md-tabs__link">
+          
+  
+  
+  Vendors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../SOJ_REVIEW/" class="md-tabs__link">
+          
+  
+  
+  Hardware and debugging
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/architecture-rules/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../DEVICE_SUPPORT_CHAT/" class="md-tabs__link">
+          
+  
+  
+  Project documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="openFPGALoader" class="md-nav__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    openFPGALoader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/first-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compatibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/board/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/fpga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FPGAs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/cable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vendors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vendors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/anlogic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anlogic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/colognechip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cologne Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/efinix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efinix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/gowin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gowin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/intel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intel/Altera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/lattice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lattice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and debugging
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware and debugging
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SOJ_REVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOJ review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#short-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Short conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cable-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cable definitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-parsing-and-common-request-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI parsing and common request fields
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-the-paths-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the paths split
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#digilent-hs3-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Digilent HS3 path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xilinx-platform-cable-usb-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Xilinx Platform Cable USB path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-would-happen-after-xpcu-initialized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What would happen after XPCU initialized
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shared-xilinx-flash-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared Xilinx flash path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-the-logs-are-different" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the logs are different
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why the logs are different">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#successful-digilent-hs3-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Successful Digilent HS3 log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-xilinx-platform-cable-usb-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing Xilinx Platform Cable USB log
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-debugging-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical debugging implications
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-xpcu-spi-debug-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-hs3-m25p40-write-stall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 HS3 write stall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-technical-reproduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-windows-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machxo3-recovery-after-bulk-erase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MachXO3 recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XCF_PLATFORM_FLASH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XCF platform flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XILINX_PLATFORM_CABLE_USB_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows cable notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/source-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/runtime-flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/build-and-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/architecture-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API and code reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVICE_SUPPORT_CHAT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-flash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-fpga-and-flash-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_CROSS_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker cross-Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_DEPLOY_LINUX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Linux deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/ci-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI issue report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../todo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Todo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#short-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Short conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cable-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cable definitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli-parsing-and-common-request-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CLI parsing and common request fields
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-the-paths-split" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the paths split
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#digilent-hs3-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Digilent HS3 path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#xilinx-platform-cable-usb-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Xilinx Platform Cable USB path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-would-happen-after-xpcu-initialized" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What would happen after XPCU initialized
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shared-xilinx-flash-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared Xilinx flash path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-the-logs-are-different" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the logs are different
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why the logs are different">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#successful-digilent-hs3-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Successful Digilent HS3 log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failing-xilinx-platform-cable-usb-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failing Xilinx Platform Cable USB log
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-debugging-implications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical debugging implications
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Digilent HS3 vs XPCU</h1>
+
+<p># Digilent HS3 vs Xilinx Platform Cable USB Dump-Flash Codepath</p>
+<p>This note compares these two commands:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">openFPGALoader</span><span class="p">.</span><span class="n">exe</span> <span class="p">`</span>
+  <span class="n">-c</span> <span class="n">digilent_hs3</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-fpga-part</span> <span class="n">xc6slx9tqg144</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-external-flash</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-dump-flash</span> <span class="p">`</span>
+  <span class="p">-</span><span class="o">-file</span><span class="n">-size</span> <span class="n">16777216</span> <span class="p">`</span>
+  <span class="n">-o</span> <span class="n">0</span> <span class="p">`</span>
+  <span class="n">flash_dump</span><span class="p">.</span><span class="n">bin</span> <span class="p">`</span>
+  <span class="n">-v</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">openFPGALoader</span><span class="p">.</span><span class="n">exe</span> <span class="p">`</span>
+  <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-fpga-part</span> <span class="n">xc6slx9tqg144</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-external-flash</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-dump-flash</span> <span class="p">`</span>
+  <span class="p">-</span><span class="o">-file</span><span class="n">-size</span> <span class="n">16777216</span> <span class="p">`</span>
+  <span class="n">-o</span> <span class="n">0</span> <span class="p">`</span>
+  <span class="n">flash_dump</span><span class="p">.</span><span class="n">bin</span> <span class="p">`</span>
+  <span class="n">-v</span>
+</code></pre></div>
+<h2 id="short-conclusion">Short conclusion<a class="headerlink" href="#short-conclusion" title="Permanent link">&para;</a></h2>
+<p>The two commands are identical from the FPGA/flash point of view once JTAG is initialized. Both request a Spartan-6 external SPI flash dump through the Xilinx <code>dumpFlash()</code> path.</p>
+<p>The difference is entirely caused by <code>-c</code>:</p>
+<ul>
+<li><code>digilent_hs3</code> selects the FTDI MPSSE backend. In the successful log it reaches JTAG chain detection, loads <code>spiOverJtag_xc6slx9tqg144.bit.gz</code>, reads the SPI flash JEDEC ID, and dumps flash.</li>
+<li><code>xilinxPlatformCableUsb</code> selects the Xilinx Platform Cable USB / FX2 backend. In the failing log it loads <code>xusb_xp2_loader.hex</code>, waits for USB re-enumeration, then cannot reopen the post-firmware FX2 device. It fails before JTAG chain detection, before bridge loading, before JEDEC ID read, and before any flash dump.</li>
+</ul>
+<p>So the observed failure for <code>-c xilinxPlatformCableUsb</code> is not a Spartan-6 USER opcode problem and not a SPI flash problem. It is a cable initialization/re-enumeration problem in the XPCU backend.</p>
+<h2 id="cable-definitions">Cable definitions<a class="headerlink" href="#cable-definitions" title="Permanent link">&para;</a></h2>
+<p>The command-line cable name is looked up in <code>cable_list</code> in <code>src/cable.hpp</code>.</p>
+<p>Relevant entries:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="s">"digilent_hs3"</span><span class="p">,</span><span class="w">       </span><span class="n">FTDI_SER</span><span class="p">(</span><span class="mh">0x0403</span><span class="p">,</span><span class="w"> </span><span class="mh">0x6014</span><span class="p">,</span><span class="w"> </span><span class="n">FTDI_INTF_A</span><span class="p">,</span><span class="w"> </span><span class="mh">0x88</span><span class="p">,</span><span class="w"> </span><span class="mh">0x8B</span><span class="p">,</span><span class="w"> </span><span class="mh">0x20</span><span class="p">,</span><span class="w"> </span><span class="mh">0x30</span><span class="p">)},</span>
+<span class="p">{</span><span class="s">"xilinxPlatformCableUsb"</span><span class="p">,</span><span class="w">     </span><span class="n">CABLE_DEF</span><span class="p">(</span><span class="n">MODE_XPCU</span><span class="p">,</span><span class="w"> </span><span class="mh">0x03fd</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0013</span><span class="w">                 </span><span class="p">)},</span>
+<span class="p">{</span><span class="s">"xilinxPlatformCableUsb_alt"</span><span class="p">,</span><span class="w"> </span><span class="n">CABLE_DEF</span><span class="p">(</span><span class="n">MODE_XPCU</span><span class="p">,</span><span class="w"> </span><span class="mh">0x03fd</span><span class="p">,</span><span class="w"> </span><span class="mh">0x000D</span><span class="w">                 </span><span class="p">)},</span>
+<span class="p">{</span><span class="s">"xilinxPlatformCableUsb_initialized"</span><span class="p">,</span><span class="w"> </span><span class="n">CABLE_DEF</span><span class="p">(</span><span class="n">MODE_XPCU</span><span class="p">,</span><span class="w"> </span><span class="mh">0x03fd</span><span class="p">,</span><span class="w"> </span><span class="mh">0x0008</span><span class="w">         </span><span class="p">)},</span>
+</code></pre></div>
+<p>Source: <code>src/cable.hpp:105</code>, <code>src/cable.hpp:142-144</code>.</p>
+<p>Practical meaning:</p>
+<ul>
+<li><code>digilent_hs3</code> is <code>MODE_FTDI_SERIAL</code>, VID:PID <code>0403:6014</code>, FTDI interface A, with Digilent-specific initial GPIO values/directions.</li>
+<li><code>xilinxPlatformCableUsb</code> is <code>MODE_XPCU</code>, VID:PID <code>03fd:0013</code>, the uninitialized/loader identity used by one Xilinx Platform Cable USB variant.</li>
+<li><code>xilinxPlatformCableUsb_alt</code> is also <code>MODE_XPCU</code>, but starts from VID:PID <code>03fd:000d</code>.</li>
+<li>The initialized XPCU identity is <code>03fd:0008</code>.</li>
+</ul>
+<h2 id="cli-parsing-and-common-request-fields">CLI parsing and common request fields<a class="headerlink" href="#cli-parsing-and-common-request-fields" title="Permanent link">&para;</a></h2>
+<p><code>--dump-flash</code> is parsed into <code>Device::RD_FLASH</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">"dump-flash"</span><span class="p">))</span>
+<span class="w">    </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">prg_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Device</span><span class="o">::</span><span class="n">RD_FLASH</span><span class="p">;</span>
+</code></pre></div>
+<p>Source: <code>src/main.cpp:1191-1204</code>.</p>
+<p>The dump is executed later by:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="n">prg_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Device</span><span class="o">::</span><span class="n">RD_FLASH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="n">file_size</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">printError</span><span class="p">(</span><span class="s">"Error: 0 size for dump"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fpga</span><span class="o">-&gt;</span><span class="n">dumpFlash</span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="n">offset</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">file_size</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/main.cpp:735-740</code>.</p>
+<p>Practical meaning:</p>
+<ul>
+<li><code>--dump-flash</code> chooses read-flash mode.</li>
+<li><code>--file-size 16777216</code> becomes the number of bytes passed to <code>dumpFlash()</code>.</li>
+<li><code>-o 0</code> becomes the <code>base_addr</code> argument.</li>
+<li><code>flash_dump.bin</code> is the output file name stored in <code>args.bit_file</code>.</li>
+<li><code>--external-flash</code> makes the Xilinx object use SPI flash access mode through a bridge.</li>
+</ul>
+<p>These fields are the same in both commands. They only matter after JTAG initialization succeeds.</p>
+<h2 id="where-the-paths-split">Where the paths split<a class="headerlink" href="#where-the-paths-split" title="Permanent link">&para;</a></h2>
+<p>After cable lookup, <code>main()</code> constructs a <code>Jtag</code> object:</p>
+<div class="highlight"><pre><span></span><code><span class="n">jtag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Jtag</span><span class="p">(</span><span class="n">cable</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">pins_config</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">usb_serial_num</span><span class="p">,</span>
+<span class="w">        </span><span class="n">args</span><span class="p">.</span><span class="n">freq</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">ip_adr</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">port</span><span class="p">,</span>
+<span class="w">        </span><span class="n">args</span><span class="p">.</span><span class="n">invert_read_edge</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">.</span><span class="n">probe_firmware</span><span class="p">,</span>
+<span class="w">        </span><span class="n">args</span><span class="p">.</span><span class="n">user_misc_devs</span><span class="p">);</span>
+</code></pre></div>
+<p>Source: <code>src/main.cpp:459-464</code>.</p>
+<p>Inside <code>Jtag::Jtag()</code>, the backend is selected by <code>cable.type</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">case</span><span class="w"> </span><span class="no">MODE_FTDI_SERIAL</span><span class="p">:</span>
+<span class="w">    </span><span class="n">_jtag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">FtdiJtagMPSSE</span><span class="p">(</span><span class="n">cable</span><span class="p">,</span><span class="w"> </span><span class="n">dev</span><span class="p">,</span><span class="w"> </span><span class="n">serial</span><span class="p">,</span><span class="w"> </span><span class="n">clkHZ</span><span class="p">,</span>
+<span class="w">            </span><span class="n">invert_read_edge</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="p">);</span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span>
+
+<span class="k">case</span><span class="w"> </span><span class="no">MODE_XPCU</span><span class="p">:</span>
+<span class="w">    </span><span class="n">_jtag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">XilinxPlatformCableUSB</span><span class="p">(</span><span class="n">cable</span><span class="p">.</span><span class="n">vid</span><span class="p">,</span><span class="w"> </span><span class="n">cable</span><span class="p">.</span><span class="n">pid</span><span class="p">,</span><span class="w"> </span><span class="n">clkHZ</span><span class="p">,</span>
+<span class="w">        </span><span class="n">firmware_path</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="p">);</span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span>
+</code></pre></div>
+<p>Source: <code>src/jtag.cpp:126-129</code>, <code>src/jtag.cpp:214-218</code>.</p>
+<p>This is the main fork:</p>
+<ul>
+<li><code>digilent_hs3</code> -&gt; <code>FtdiJtagMPSSE</code></li>
+<li><code>xilinxPlatformCableUsb</code> -&gt; <code>XilinxPlatformCableUSB</code></li>
+</ul>
+<h2 id="digilent-hs3-path">Digilent HS3 path<a class="headerlink" href="#digilent-hs3-path" title="Permanent link">&para;</a></h2>
+<p><code>digilent_hs3</code> is FTDI MPSSE. Construction goes through:</p>
+<ul>
+<li><code>Jtag::Jtag()</code> -&gt; <code>FtdiJtagMPSSE</code></li>
+<li><code>FtdiJtagMPSSE</code> -&gt; <code>FTDIpp_MPSSE</code></li>
+</ul>
+<p><code>FTDIpp_MPSSE</code> opens the FTDI device by VID/PID and interface:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_vid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cable</span><span class="p">.</span><span class="n">vid</span><span class="p">;</span>
+<span class="n">_pid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cable</span><span class="p">.</span><span class="n">pid</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="n">open_device</span><span class="p">(</span><span class="n">serial</span><span class="p">,</span><span class="w"> </span><span class="mi">115200</span><span class="p">);</span>
+</code></pre></div>
+<p>Source: <code>src/ftdipp_mpsse.cpp:41-56</code>.</p>
+<p><code>FtdiJtagMPSSE::init_internal()</code> then switches the FTDI chip into MPSSE mode:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">init</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="mh">0xfb</span><span class="p">,</span><span class="w"> </span><span class="n">BITMODE_MPSSE</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">"low level FTDI init failed"</span><span class="p">);</span>
+<span class="n">config_edge</span><span class="p">();</span>
+</code></pre></div>
+<p>Source: <code>src/ftdiJtagMPSSE.cpp:68-98</code>.</p>
+<p>JTAG transfers use FTDI MPSSE commands in <code>writeTDI()</code> and <code>writeTMS()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">FtdiJtagMPSSE</span><span class="o">::</span><span class="n">writeTDI</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">tdi</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">tdo</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">last</span><span class="p">)</span>
+</code></pre></div>
+<p>Source: <code>src/ftdiJtagMPSSE.cpp:233-350</code>.</p>
+<p>In the successful log, this backend works:</p>
+<div class="highlight"><pre><span></span><code>Jtag frequency : requested 6.00MHz    -&gt; real 6.00MHz
+found 1 devices
+JTAG chain: [0]=0x04001093
+...
+SOJ version raw: 02 00 00 00 00 00 00
+SPI RDID probe v1: 20 20 13 10
+...
+Read flash ... 100.00%
+Done
+</code></pre></div>
+<p>Interpretation:</p>
+<ul>
+<li>The FTDI backend successfully opened the cable.</li>
+<li>JTAG chain detection found the Spartan-6 LX9.</li>
+<li>The Spartan-6 bridge bitstream loaded.</li>
+<li>USER4/version readback worked.</li>
+<li>USER1 SPI bridge readback worked.</li>
+<li>SPI flash JEDEC RDID returned valid bytes.</li>
+<li>Flash dump completed.</li>
+</ul>
+<h2 id="xilinx-platform-cable-usb-path">Xilinx Platform Cable USB path<a class="headerlink" href="#xilinx-platform-cable-usb-path" title="Permanent link">&para;</a></h2>
+<p><code>xilinxPlatformCableUsb</code> is XPCU. Construction goes through:</p>
+<ul>
+<li><code>Jtag::Jtag()</code> -&gt; <code>XilinxPlatformCableUSB</code></li>
+<li><code>XilinxPlatformCableUSB</code> -&gt; <code>FX2_ll</code></li>
+</ul>
+<p>The constructor starts here:</p>
+<div class="highlight"><pre><span></span><code><span class="n">XilinxPlatformCableUSB</span><span class="o">::</span><span class="n">XilinxPlatformCableUSB</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">vid</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">pid</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">clkHz</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">firmware_path</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">int8_t</span><span class="w"> </span><span class="n">verbose</span><span class="p">)</span>
+</code></pre></div>
+<p>Source: <code>src/xilinxPlatformCableUSB.cpp:386-398</code>.</p>
+<p>For <code>xilinxPlatformCableUsb</code>, VID:PID is <code>03fd:0013</code>, so <code>already_initialized</code> is false:</p>
+<div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">already_initialized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">XPCU_INITIALIZED_VID</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">    </span><span class="n">pid</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">XPCU_INITIALIZED_PID</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">already_initialized</span><span class="p">)</span>
+<span class="w">    </span><span class="n">firmware_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findXusbFirmwareFile</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span><span class="w"> </span><span class="n">firmware_path</span><span class="p">);</span>
+</code></pre></div>
+<p>Source: <code>src/xilinxPlatformCableUSB.cpp:406-410</code>.</p>
+<p>Then it creates the FX2 low-level object:</p>
+<div class="highlight"><pre><span></span><code><span class="n">fx2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">FX2_ll</span><span class="o">&gt;</span><span class="p">(</span><span class="n">already_initialized</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">vid</span><span class="p">,</span>
+<span class="w">        </span><span class="n">already_initialized</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">pid</span><span class="p">,</span><span class="w"> </span><span class="n">XPCU_INITIALIZED_VID</span><span class="p">,</span>
+<span class="w">        </span><span class="n">XPCU_INITIALIZED_PID</span><span class="p">,</span><span class="w"> </span><span class="n">firmware_file</span><span class="p">);</span>
+</code></pre></div>
+<p>Source: <code>src/xilinxPlatformCableUSB.cpp:437-447</code>.</p>
+<p>For <code>03fd:0013</code>, the selected firmware is <code>xusb_xp2_loader.hex</code>. That matches the failing log:</p>
+<div class="highlight"><pre><span></span><code>firmware_file : ...\xusb_xp2_loader.hex
+Loading firmware ... Done
+Waiting reload ... 100.00%
+Fail
+FX2: fail to open device
+JTAG init failed with: lowlevel init failed
+</code></pre></div>
+<p>Inside <code>FX2_ll</code>, the flow is:</p>
+<ol>
+<li>Try opening the uninitialized device <code>03fd:0013</code>.</li>
+<li>Claim USB interface 0.</li>
+<li>Load FX2 firmware.</li>
+<li>Close the original USB handle.</li>
+<li>Wait for the initialized device <code>03fd:0008</code>.</li>
+<li>If it cannot open <code>03fd:0008</code>, throw <code>FX2: fail to open device</code>.</li>
+</ol>
+<p>Relevant code:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dev_handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">libusb_open_device_with_vid_pid</span><span class="p">(</span><span class="n">usb_ctx</span><span class="p">,</span><span class="w"> </span><span class="n">uninit_vid</span><span class="p">,</span><span class="w"> </span><span class="n">uninit_pid</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">load_firmware</span><span class="p">(</span><span class="n">firmware_path</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">}</span>
+<span class="n">close</span><span class="p">();</span>
+<span class="n">reenum</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="n">dev_handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">libusb_open_device_with_vid_pid</span><span class="p">(</span><span class="n">usb_ctx</span><span class="p">,</span><span class="w"> </span><span class="n">vid</span><span class="p">,</span><span class="w"> </span><span class="n">pid</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dev_handle</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">progress</span><span class="p">.</span><span class="n">fail</span><span class="p">();</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">"FX2: fail to open device"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/fx2_ll.cpp:73-124</code>.</p>
+<p>This is exactly where the failing command stops. Because <code>Jtag</code> construction fails, none of the following code runs:</p>
+<ul>
+<li><code>Jtag::detectChain()</code></li>
+<li>Xilinx device claiming</li>
+<li><code>Xilinx::prepare_flash_access()</code></li>
+<li><code>Xilinx::load_bridge()</code></li>
+<li><code>Xilinx::get_spiOverJtag_version()</code></li>
+<li><code>SPIFlash::read_id()</code></li>
+<li><code>SPIFlash::dump()</code></li>
+</ul>
+<h2 id="what-would-happen-after-xpcu-initialized">What would happen after XPCU initialized<a class="headerlink" href="#what-would-happen-after-xpcu-initialized" title="Permanent link">&para;</a></h2>
+<p>If XPCU successfully reopened as <code>03fd:0008</code>, <code>XilinxPlatformCableUSB</code> would continue:</p>
+<div class="highlight"><pre><span></span><code><span class="n">configureXpcuUsbInterface</span><span class="p">(</span><span class="n">fx2</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="n">waitForXpcuControlReady</span><span class="p">(</span><span class="n">fx2</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">uint16_t</span><span class="w"> </span><span class="n">fx2_firmware_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">displayCableVersion</span><span class="p">();</span>
+<span class="p">...</span>
+<span class="n">enableDevice</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="n">setClkFreq</span><span class="p">(</span><span class="n">clkHz</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="n">xpcuPrimeAcceleratedTransfer</span><span class="p">(</span><span class="n">fx2</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+</code></pre></div>
+<p>Source: <code>src/xilinxPlatformCableUSB.cpp:475-518</code>.</p>
+<p>For JTAG transfers, XPCU has two transport modes:</p>
+<ul>
+<li>control-transfer bitbang path</li>
+<li>accelerated bulk transfer path</li>
+</ul>
+<p>The split is in <code>XilinxPlatformCableUSB::write()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_use_control_bitbang</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="n">fx2</span><span class="o">-&gt;</span><span class="n">write_ctrl</span><span class="p">(...)</span>
+<span class="w">    </span><span class="n">fx2</span><span class="o">-&gt;</span><span class="n">read_ctrl</span><span class="p">(...)</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="p">...</span>
+<span class="n">xpcuGpioTransferCtrl</span><span class="p">(...)</span>
+<span class="n">fx2</span><span class="o">-&gt;</span><span class="n">write</span><span class="p">(</span><span class="n">xpcu_ep_jtag_out</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+<span class="n">fx2</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">(</span><span class="n">xpcu_ep_jtag_in</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span>
+</code></pre></div>
+<p>Source: <code>src/xilinxPlatformCableUSB.cpp:675-837</code>.</p>
+<p>But again, the failing <code>xilinxPlatformCableUsb</code> log does not reach this point.</p>
+<h2 id="shared-xilinx-flash-path">Shared Xilinx flash path<a class="headerlink" href="#shared-xilinx-flash-path" title="Permanent link">&para;</a></h2>
+<p>Once JTAG exists and the FPGA is claimed, both cables use the same Xilinx flash logic.</p>
+<p>For Spartan-6, the constructor sets:</p>
+<div class="highlight"><pre><span></span><code><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">family</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"spartan6"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_fpga_family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SPARTAN6_FAMILY</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_ircode_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ircode_mapping</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="s">"spartan6"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/xilinx.cpp:592-597</code>.</p>
+<p>For dump-flash, Xilinx delegates to <code>FlashInterface</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_flash_chips</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">PRIMARY_FLASH</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">select_flash_chip</span><span class="p">(</span><span class="n">PRIMARY_FLASH</span><span class="p">);</span>
+<span class="w">    </span><span class="n">FlashInterface</span><span class="o">::</span><span class="n">set_filename</span><span class="p">(</span><span class="n">_filename</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">FlashInterface</span><span class="o">::</span><span class="n">dump</span><span class="p">(</span><span class="n">base_addr</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/xilinx.cpp:1718-1722</code>.</p>
+<p><code>FlashInterface::dump()</code> prepares bridge access, creates <code>SPIFlash</code>, then dumps:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">prepare_flash_access</span><span class="p">())</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="n">SPIFlash</span><span class="w"> </span><span class="n">flash</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="n">_spif_verbose</span><span class="p">);</span>
+<span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">flash</span><span class="p">.</span><span class="n">dump</span><span class="p">(</span><span class="n">_spif_filename</span><span class="p">,</span><span class="w"> </span><span class="n">base_addr</span><span class="p">,</span><span class="w"> </span><span class="n">len</span><span class="p">,</span><span class="w"> </span><span class="n">_spif_rd_burst</span><span class="p">);</span>
+</code></pre></div>
+<p>Source: <code>src/flashInterface.cpp:249-265</code>.</p>
+<p>The bridge load is in <code>Xilinx::prepare_flash_access()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load_bridge</span><span class="p">();</span>
+<span class="p">...</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">get_spiOverJtag_version</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">2.0f</span><span class="p">)</span>
+<span class="w">    </span><span class="n">_soj_is_v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+</code></pre></div>
+<p>Source: <code>src/xilinx.cpp:1019-1051</code>.</p>
+<p>For Spartan-6 auto bridge selection:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_fpga_family</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SPARTAN6_FAMILY</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spartan6_bridge_model_from_package</span><span class="p">(</span><span class="n">_device_package</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">model</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">cor_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bridge_dir</span><span class="w"> </span><span class="o">+</span>
+<span class="w">            </span><span class="s">"/from_ise/spartan-6/"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">"_spi.cor"</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">file_exists</span><span class="p">(</span><span class="n">cor_path</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bitname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cor_path</span><span class="p">;</span>
+<span class="w">            </span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"cor"</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bitname</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">bitname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bridge_dir</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">"/spiOverJtag_"</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_device_package</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">".bit.gz"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"bit"</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/xilinx.cpp:1054-1087</code>.</p>
+<p>In the successful HS3 LX9 log, this selected:</p>
+<div class="highlight"><pre><span></span><code>...\spiOverJtag_xc6slx9tqg144.bit.gz
+</code></pre></div>
+<p>The actual SPI flash file dump is:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">rd_burst</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="mi">0</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">base_addr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">uint8_t</span><span class="o">*</span><span class="p">)</span><span class="o">&amp;</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">rd_burst</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">...</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">fwrite</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">uint8_t</span><span class="p">),</span><span class="w"> </span><span class="n">rd_burst</span><span class="p">,</span><span class="w"> </span><span class="n">fd</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/spiFlash.cpp:324-360</code>.</p>
+<p>Before dump, <code>SPIFlash</code> reads JEDEC ID:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_spi</span><span class="o">-&gt;</span><span class="n">spi_put</span><span class="p">(</span><span class="mh">0x9F</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">rx</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span>
+<span class="p">...</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">jedec24</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0x000000</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">jedec24</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0x00ffff</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">jedec24</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mh">0xffffff</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="k">throw</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">runtime_error</span><span class="p">(</span><span class="s">"Read ID failed"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Source: <code>src/spiFlash.cpp:611-635</code>.</p>
+<p>The HS3 log passed this step:</p>
+<div class="highlight"><pre><span></span><code>SPI RDID probe v1: 20 20 13 10
+20 20 13 10 read 20201310
+</code></pre></div>
+<p>The failing XPCU command did not reach this step.</p>
+<h2 id="why-the-logs-are-different">Why the logs are different<a class="headerlink" href="#why-the-logs-are-different" title="Permanent link">&para;</a></h2>
+<h3 id="successful-digilent-hs3-log">Successful Digilent HS3 log<a class="headerlink" href="#successful-digilent-hs3-log" title="Permanent link">&para;</a></h3>
+<p>The Digilent log reaches:</p>
+<div class="highlight"><pre><span></span><code>found 1 devices
+JTAG chain: [0]=0x04001093
+...
+SOJ version raw: 02 00 00 00 00 00 00
+SPI RDID probe v1: 20 20 13 10
+...
+Read flash ... 100.00%
+Done
+</code></pre></div>
+<p>That means the entire path succeeded:</p>
+<div class="highlight"><pre><span></span><code>CLI args
+  -&gt; cable_list["digilent_hs3"]
+  -&gt; MODE_FTDI_SERIAL
+  -&gt; FtdiJtagMPSSE
+  -&gt; Jtag::detectChain()
+  -&gt; Xilinx Spartan-6 object
+  -&gt; Xilinx::dumpFlash()
+  -&gt; FlashInterface::dump()
+  -&gt; Xilinx::prepare_flash_access()
+  -&gt; Xilinx::load_bridge()
+  -&gt; spiOverJtag_xc6slx9tqg144.bit.gz
+  -&gt; SPIFlash::read_id()
+  -&gt; SPIFlash::dump()
+</code></pre></div>
+<h3 id="failing-xilinx-platform-cable-usb-log">Failing Xilinx Platform Cable USB log<a class="headerlink" href="#failing-xilinx-platform-cable-usb-log" title="Permanent link">&para;</a></h3>
+<p>The XPCU log reaches only:</p>
+<div class="highlight"><pre><span></span><code>firmware_file : ...\xusb_xp2_loader.hex
+Loading firmware ... Done
+Waiting reload ... 100.00%
+Fail
+FX2: fail to open device
+JTAG init failed with: lowlevel init failed
+</code></pre></div>
+<p>That means it fails here:</p>
+<div class="highlight"><pre><span></span><code>CLI args
+  -&gt; cable_list["xilinxPlatformCableUsb"]
+  -&gt; MODE_XPCU
+  -&gt; XilinxPlatformCableUSB
+  -&gt; FX2_ll
+  -&gt; load xusb_xp2_loader.hex into 03fd:0013
+  -&gt; wait for 03fd:0008
+  -&gt; cannot open 03fd:0008
+  -&gt; throw "FX2: fail to open device"
+</code></pre></div>
+<p>It never reaches:</p>
+<div class="highlight"><pre><span></span><code>Jtag::detectChain()
+Xilinx::dumpFlash()
+Xilinx::load_bridge()
+SPIFlash::read_id()
+SPIFlash::dump()
+</code></pre></div>
+<h2 id="practical-debugging-implications">Practical debugging implications<a class="headerlink" href="#practical-debugging-implications" title="Permanent link">&para;</a></h2>
+<p>For <code>-c xilinxPlatformCableUsb</code>, debug USB/XPCU initialization first:</p>
+<ul>
+<li>Check whether the cable re-enumerates as <code>03fd:0008</code> after firmware load.</li>
+<li>Try <code>-c xilinxPlatformCableUsb_alt</code> if the physical cable initially appears as <code>03fd:000d</code>.</li>
+<li>Try <code>-c xilinxPlatformCableUsb_initialized</code> if the cable is already loaded as <code>03fd:0008</code>.</li>
+<li>On Windows, check the driver binding for the post-firmware <code>03fd:0008</code> interface. The code expects libusb access through <code>FX2_ll</code>.</li>
+<li>The failing log is not useful for Spartan-6 SPI bridge debugging because no JTAG scan occurred.</li>
+</ul>
+<p>For <code>-c digilent_hs3</code>, the same FPGA/flash stack is proven to work on <code>xc6slx9tqg144</code>:</p>
+<ul>
+<li>JTAG chain detection works.</li>
+<li><code>spiOverJtag_xc6slx9tqg144.bit.gz</code> works.</li>
+<li>USER4 version endpoint responds.</li>
+<li>USER1 SPI bridge responds.</li>
+<li>JEDEC RDID responds.</li>
+<li>Dump completes.</li>
+</ul>
+<p>That successful log is a strong control case: Spartan-6 external SPI dump support is functional in the shared Xilinx codepath, at least for LX9/TQG144 with the packaged bridge and HS3 transport.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../javascripts/mermaid.js"></script>
+      
+    
+  </body>
+</html>

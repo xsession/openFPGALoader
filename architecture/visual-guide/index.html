@@ -1,0 +1,2839 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Universal utility for programming FPGAs">
+      
+      
+      
+        <link rel="canonical" href="https://xsession.github.io/openFPGALoader/architecture/visual-guide/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../source-map/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Visual guide - openFPGALoader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#visual-guide-to-openfpgaloader" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="openFPGALoader" class="md-header__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            openFPGALoader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Visual guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/first-steps/" class="md-tabs__link">
+          
+  
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../compatibility/board/" class="md-tabs__link">
+          
+  
+  
+  Compatibility
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../vendors/anlogic/" class="md-tabs__link">
+          
+  
+  
+  Vendors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SOJ_REVIEW/" class="md-tabs__link">
+          
+  
+  
+  Hardware and debugging
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/architecture-rules/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../DEVICE_SUPPORT_CHAT/" class="md-tabs__link">
+          
+  
+  
+  Project documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="openFPGALoader" class="md-nav__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    openFPGALoader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/first-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compatibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../compatibility/board/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../compatibility/fpga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FPGAs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../compatibility/cable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vendors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vendors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/anlogic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anlogic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/colognechip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cologne Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/efinix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efinix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/gowin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gowin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/intel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intel/Altera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/lattice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lattice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../vendors/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and debugging
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware and debugging
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SOJ_REVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOJ review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../digilent-hs3-vs-xpcu-dump-flash-codepath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spartan6-xpcu-spi-debug-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../spartan6-hs3-m25p40-write-stall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 HS3 write stall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xilinx-platform-cable-usb-technical-reproduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../xilinx-platform-cable-usb-windows-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../machxo3-recovery-after-bulk-erase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MachXO3 recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../XCF_PLATFORM_FLASH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XCF platform flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../XILINX_PLATFORM_CABLE_USB_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows cable notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-one-request-one-target-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. One request, one target path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-how-maincpp-routes-a-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. How main.cpp routes a request
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-jtag-programming-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. JTAG programming at a glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-jtag-discovery-and-target-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. JTAG discovery and target selection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-why-bypass-alignment-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Why BYPASS alignment matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-bitstream-parsing-is-separate-from-programming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Bitstream parsing is separate from programming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-flash-programming-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Flash programming lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-direct-spi-versus-spi-over-jtag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Direct SPI versus SPI-over-JTAG
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-soj-the-bridge-inside-the-jtag-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. SOJ: the bridge inside the JTAG path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-cable-abstraction-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Cable abstraction layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-compile-time-capability-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Compile-time capability gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-build-and-package-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Build and package flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-ci-gates-and-release-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. CI gates and release artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-deployment-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Deployment topology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-troubleshooting-decision-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Troubleshooting decision tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-contributor-change-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Contributor change routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../source-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../runtime-flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-and-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c4/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c4/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c4/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../c4/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/architecture-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API and code reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEVICE_SUPPORT_CHAT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adding-new-flash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../adding-new-fpga-and-flash-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DOCKER_CROSS_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker cross-Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DOCKER_DEPLOY_LINUX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Linux deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/ci-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI issue report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../todo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Todo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-one-request-one-target-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. One request, one target path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-how-maincpp-routes-a-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. How main.cpp routes a request
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-jtag-programming-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. JTAG programming at a glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-jtag-discovery-and-target-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. JTAG discovery and target selection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-why-bypass-alignment-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Why BYPASS alignment matters
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-bitstream-parsing-is-separate-from-programming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Bitstream parsing is separate from programming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-flash-programming-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Flash programming lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-direct-spi-versus-spi-over-jtag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Direct SPI versus SPI-over-JTAG
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-soj-the-bridge-inside-the-jtag-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. SOJ: the bridge inside the JTAG path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-cable-abstraction-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Cable abstraction layers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-compile-time-capability-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Compile-time capability gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-build-and-package-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Build and package flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-ci-gates-and-release-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. CI gates and release artifacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-deployment-topology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Deployment topology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-troubleshooting-decision-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Troubleshooting decision tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-contributor-change-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Contributor change routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="visual-guide-to-openfpgaloader">Visual guide to openFPGALoader<a class="headerlink" href="#visual-guide-to-openfpgaloader" title="Permanent link">&para;</a></h1>
+<p>This page is a diagram-first tour of the project. Read from top to bottom when
+you are new to the codebase; jump directly to the relevant diagram when
+debugging a board, cable, flash, or workflow problem.</p>
+<p>The diagrams are intentionally tied to concrete implementation boundaries. The
+names in brackets are the source locations that own the behavior.</p>
+<h2 id="1-one-request-one-target-path">1. One request, one target path<a class="headerlink" href="#1-one-request-one-target-path" title="Permanent link">&para;</a></h2>
+<p>The whole product can be understood as a command-line request entering one of
+four execution paths.</p>
+<pre class="mermaid"><code>flowchart LR
+    user["Operator or CI"] --&gt; cli["openFPGALoader CLI\n[src/main.cpp]"]
+    cli --&gt; mode{"Select mode"}
+    mode --&gt; jtag["JTAG\n[protocols/jtag]"]
+    mode --&gt; spi["Direct SPI\n[FlashInterface]"]
+    mode --&gt; dfu["DFU\n[DFU adapter]"]
+    mode --&gt; xvc["XVC\n[client or server]"]
+    jtag --&gt; target["FPGA target"]
+    spi --&gt; target
+    dfu --&gt; target
+    xvc --&gt; target</code></pre>
+<p><strong>Teaching point:</strong> board metadata and explicit flags select the path; the
+selected path determines whether chain discovery is required.</p>
+<h2 id="2-how-maincpp-routes-a-request">2. How <code>main.cpp</code> routes a request<a class="headerlink" href="#2-how-maincpp-routes-a-request" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    start["Parse command line"] --&gt; list{"Is it a list command?"}
+    list --&gt;|"yes"| display["Display compiled catalogs"]
+    list --&gt;|"no"| resolve["Resolve board and cable"]
+    resolve --&gt; spi{"SPI mode?"}
+    spi --&gt;|"yes"| run_spi["Run direct SPI path"]
+    spi --&gt;|"no"| dfu{"DFU mode?"}
+    dfu --&gt;|"yes"| run_dfu["Run DFU path"]
+    dfu --&gt;|"no"| xvc{"XVC server?"}
+    xvc --&gt;|"yes"| run_xvc["Run XVC server"]
+    xvc --&gt;|"no"| run_jtag["Run JTAG path"]</code></pre>
+<p>The dispatch order is important: a board can imply SPI or DFU, while the
+default path is JTAG. Changes to the mode decision should be reviewed against
+the option parser, board catalog, and cable registry together.</p>
+<h2 id="3-jtag-programming-at-a-glance">3. JTAG programming at a glance<a class="headerlink" href="#3-jtag-programming-at-a-glance" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant O as Operator
+    participant M as main.cpp
+    participant J as Jtag
+    participant A as JtagInterface
+    participant D as Device driver
+    participant P as Parser
+    participant H as Hardware
+
+    O-&gt;&gt;M: Board, cable, file, operation
+    M-&gt;&gt;J: Construct selected adapter
+    J-&gt;&gt;A: Reset TAP and detect chain
+    A-&gt;&gt;H: TMS, TDI, TCK
+    H--&gt;&gt;A: TDO IDCODE and scan data
+    A--&gt;&gt;J: Device IDs and IR lengths
+    M-&gt;&gt;D: Select driver from IDCODE
+    D-&gt;&gt;P: Parse configuration file
+    P--&gt;&gt;D: Normalized payload
+    D-&gt;&gt;J: Vendor IR and DR scans
+    J-&gt;&gt;A: Buffered physical transfers
+    A-&gt;&gt;H: Program or verify target
+    H--&gt;&gt;M: Status and diagnostics</code></pre>
+<p><strong>Teaching point:</strong> the vendor driver owns device semantics, while <code>Jtag</code> owns
+TAP state, scan framing, and chain padding.</p>
+<h2 id="4-jtag-discovery-and-target-selection">4. JTAG discovery and target selection<a class="headerlink" href="#4-jtag-discovery-and-target-selection" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    reset["TAP reset"] --&gt; idcode["Read IDCODE stream"]
+    idcode --&gt; split["Split devices by IR length and scan order"]
+    split --&gt; lookup["Look up IDCODE in part catalog"]
+    lookup --&gt; known{"Known device?"}
+    known --&gt;|"yes"| chain["Add device to logical chain"]
+    known --&gt;|"no"| misc["Use user-supplied misc-device or report unknown"]
+    chain --&gt; select["Select --index-chain target"]
+    misc --&gt; select
+    select --&gt; driver["Dispatch vendor Device implementation"]</code></pre>
+<p>The logical chain is not always identical to the electrical chain. Passive
+devices, bridge CPLDs, and trailing scan artifacts may contribute bits without
+being programming targets.</p>
+<h2 id="5-why-bypass-alignment-matters">5. Why BYPASS alignment matters<a class="headerlink" href="#5-why-bypass-alignment-matters" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    lead["Leading device\nBYPASS = 1 DR bit"] --&gt; target["Selected FPGA\nreal DR length"]
+    target --&gt; trail["Trailing device\nBYPASS = 1 DR bit"]
+    scan["Requested target scan"] --&gt; pad["Jtag adds IR/DR padding"]
+    pad --&gt; physical["Physical TDI/TDO stream"]
+    lead --&gt; physical
+    target --&gt; physical
+    trail --&gt; physical</code></pre>
+<p>When the selected target is in the middle of a chain, the requested data must
+be surrounded by the correct BYPASS bits. A one-bit mistake can look like a
+vendor failure, a flash timeout, or a bad read edge even though the root cause
+is chain alignment.</p>
+<p>Relevant implementation state lives in <code>Jtag</code>: device order, IR lengths,
+leading/trailing padding, selected index, and trailing scan-artifact tracking.</p>
+<h2 id="6-bitstream-parsing-is-separate-from-programming">6. Bitstream parsing is separate from programming<a class="headerlink" href="#6-bitstream-parsing-is-separate-from-programming" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    file["User file"] --&gt; detect["Extension or --file-type"]
+    detect --&gt; parser["Raw, HEX, MCS, JED, POF, or vendor parser"]
+    parser --&gt; normalize["Header, compression, byte/word order"]
+    normalize --&gt; payload["Normalized configuration payload"]
+    payload --&gt; operation{"Operation"}
+    operation --&gt; sram["SRAM programming"]
+    operation --&gt; flash["Flash programming"]</code></pre>
+<p><strong>Boundary rule:</strong> a parser should transform input data and report malformed
+input. It should not open a cable, choose a JTAG device, or silently change a
+flash offset.</p>
+<h2 id="7-flash-programming-lifecycle">7. Flash programming lifecycle<a class="headerlink" href="#7-flash-programming-lifecycle" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; SelectPath
+    SelectPath --&gt; Identify: Internal or external flash
+    Identify --&gt; ResolveModel: JEDEC or explicit model
+    ResolveModel --&gt; CheckProtection
+    CheckProtection --&gt; Unprotect: User requested or required
+    CheckProtection --&gt; Erase: Writable
+    Unprotect --&gt; Erase
+    Erase --&gt; Write
+    Write --&gt; Verify: --verify
+    Write --&gt; Reset: No verification
+    Verify --&gt; Reset: Match
+    Verify --&gt; Error: Mismatch or timeout
+    Reset --&gt; [*]
+    Error --&gt; [*]</code></pre>
+<p>The vendor driver exposes the device-specific flash path. <code>SPIFlash</code> or
+<code>BPIFlash</code> then performs generic memory operations using the flash database and
+the <code>FlashInterface</code> contract.</p>
+<h2 id="8-direct-spi-versus-spi-over-jtag">8. Direct SPI versus SPI-over-JTAG<a class="headerlink" href="#8-direct-spi-versus-spi-over-jtag" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    request["Flash request"] --&gt; path{"How is flash exposed?"}
+    path --&gt;|"Direct SPI"| ftdi["FTDI or direct SPI adapter"]
+    path --&gt;|"SPI over JTAG"| bridge["Load SOJ bridge bitstream"]
+    bridge --&gt; jtag["JTAG scans through bridge"]
+    ftdi --&gt; spi["FlashInterface"]
+    jtag --&gt; spi
+    spi --&gt; algorithm["SPIFlash algorithm"]
+    algorithm --&gt; memory["Configuration flash"]</code></pre>
+<p>The two paths share flash concepts but not necessarily the same timing,
+buffering, or error signatures. Diagnose the exposure path first.</p>
+<h2 id="9-soj-the-bridge-inside-the-jtag-path">9. SOJ: the bridge inside the JTAG path<a class="headerlink" href="#9-soj-the-bridge-inside-the-jtag-path" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant M as openFPGALoader
+    participant J as JTAG adapter
+    participant S as SOJ bridge FPGA logic
+    participant F as SPI flash
+
+    M-&gt;&gt;J: Configure target JTAG path
+    M-&gt;&gt;J: Load family-specific SOJ bitstream
+    J-&gt;&gt;S: Shift bridge configuration
+    S--&gt;&gt;J: Bridge ready or status
+    M-&gt;&gt;J: Send SPI command as JTAG scan data
+    J-&gt;&gt;S: TDI/TMS/TCK transport
+    S-&gt;&gt;F: SPI clock, command, address, data
+    F--&gt;&gt;S: JEDEC/status/read data
+    S--&gt;&gt;J: TDO response bits
+    J--&gt;&gt;M: Flash result</code></pre>
+<p>SOJ failures can therefore originate in the asset, data lookup, JTAG framing,
+adapter buffering, bridge RTL, flash timing, or response alignment. The
+<a href="../../SOJ_REVIEW/">SOJ review</a> is the specialist trace-level companion to
+this diagram.</p>
+<h2 id="10-cable-abstraction-layers">10. Cable abstraction layers<a class="headerlink" href="#10-cable-abstraction-layers" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    device["Vendor Device"] --&gt; high["Jtag or FlashInterface"]
+    high --&gt; contract["Protocol contract"]
+    contract --&gt; usb["USB / HID adapter"]
+    contract --&gt; gpio["GPIO adapter"]
+    contract --&gt; remote["Remote bitbang or XVC"]
+    contract --&gt; vendor_probe["Vendor probe adapter"]
+    usb --&gt; host["Operating system libraries"]
+    gpio --&gt; host
+    remote --&gt; network["Network endpoint"]
+    vendor_probe --&gt; host</code></pre>
+<p>The protocol contract is the stability boundary. A new cable should normally
+implement an adapter instead of adding USB or GPIO conditionals to a vendor
+driver.</p>
+<h2 id="11-compile-time-capability-gates">11. Compile-time capability gates<a class="headerlink" href="#11-compile-time-capability-gates" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    option["CMake option"] --&gt; source["Conditional source inclusion"]
+    option --&gt; library["Dependency discovery"]
+    source --&gt; binary["Compiled capability"]
+    library --&gt; binary
+    binary --&gt; catalog["Runtime catalog entries"]
+    catalog --&gt; cli["--list-* and selection behavior"]</code></pre>
+<p>This is why a source file existing in <code>src/cables/</code> or <code>src/vendors/</code> does not
+guarantee that every package supports it. Review configuration, compilation,
+and runtime advertisement as one change.</p>
+<h2 id="12-build-and-package-flow">12. Build and package flow<a class="headerlink" href="#12-build-and-package-flow" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    source["Git source and submodules"] --&gt; configure["CMake configure"]
+    deps["Platform dependencies"] --&gt; configure
+    flags["Vendor and cable options"] --&gt; configure
+    configure --&gt; compile["Compile and link"]
+    compile --&gt; stage["Install staging tree"]
+    assets["SOJ, BPI, firmware, rules"] --&gt; stage
+    stage --&gt; linux["Linux archive"]
+    stage --&gt; mac["macOS archive"]
+    stage --&gt; win["Windows ZIP"]</code></pre>
+<p><strong>Teaching point:</strong> runtime assets are part of the product. An executable
+without its SOJ/BPI data or required DLLs is an incomplete deployment.</p>
+<h2 id="13-ci-gates-and-release-artifacts">13. CI gates and release artifacts<a class="headerlink" href="#13-ci-gates-and-release-artifacts" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    change["Push or pull request"] --&gt; docs["MkDocs strict build"]
+    change --&gt; source_test["Parser regression tests"]
+    change --&gt; native["Linux and macOS builds"]
+    change --&gt; windows["MSYS2 and cross Windows builds"]
+    docs --&gt; release{"Release conditions"}
+    source_test --&gt; release
+    native --&gt; release
+    windows --&gt; release
+    release --&gt; artifacts["Archives, checksums, documentation"]</code></pre>
+<p>The matrix catches packaging and CLI regressions, but physical cable timing,
+probe firmware, signal integrity, and every FPGA/flash combination still need
+hardware validation.</p>
+<h2 id="14-deployment-topology">14. Deployment topology<a class="headerlink" href="#14-deployment-topology" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    host["Developer or CI host"] --&gt; executable["openFPGALoader executable"]
+    executable --&gt; shared["Shared libraries or DLLs"]
+    executable --&gt; data["Installed transport data"]
+    executable --&gt; adapter["Cable or remote endpoint"]
+    adapter --&gt; target["FPGA board and JTAG chain"]
+    target --&gt; flash["Configuration flash"]</code></pre>
+<p>For the Windows cross-build, the host-side container must be Linux-based
+because the build image is Alpine Linux. The resulting executable is Windows
+portable, but the build environment is not a Windows container.</p>
+<h2 id="15-troubleshooting-decision-tree">15. Troubleshooting decision tree<a class="headerlink" href="#15-troubleshooting-decision-tree" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    fail["Programming failed"] --&gt; detect{"Can the cable be detected?"}
+    detect --&gt;|"no"| access["Check driver, permissions, USB, firmware"]
+    detect --&gt;|"yes"| chain{"Is JTAG IDCODE stable?"}
+    chain --&gt;|"no"| signal["Lower frequency; check wiring and read edge"]
+    chain --&gt;|"yes"| target{"Is target index/vendor correct?"}
+    target --&gt;|"no"| alignment["Inspect chain order and BYPASS padding"]
+    target --&gt;|"yes"| file{"Does parser accept the file?"}
+    file --&gt;|"no"| format["Check format, compression, and byte order"]
+    file --&gt;|"yes"| flash{"Does flash identify and verify?"}
+    flash --&gt;|"no"| memory["Check protection, model, erase, timing"]
+    flash --&gt;|"yes"| hardware["Investigate target-specific sequence or asset"]</code></pre>
+<p>This prevents jumping directly to a vendor driver when the failure is actually
+transport discovery, scan alignment, input parsing, or flash protection.</p>
+<h2 id="16-contributor-change-routing">16. Contributor change routing<a class="headerlink" href="#16-contributor-change-routing" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    change["What are you changing?"] --&gt; board{"Board or default?"}
+    change --&gt; cable{"Cable or transport?"}
+    change --&gt; vendor{"Vendor or FPGA sequence?"}
+    change --&gt; parser{"File format?"}
+    change --&gt; flash{"Flash model or algorithm?"}
+    change --&gt; build{"Build or package?"}
+    board --&gt; board_files["board.hpp + compatibility docs"]
+    cable --&gt; cable_files["cable.hpp + src/cables + CMake"]
+    vendor --&gt; vendor_files["part.hpp + src/vendors + hardware note"]
+    parser --&gt; parser_files["src/parsers + regression fixture"]
+    flash --&gt; flash_files["spiFlashdb + flash tests"]
+    build --&gt; build_files["CMake + deploy + workflow"]</code></pre>
+<p>After the focused change, run the broad gates: compatibility generation,
+strict MkDocs, parser tests, build/smoke tests, and the relevant physical
+fixture if the behavior is hardware-dependent.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid.js"></script>
+      
+    
+  </body>
+</html>

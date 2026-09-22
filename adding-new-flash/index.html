@@ -1,0 +1,3084 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Universal utility for programming FPGAs">
+      
+      
+      
+        <link rel="canonical" href="https://xsession.github.io/openFPGALoader/adding-new-flash/">
+      
+      
+        <link rel="prev" href="../DEVICE_SUPPORT_CHAT/">
+      
+      
+        <link rel="next" href="../adding-new-fpga-and-flash-guide/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Adding a flash - openFPGALoader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adding-a-new-spi-flash-to-openfpgaloader" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="openFPGALoader" class="md-header__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            openFPGALoader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Adding a flash
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guide/first-steps/" class="md-tabs__link">
+          
+  
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../compatibility/board/" class="md-tabs__link">
+          
+  
+  
+  Compatibility
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../vendors/anlogic/" class="md-tabs__link">
+          
+  
+  
+  Vendors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../SOJ_REVIEW/" class="md-tabs__link">
+          
+  
+  
+  Hardware and debugging
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/architecture-rules/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../DEVICE_SUPPORT_CHAT/" class="md-tabs__link">
+          
+  
+  
+  Project documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="openFPGALoader" class="md-nav__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    openFPGALoader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/first-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compatibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/board/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/fpga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FPGAs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/cable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vendors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vendors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/anlogic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anlogic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/colognechip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cologne Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/efinix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efinix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/gowin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gowin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/intel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intel/Altera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/lattice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lattice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and debugging
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware and debugging
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SOJ_REVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOJ review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../digilent-hs3-vs-xpcu-dump-flash-codepath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-xpcu-spi-debug-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-hs3-m25p40-write-stall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 HS3 write stall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-technical-reproduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-windows-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machxo3-recovery-after-bulk-erase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MachXO3 recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XCF_PLATFORM_FLASH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XCF platform flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XILINX_PLATFORM_CABLE_USB_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows cable notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/source-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/runtime-flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/build-and-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/architecture-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API and code reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVICE_SUPPORT_CHAT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-discover-the-jedec-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Discover the JEDEC ID
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Discover the JEDEC ID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-id-is-built" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the ID is built
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manufacturer-codes-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manufacturer codes (cheat sheet)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-read-the-datasheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Read the Datasheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-fill-in-the-flash_t-struct" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Fill in the flash_t struct
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Fill in the flash_t struct">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-by-field-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field-by-field reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-enum-values-tb_register-and-quad_register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register enum values (tb_register and quad_register)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calculating-nr_sector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calculating nr_sector
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-add-the-entry-to-spiflashdbhpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Add the entry to spiFlashdb.hpp
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Add the entry to spiFlashdb.hpp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#complete-example-micron-mt25ql256aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete example: Micron MT25QL256ABA
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-build-and-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Build and test
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-common-bptb-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick-reference: common BP/TB patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick-reference: common BP/TB patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pattern-a-bp-bits-in-status-register-most-common" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern A — BP bits in Status Register (most common)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-b-quad-only-chip-no-qe-bit-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern B — Quad-only chip, no QE bit needed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-c-4-bp-bits-bp3-in-bit-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern C — 4 BP bits, BP3 in bit 6
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-d-bptb-in-configuration-register-spansion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern D — BP/TB in Configuration Register (Spansion)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-fpga-and-flash-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_CROSS_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker cross-Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_DEPLOY_LINUX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Linux deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/ci-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI issue report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../todo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Todo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-discover-the-jedec-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Discover the JEDEC ID
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Discover the JEDEC ID">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-id-is-built" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the ID is built
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manufacturer-codes-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manufacturer codes (cheat sheet)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-read-the-datasheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Read the Datasheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-fill-in-the-flash_t-struct" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Fill in the flash_t struct
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Fill in the flash_t struct">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-by-field-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field-by-field reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#register-enum-values-tb_register-and-quad_register" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Register enum values (tb_register and quad_register)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calculating-nr_sector" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calculating nr_sector
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-add-the-entry-to-spiflashdbhpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Add the entry to spiFlashdb.hpp
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Add the entry to spiFlashdb.hpp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#complete-example-micron-mt25ql256aba" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Complete example: Micron MT25QL256ABA
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-build-and-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Build and test
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-common-bptb-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick-reference: common BP/TB patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick-reference: common BP/TB patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pattern-a-bp-bits-in-status-register-most-common" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern A — BP bits in Status Register (most common)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-b-quad-only-chip-no-qe-bit-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern B — Quad-only chip, no QE bit needed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-c-4-bp-bits-bp3-in-bit-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern C — 4 BP bits, BP3 in bit 6
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pattern-d-bptb-in-configuration-register-spansion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern D — BP/TB in Configuration Register (Spansion)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adding-a-new-spi-flash-to-openfpgaloader">Adding a New SPI Flash to openFPGALoader<a class="headerlink" href="#adding-a-new-spi-flash-to-openfpgaloader" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>openFPGALoader maintains a static flash database in <code>src/spiFlashdb.hpp</code>. Each entry maps a
+JEDEC ID (the key) to a <code>flash_t</code> struct describing the chip's capabilities. This guide walks
+you through adding an unknown flash chip by hand.</p>
+<hr />
+<h2 id="step-1-discover-the-jedec-id">Step 1: Discover the JEDEC ID<a class="headerlink" href="#step-1-discover-the-jedec-id" title="Permanent link">&para;</a></h2>
+<p>Run openFPGALoader on your board. If the flash is not in the database, the tool prints:</p>
+<div class="highlight"><pre><span></span><code>Read ID failed: SPI RDID raw bytes: XX XX XX XX -&gt; 0xXXXXXXXX
+Manufacturer byte: 0xXX (name)
+Memory type byte: 0xXX
+Memory capacity byte: 0xXX
+Starter spiFlashdb.hpp entry:
+    {0xXXXXXX, {
+        ...
+    }},
+</code></pre></div>
+<p>The tool already emits a skeleton entry. You still need to fill in the fields from the
+datasheet (Step 3), but this template is a great starting point.</p>
+<h3 id="how-the-id-is-built">How the ID is built<a class="headerlink" href="#how-the-id-is-built" title="Permanent link">&para;</a></h3>
+<p>The code issues the <strong>RDID command <code>0x9F</code></strong> and reads 4 bytes:</p>
+<div class="highlight"><pre><span></span><code>_jedec_id = 0;
+for (int i = 0; i &lt; 4; i++)
+    _jedec_id = (_jedec_id &lt;&lt; 8) | rx[i];
+jedec24 = _jedec_id &gt;&gt; 8;    // drops the 4th byte
+</code></pre></div>
+<p>Lookup key = <code>jedec24</code> (24-bit for most chips). Some chips return 4 significant bytes, in
+which case the full 32-bit value is the key (e.g. <code>0x4000190c</code>, <code>0x05059093</code>).</p>
+<p>To decide which key to use:
+- Most SPI NOR flashes: use the first 3 response bytes (e.g. <code>BA 21 19</code> → <code>0xBA2119</code>).
+- If the 4th byte is non-zero and meaningful per the datasheet, use all 4 bytes
+  (e.g. <code>40 00 19 0C</code> → <code>0x4000190c</code>).</p>
+<p>You can add both keys pointing to the same struct so the chip is recognised regardless of
+which response variant your bridge returns.</p>
+<h3 id="manufacturer-codes-cheat-sheet">Manufacturer codes (cheat sheet)<a class="headerlink" href="#manufacturer-codes-cheat-sheet" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Manufacturer ID</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0xC2</td>
+<td>Macronix</td>
+</tr>
+<tr>
+<td>0xEF</td>
+<td>Winbond</td>
+</tr>
+<tr>
+<td>0xBF</td>
+<td>SST / Esma</td>
+</tr>
+<tr>
+<td>0x1C</td>
+<td>Micron/N25Q</td>
+</tr>
+<tr>
+<td>0xBA</td>
+<td>Micron/Numonyx</td>
+</tr>
+<tr>
+<td>0x20</td>
+<td>Micron (1.8V)</td>
+</tr>
+<tr>
+<td>0x01</td>
+<td>Spansion/Infineon</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td>Xilinx</td>
+</tr>
+<tr>
+<td>0x7F</td>
+<td>Cypress/Spansion</td>
+</tr>
+<tr>
+<td>0x4000</td>
+<td>Numonyx/Micron (4-byte sig)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="step-2-read-the-datasheet">Step 2: Read the Datasheet<a class="headerlink" href="#step-2-read-the-datasheet" title="Permanent link">&para;</a></h2>
+<p>Look up the exact part number on the chip label. Get the datasheet and note:</p>
+<ol>
+<li><strong>Total capacity</strong> (Mbit or MB) — needed to compute <code>nr_sector</code></li>
+<li><strong>Erase commands supported</strong> — 64 KB block erase (<code>0xD8</code>), 4 KB subsector erase (<code>0x20</code>)</li>
+<li><strong>Status register layout</strong> — where BP (Block Protect) and TB (Top/Bottom) bits live</li>
+<li><strong>Quad Enable (QE) bit</strong> — which register and which bit enables quad I/O</li>
+<li><strong>Whether BP/TB bits are OTP</strong> (one-time programmable, cannot be changed after programming)</li>
+<li><strong>Extended address register</strong> — chips &gt;= 16 MB need a 3-byte address register (<code>0xB7</code>)</li>
+</ol>
+<hr />
+<h2 id="step-3-fill-in-the-flash_t-struct">Step 3: Fill in the <code>flash_t</code> struct<a class="headerlink" href="#step-3-fill-in-the-flash_t-struct" title="Permanent link">&para;</a></h2>
+<p>Open <code>src/spiFlashdb.hpp</code>. The struct definition:</p>
+<div class="highlight"><pre><span></span><code><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">manufacturer</span><span class="p">;</span><span class="w">  </span><span class="cm">/**&lt; manufacturer name                  */</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">model</span><span class="p">;</span><span class="w">         </span><span class="cm">/**&lt; chip name                          */</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">  </span><span class="n">nr_sector</span><span class="p">;</span><span class="w">       </span><span class="cm">/**&lt; number of 64 KiB sectors           */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">sector_erase</span><span class="p">;</span><span class="w">    </span><span class="cm">/**&lt; 64 KB erase support                */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">subsector_erase</span><span class="p">;</span><span class="w"> </span><span class="cm">/**&lt; 4 KB erase support                 */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">has_extended</span><span class="p">;</span><span class="w">    </span><span class="cm">/**&lt; Extended Address Register (0xB7)   */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">tb_otp</span><span class="p">;</span><span class="w">          </span><span class="cm">/**&lt; TOP/BOTTOM is One-Time Programmable */</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">  </span><span class="n">tb_offset</span><span class="p">;</span><span class="w">       </span><span class="cm">/**&lt; TOP/BOTTOM bit mask                */</span>
+<span class="w">    </span><span class="n">tb_loc_t</span><span class="w">  </span><span class="n">tb_register</span><span class="p">;</span><span class="w">     </span><span class="cm">/**&lt; register where BP/TB bits live     */</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w">   </span><span class="n">bp_len</span><span class="p">;</span><span class="w">          </span><span class="cm">/**&lt; number of BP bits (0-4)            */</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w">   </span><span class="n">bp_offset</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span><span class="w">    </span><span class="cm">/**&lt; BP[0..3] bit masks                 */</span>
+<span class="w">    </span><span class="n">tb_loc_t</span><span class="w">  </span><span class="n">quad_register</span><span class="p">;</span><span class="w">   </span><span class="cm">/**&lt; register containing QE bit         */</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">  </span><span class="n">quad_mask</span><span class="p">;</span><span class="w">       </span><span class="cm">/**&lt; QE bit mask                        */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">global_lock</span><span class="p">;</span><span class="w">     </span><span class="cm">/**&lt; global lock/unlock bit present     */</span>
+<span class="p">}</span><span class="w"> </span><span class="n">flash_t</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="field-by-field-reference">Field-by-field reference<a class="headerlink" href="#field-by-field-reference" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>How to determine</th>
+<th>Typical values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>manufacturer</code></td>
+<td>From datasheet / JEDEC ID</td>
+<td><code>"Micron"</code>, <code>"Winbond"</code>, <code>"Spansion"</code>, <code>"Macronix"</code>, <code>"ST"</code></td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>Exact part number</td>
+<td><code>"MT25QL256ABA"</code>, <code>"W25Q256"</code></td>
+</tr>
+<tr>
+<td><code>nr_sector</code></td>
+<td>Capacity / 65536 (64 KiB)</td>
+<td>8 (512Kbit), 128 (8Mbit), 256 (16Mbit), 512 (256Mbit)</td>
+</tr>
+<tr>
+<td><code>sector_erase</code></td>
+<td>Does the chip support 64 KB erase (<code>0xD8</code>/<code>0xC7</code>)?</td>
+<td><code>true</code> (almost always)</td>
+</tr>
+<tr>
+<td><code>subsector_erase</code></td>
+<td>Does the chip support 4 KB block erase (<code>0x20</code>)?</td>
+<td><code>true</code> for most modern chips; <code>false</code> for some Spansion parts</td>
+</tr>
+<tr>
+<td><code>has_extended</code></td>
+<td>Does the chip need Extended Address Register (<code>0xB7</code>)? Required for chips &gt;= 16 MB.</td>
+<td><code>true</code> for 16 Mbit+ that use the 3-byte address mode; <code>false</code> otherwise</td>
+</tr>
+<tr>
+<td><code>tb_otp</code></td>
+<td>Is the TB bit OTP (one-time programmable)?</td>
+<td><code>true</code> for Spansion S25FL256S/512S/128S; <code>false</code> for most others</td>
+</tr>
+<tr>
+<td><code>tb_offset</code></td>
+<td>Bit position of TB bit in the register, as <code>(1 &lt;&lt; N)</code></td>
+<td><code>(1 &lt;&lt; 5)</code> (most common), <code>(1 &lt;&lt; 6)</code>, <code>(1 &lt;&lt; 14)</code></td>
+</tr>
+<tr>
+<td><code>tb_register</code></td>
+<td>Which register holds BP/TB</td>
+<td><code>STATR</code>, <code>FUNCR</code>, <code>CONFR</code>, <code>NVCONFR</code> (see register table below)</td>
+</tr>
+<tr>
+<td><code>bp_len</code></td>
+<td>Number of BP bits (1-4)</td>
+<td><code>3</code> or <code>4</code></td>
+</tr>
+<tr>
+<td><code>bp_offset</code></td>
+<td>Bit masks for BP0-BP3 as <code>(1 &lt;&lt; N)</code></td>
+<td><code>{(1&lt;&lt;2), (1&lt;&lt;3), (1&lt;&lt;4), 0}</code> (3 BP bits) or <code>{(1&lt;&lt;2), (1&lt;&lt;3), (1&lt;&lt;4), (1&lt;&lt;5)}</code> (4 BP bits)</td>
+</tr>
+<tr>
+<td><code>quad_register</code></td>
+<td>Which register holds the QE bit</td>
+<td><code>STATR</code>, <code>CONFR</code>, or <code>NONER</code> if the chip is quad-only</td>
+</tr>
+<tr>
+<td><code>quad_mask</code></td>
+<td>Bit mask for QE bit</td>
+<td><code>(1 &lt;&lt; 6)</code> (most common), or <code>0</code> if quad-only (<code>NONER</code>)</td>
+</tr>
+<tr>
+<td><code>global_lock</code></td>
+<td>Global lock/unlock (GL) bit in status register</td>
+<td><code>false</code> for most; <code>true</code> for some ISSI / low-density chips</td>
+</tr>
+</tbody>
+</table>
+<h3 id="register-enum-values-tb_register-and-quad_register">Register enum values (<code>tb_register</code> and <code>quad_register</code>)<a class="headerlink" href="#register-enum-values-tb_register-and-quad_register" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Constant</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>STATR</code></td>
+<td>Status Register (read <code>0x05</code>)</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>FUNCR</code></td>
+<td>Function Register</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>CONFR</code></td>
+<td>Configuration Register</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>NVCONFR</code></td>
+<td>Non-Volatile Configuration Register</td>
+</tr>
+<tr>
+<td>99</td>
+<td><code>NONER</code></td>
+<td>None — not applicable (use for quad-only chips)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="calculating-nr_sector">Calculating <code>nr_sector</code><a class="headerlink" href="#calculating-nr_sector" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>nr_sector = (capacity in Mbit × 131072) / 65536
+         = capacity_in_Mbit × 2
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Capacity</th>
+<th>nr_sector</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>512 Kbit</td>
+<td>8</td>
+</tr>
+<tr>
+<td>1 Mbit</td>
+<td>16</td>
+</tr>
+<tr>
+<td>2 Mbit</td>
+<td>32</td>
+</tr>
+<tr>
+<td>4 Mbit</td>
+<td>64</td>
+</tr>
+<tr>
+<td>8 Mbit</td>
+<td>128</td>
+</tr>
+<tr>
+<td>16 Mbit</td>
+<td>256</td>
+</tr>
+<tr>
+<td>32 Mbit</td>
+<td>512</td>
+</tr>
+<tr>
+<td>64 Mbit</td>
+<td>1024</td>
+</tr>
+<tr>
+<td>128 Mbit</td>
+<td>2048</td>
+</tr>
+<tr>
+<td>256 Mbit</td>
+<td>4096</td>
+</tr>
+<tr>
+<td>512 Mbit</td>
+<td>8192</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="step-4-add-the-entry-to-spiflashdbhpp">Step 4: Add the entry to <code>spiFlashdb.hpp</code><a class="headerlink" href="#step-4-add-the-entry-to-spiflashdbhpp" title="Permanent link">&para;</a></h2>
+<p>Insert the new entry into <code>flash_list</code> (a <code>std::map&lt;uint32_t, flash_t&gt;</code>) at an appropriate
+position (sorted by JEDEC ID is conventional but not strictly required).</p>
+<h3 id="complete-example-micron-mt25ql256aba">Complete example: Micron MT25QL256ABA<a class="headerlink" href="#complete-example-micron-mt25ql256aba" title="Permanent link">&para;</a></h3>
+<p>This chip responds to 0x9F with <code>BA 21 19</code> (3-byte JEDEC), giving key <code>0xBA2119</code>.
+It also has a 4-byte electronic signature <code>40 00 19 0C</code> (from command <code>0xAB</code>),
+giving key <code>0x4000190c</code>. Both keys should point to the same struct.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 4-byte electronic signature variant (cmd 0xAB: 40 00 19 0C)</span>
+<span class="p">{</span><span class="mh">0x4000190c</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* Micron MT25QL256ABA1EW9 - 256Mb Serial NOR Flash, 3.0V.</span>
+<span class="cm">     * Electronic Signature (0xAB): 40 00 19 0C</span>
+<span class="cm">     * https://media-www.micron.com/...mt25q_qlhs_u_256_aba_0.pdf */</span>
+<span class="w">    </span><span class="p">.</span><span class="n">manufacturer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Micron"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"MT25QL256ABA"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">nr_sector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">512</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">sector_erase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">subsector_erase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">has_extended</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">tb_otp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">tb_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span>
+<span class="w">    </span><span class="p">.</span><span class="n">tb_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STATR</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">bp_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">bp_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span>
+<span class="w">    </span><span class="p">.</span><span class="n">quad_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NONER</span><span class="p">,</span><span class="w">   </span><span class="c1">// MT25QL is quad-only, no QE bit needed</span>
+<span class="w">    </span><span class="p">.</span><span class="n">quad_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">global_lock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span>
+<span class="p">}},</span>
+
+<span class="c1">// 3-byte JEDEC RDID variant (cmd 0x9F: BA 21 19)</span>
+<span class="p">{</span><span class="mh">0xba2119</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* Micron MT25QL256ABA1EW9 - 256Mb Serial NOR Flash, 3.0V.</span>
+<span class="cm">     * RDID (0x9F): BA 21 19</span>
+<span class="cm">     * Manufacturer: 0xBA (Numonyx/Micron)</span>
+<span class="cm">     * Memory type:  0x21 (Serial NOR)</span>
+<span class="cm">     * Capacity:     0x19 (256Mb / 32MB)</span>
+<span class="cm">     * https://media-www.micron.com/...mt25q_qlhs_u_256_aba_0.pdf */</span>
+<span class="w">    </span><span class="p">.</span><span class="n">manufacturer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Micron"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"MT25QL256ABA"</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">nr_sector</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">512</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">sector_erase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">subsector_erase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">has_extended</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">tb_otp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">tb_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span>
+<span class="w">    </span><span class="p">.</span><span class="n">tb_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STATR</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">bp_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">bp_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span>
+<span class="w">    </span><span class="p">.</span><span class="n">quad_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NONER</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">quad_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">global_lock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span>
+<span class="p">}},</span>
+</code></pre></div>
+<hr />
+<h2 id="step-5-build-and-test">Step 5: Build and test<a class="headerlink" href="#step-5-build-and-test" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>cmake<span class="w"> </span>-B<span class="w"> </span>build
+cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>-j
+</code></pre></div>
+<p>Run the tool against your board. It should now detect the flash:</p>
+<div class="highlight"><pre><span></span><code>Detected: Micron MT25QL256ABA 512 sectors size: 32Mb
+</code></pre></div>
+<p>If it still shows "unknown", double-check:
+- The JEDEC ID key matches what <code>spiFlash.cpp</code> actually reads from the 0x9F command.
+- The entry is inside the <code>flash_list</code> map braces (no missing comma from the previous entry).</p>
+<hr />
+<h2 id="quick-reference-common-bptb-patterns">Quick-reference: common BP/TB patterns<a class="headerlink" href="#quick-reference-common-bptb-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="pattern-a-bp-bits-in-status-register-most-common">Pattern A — BP bits in Status Register (most common)<a class="headerlink" href="#pattern-a-bp-bits-in-status-register-most-common" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">tb_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span>
+<span class="p">.</span><span class="n">tb_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STATR</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span>
+<span class="p">.</span><span class="n">quad_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STATR</span><span class="p">,</span>
+<span class="p">.</span><span class="n">quad_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">6</span><span class="p">),</span>
+</code></pre></div>
+<h3 id="pattern-b-quad-only-chip-no-qe-bit-needed">Pattern B — Quad-only chip, no QE bit needed<a class="headerlink" href="#pattern-b-quad-only-chip-no-qe-bit-needed" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">tb_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span>
+<span class="p">.</span><span class="n">tb_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STATR</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span>
+<span class="p">.</span><span class="n">quad_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NONER</span><span class="p">,</span>
+<span class="p">.</span><span class="n">quad_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</code></pre></div>
+<h3 id="pattern-c-4-bp-bits-bp3-in-bit-6">Pattern C — 4 BP bits, BP3 in bit 6<a class="headerlink" href="#pattern-c-4-bp-bits-bp3-in-bit-6" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">tb_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span>
+<span class="p">.</span><span class="n">tb_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">STATR</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">6</span><span class="p">)},</span>
+<span class="p">.</span><span class="n">quad_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NONER</span><span class="p">,</span>
+<span class="p">.</span><span class="n">quad_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</code></pre></div>
+<h3 id="pattern-d-bptb-in-configuration-register-spansion">Pattern D — BP/TB in Configuration Register (Spansion)<a class="headerlink" href="#pattern-d-bptb-in-configuration-register-spansion" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="p">.</span><span class="n">tb_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">),</span>
+<span class="p">.</span><span class="n">tb_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CONFR</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="p">.</span><span class="n">bp_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span>
+<span class="p">.</span><span class="n">quad_register</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CONFR</span><span class="p">,</span>
+<span class="p">.</span><span class="n">quad_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span>
+</code></pre></div>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<p><strong>Flash still unknown after adding entry:</strong>
+- Check the raw bytes printed by the tool. The key must match <code>(rx[0] &lt;&lt; 16) | (rx[1] &lt;&lt; 8) | rx[2]</code>
+  for 3-byte IDs.
+- If rx[0] is <code>0x40</code> or <code>0x05</code>, the chip reports a 4-byte ID — use the full 32-bit value.</p>
+<p><strong>Erase/write fails but flash is detected:</strong>
+- <code>nr_sector</code> is wrong — verify capacity from datasheet.
+- <code>has_extended</code> should be <code>true</code> for chips &gt;= 16 MB that use the Extended Address Register
+  (command <code>0xB7</code> to enable 3-byte addressing).</p>
+<p><strong>Protection bits don't match expected:</strong>
+- <code>tb_register</code> might be wrong — try <code>CONFR</code> instead of <code>STATR</code>.
+- <code>bp_offset</code> bit positions vary by manufacturer; check the register map in the datasheet.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../javascripts/mermaid.js"></script>
+      
+    
+  </body>
+</html>

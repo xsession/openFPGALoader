@@ -1,0 +1,3240 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Universal utility for programming FPGAs">
+      
+      
+      
+        <link rel="canonical" href="https://xsession.github.io/openFPGALoader/spartan6-xpcu-spi-debug-log/">
+      
+      
+        <link rel="prev" href="../digilent-hs3-vs-xpcu-dump-flash-codepath/">
+      
+      
+        <link rel="next" href="../spartan6-hs3-m25p40-write-stall/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Spartan-6 XPCU debug - openFPGALoader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spartan-6-xpcu-spi-flash-debug-log" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="openFPGALoader" class="md-header__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            openFPGALoader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Spartan-6 XPCU debug
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guide/first-steps/" class="md-tabs__link">
+          
+  
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../compatibility/board/" class="md-tabs__link">
+          
+  
+  
+  Compatibility
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../vendors/anlogic/" class="md-tabs__link">
+          
+  
+  
+  Vendors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../SOJ_REVIEW/" class="md-tabs__link">
+          
+  
+  
+  Hardware and debugging
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/architecture-rules/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../DEVICE_SUPPORT_CHAT/" class="md-tabs__link">
+          
+  
+  
+  Project documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="openFPGALoader" class="md-nav__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    openFPGALoader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/first-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compatibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/board/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/fpga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FPGAs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/cable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vendors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vendors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/anlogic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anlogic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/colognechip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cologne Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/efinix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efinix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/gowin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gowin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/intel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intel/Altera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/lattice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lattice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and debugging
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware and debugging
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SOJ_REVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOJ review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../digilent-hs3-vs-xpcu-dump-flash-codepath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-symptom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main Symptom
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#baseline-observations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Baseline Observations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-visible-commands-used-repeatedly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User-Visible Commands Used Repeatedly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features-added-during-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features Added During Investigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Features Added During Investigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vs-code-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VS Code Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flash-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flash Listing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-flash-detection-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Flash Detection Option
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ise-cor-bridge-import-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ISE .cor Bridge Import Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-code-changes-already-made" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Code Changes Already Made
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Important Code Changes Already Made">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-spartan-6-user-instruction-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Spartan-6 USER Instruction Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-bridge-version-probe-uses-user4-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bridge Version Probe Uses USER4 Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-generic-bridge-loading-cor-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Generic Bridge Loading / .cor Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-invalid-jedec-handling-tightened" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Invalid JEDEC Handling Tightened
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-xpcu-control-bitbang-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. XPCU Control-Bitbang Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-retry-logic-for-bad-spartan-6-bridge-replies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Retry Logic for Bad Spartan-6 Bridge Replies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-startup-sequence-experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Startup Sequence Experiments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observed-failure-modes-by-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observed Failure Modes by Stage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Observed Failure Modes by Stage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stage-a-initial-spi-access-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage A: Initial SPI Access Failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-b-control-bitbang-mode-made-things-worse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage B: Control-Bitbang Mode Made Things Worse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-c-accelerated-path-returned-all-zeroes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage C: Accelerated Path Returned All Zeroes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-d-internal-bridge-version-path-also-dead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage D: Internal Bridge Version Path Also Dead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-best-hypotheses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Best Hypotheses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#representative-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Representative Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#representative-all-zero-accelerated-path-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative "all zero" accelerated-path failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#representative-all-ff-control-bitbang-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative "all ff" control-bitbang failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#representative-design-loaded-but-bridge-still-dead-clue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative "design loaded but bridge still dead" clue
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-was-learned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Was Learned
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-of-the-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State Of The Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-references-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External References Used
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-hs3-m25p40-write-stall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 HS3 write stall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-technical-reproduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-windows-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machxo3-recovery-after-bulk-erase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MachXO3 recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XCF_PLATFORM_FLASH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XCF platform flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XILINX_PLATFORM_CABLE_USB_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows cable notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/source-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/runtime-flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/build-and-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/architecture-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API and code reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVICE_SUPPORT_CHAT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-flash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-fpga-and-flash-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_CROSS_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker cross-Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_DEPLOY_LINUX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Linux deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/ci-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI issue report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../todo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Todo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#main-symptom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Main Symptom
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#baseline-observations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Baseline Observations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-visible-commands-used-repeatedly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User-Visible Commands Used Repeatedly
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features-added-during-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features Added During Investigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Features Added During Investigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vs-code-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VS Code Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flash-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flash Listing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-flash-detection-option" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Flash Detection Option
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ise-cor-bridge-import-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ISE .cor Bridge Import Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#important-code-changes-already-made" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Important Code Changes Already Made
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Important Code Changes Already Made">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-spartan-6-user-instruction-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Spartan-6 USER Instruction Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-bridge-version-probe-uses-user4-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bridge Version Probe Uses USER4 Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-generic-bridge-loading-cor-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Generic Bridge Loading / .cor Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-invalid-jedec-handling-tightened" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Invalid JEDEC Handling Tightened
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-xpcu-control-bitbang-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. XPCU Control-Bitbang Work
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-retry-logic-for-bad-spartan-6-bridge-replies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Retry Logic for Bad Spartan-6 Bridge Replies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-startup-sequence-experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Startup Sequence Experiments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observed-failure-modes-by-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observed Failure Modes by Stage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Observed Failure Modes by Stage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stage-a-initial-spi-access-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage A: Initial SPI Access Failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-b-control-bitbang-mode-made-things-worse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage B: Control-Bitbang Mode Made Things Worse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-c-accelerated-path-returned-all-zeroes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage C: Accelerated Path Returned All Zeroes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stage-d-internal-bridge-version-path-also-dead" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stage D: Internal Bridge Version Path Also Dead
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-best-hypotheses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Best Hypotheses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#representative-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Representative Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#representative-all-zero-accelerated-path-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative "all zero" accelerated-path failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#representative-all-ff-control-bitbang-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative "all ff" control-bitbang failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#representative-design-loaded-but-bridge-still-dead-clue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Representative "design loaded but bridge still dead" clue
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-was-learned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Was Learned
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-state-of-the-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State Of The Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-references-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External References Used
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="spartan-6-xpcu-spi-flash-debug-log">Spartan-6 XPCU SPI Flash Debug Log<a class="headerlink" href="#spartan-6-xpcu-spi-flash-debug-log" title="Permanent link">&para;</a></h1>
+<h2 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>This note collects the investigation history for external SPI flash access on a Spartan-6 target through <code>xilinxPlatformCableUsb_alt</code> / XPCU in <code>openFPGALoader</code>.</p>
+<p>Target context:</p>
+<ul>
+<li>FPGA: <code>xc6slx45tfgg484</code></li>
+<li>Board flash believed to be: <code>W25Q64</code></li>
+<li>Expected JEDEC ID: <code>0xef4017</code></li>
+<li>Cable path under test: <code>xilinxPlatformCableUsb_alt</code></li>
+<li>Reference behavior: Xilinx iMPACT can see and use the flash successfully on the same hardware</li>
+</ul>
+<h2 id="main-symptom">Main Symptom<a class="headerlink" href="#main-symptom" title="Permanent link">&para;</a></h2>
+<p>JTAG chain detection works, the SPI-over-JTAG bridge bitstream loads into SRAM, but flash access through the bridge fails.</p>
+<p>Typical failure signatures seen during the investigation:</p>
+<ul>
+<li><code>Read ID failed</code></li>
+<li><code>SPI RDID raw bytes: 00 00 00 00 -&gt; 0x00000000</code></li>
+<li><code>SPI RDID raw bytes: ff ff ff ff -&gt; 0xffffffff</code></li>
+<li><code>SOJ version raw: 00 00 00 00 00 00 00</code></li>
+<li><code>SOJ version raw: ff ff ff ff ff ff 00</code></li>
+</ul>
+<p>Important interpretation:</p>
+<ul>
+<li>If <code>USER4</code> bridge version readout is dead, the issue is broader than SPI command formatting.</li>
+<li>That points to one of:</li>
+<li>the bridge design not truly entering active user mode after SRAM configuration</li>
+<li>XPCU transport returning USER scan data incorrectly</li>
+<li>USER instruction / scan framing mismatch on Spartan-6</li>
+</ul>
+<h2 id="baseline-observations">Baseline Observations<a class="headerlink" href="#baseline-observations" title="Permanent link">&para;</a></h2>
+<ul>
+<li>JTAG chain detection is good.</li>
+<li>The cable can identify the Spartan-6 device:</li>
+<li><code>idcode 0x04028093</code></li>
+<li>family <code>spartan6</code></li>
+<li>model <code>xc6slx45T</code></li>
+<li>IR length <code>6</code></li>
+<li>Loading the bridge bitstream reports success.</li>
+<li>After bridge load, <code>done=1</code> is often reported.</li>
+<li>Despite that, <code>USER4</code> version probing can still return all-zero or all-<code>ff</code> data.</li>
+</ul>
+<p>This means "bitstream loaded" is not the same as "bridge logic is alive and reachable through USER scans".</p>
+<h2 id="user-visible-commands-used-repeatedly">User-Visible Commands Used Repeatedly<a class="headerlink" href="#user-visible-commands-used-repeatedly" title="Permanent link">&para;</a></h2>
+<p>Primary detect command:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">openFPGALoader</span><span class="p">.</span><span class="n">exe</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">-</span><span class="n">-fpga-part</span> <span class="n">xc6slx45tfgg484</span> <span class="p">-</span><span class="n">-detect-external-flash</span> <span class="p">-</span><span class="n">-index-chain</span> <span class="n">0</span> <span class="n">-v</span> <span class="n">-v</span>
+</code></pre></div>
+<p>Other explored variants:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">openFPGALoader</span><span class="p">.</span><span class="n">exe</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">-</span><span class="n">-fpga-part</span> <span class="n">xc6slx45tfgg484</span> <span class="p">-</span><span class="n">-detect-external-flash</span> <span class="p">-</span><span class="n">-index-chain</span> <span class="n">0</span> <span class="p">-</span><span class="n">-enable-quad</span>
+<span class="p">.\</span><span class="n">openFPGALoader</span><span class="p">.</span><span class="n">exe</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">-</span><span class="n">-fpga-part</span> <span class="n">xc6slx45tfgg484</span> <span class="p">-</span><span class="n">-bridge</span> <span class="n">E</span><span class="p">:\</span><span class="n">Xilinx</span><span class="p">\</span><span class="n">14</span><span class="p">.</span><span class="n">7</span><span class="p">\</span><span class="n">ISE_DS</span><span class="p">\</span><span class="n">ISE</span><span class="p">\</span><span class="n">spartan6</span><span class="p">\</span><span class="n">data</span><span class="p">\</span><span class="n">xc6slx45t_spi</span><span class="p">.</span><span class="n">cor</span> <span class="p">-</span><span class="n">-detect-external-flash</span> <span class="p">-</span><span class="n">-index-chain</span> <span class="n">0</span>
+<span class="p">.\</span><span class="n">openFPGALoader</span><span class="p">.</span><span class="n">exe</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb</span> <span class="p">-</span><span class="n">-detect</span> <span class="n">-v</span>
+</code></pre></div>
+<p>Environment switches explored:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">$env:OPENFPGALOADER_XPCU_CONTROL_BITBANG</span><span class="p">=</span><span class="s2">"1"</span>
+<span class="nv">$env:OPENFPGALOADER_XPCU_CONTROL_BITBANG</span><span class="p">=</span><span class="s2">"0"</span>
+<span class="nv">$env:OPENFPGALOADER_XPCU_TDO_MASK</span><span class="p">=</span><span class="s2">"0x02"</span>
+</code></pre></div>
+<p>Key observed behavior:</p>
+<ul>
+<li><code>OPENFPGALOADER_XPCU_CONTROL_BITBANG=1</code> could break detection completely on some runs.</li>
+<li><code>OPENFPGALOADER_XPCU_CONTROL_BITBANG=0</code> worked better for chain detection and generally behaved better on this hardware.</li>
+</ul>
+<h2 id="features-added-during-investigation">Features Added During Investigation<a class="headerlink" href="#features-added-during-investigation" title="Permanent link">&para;</a></h2>
+<h3 id="vs-code-support">VS Code Support<a class="headerlink" href="#vs-code-support" title="Permanent link">&para;</a></h3>
+<p>Workspace <code>.vscode</code> files were added/updated so the project can be built and debugged from VS Code.</p>
+<h3 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h3>
+<p>Additional logging was added to make failures easier to diagnose:</p>
+<ul>
+<li>raw SPI JEDEC readback bytes</li>
+<li>flash-access preparation context</li>
+<li>bridge version raw and decoded data</li>
+<li>XPCU mode / mask retry messages</li>
+</ul>
+<h3 id="flash-listing">Flash Listing<a class="headerlink" href="#flash-listing" title="Permanent link">&para;</a></h3>
+<p>A <code>--list-flash</code> option was added to print supported flash names and IDs.</p>
+<h3 id="external-flash-detection-option">External Flash Detection Option<a class="headerlink" href="#external-flash-detection-option" title="Permanent link">&para;</a></h3>
+<p>A <code>--detect-external-flash</code> option was added.</p>
+<h3 id="ise-cor-bridge-import-support">ISE <code>.cor</code> Bridge Import Support<a class="headerlink" href="#ise-cor-bridge-import-support" title="Permanent link">&para;</a></h3>
+<p>Bridge loading was extended so direct Spartan-6 <code>.cor</code> files from ISE can be used, for example:</p>
+<div class="highlight"><pre><span></span><code>E:\Xilinx\14.7\ISE_DS\ISE\spartan6\data\xc6slx45t_spi.cor
+</code></pre></div>
+<h2 id="important-code-changes-already-made">Important Code Changes Already Made<a class="headerlink" href="#important-code-changes-already-made" title="Permanent link">&para;</a></h2>
+<h3 id="1-spartan-6-user-instruction-mapping">1. Spartan-6 USER Instruction Mapping<a class="headerlink" href="#1-spartan-6-user-instruction-mapping" title="Permanent link">&para;</a></h3>
+<p>Spartan-6 uses different USER3/USER4 opcodes than 7-series.</p>
+<p>Added mapping:</p>
+<ul>
+<li><code>USER1 = 0x02</code></li>
+<li><code>USER2 = 0x03</code></li>
+<li><code>USER3 = 0x1a</code></li>
+<li><code>USER4 = 0x1b</code></li>
+</ul>
+<p>This matches Xilinx Spartan-6 documentation.</p>
+<h3 id="2-bridge-version-probe-uses-user4-mapping">2. Bridge Version Probe Uses USER4 Mapping<a class="headerlink" href="#2-bridge-version-probe-uses-user4-mapping" title="Permanent link">&para;</a></h3>
+<p>The bridge version probe was updated to use the family-specific <code>USER4</code> opcode from the IR map instead of a hardcoded assumption.</p>
+<h3 id="3-generic-bridge-loading-cor-support">3. Generic Bridge Loading / <code>.cor</code> Support<a class="headerlink" href="#3-generic-bridge-loading-cor-support" title="Permanent link">&para;</a></h3>
+<p>Bridge loading was changed to support:</p>
+<ul>
+<li><code>.bit</code></li>
+<li><code>.bit.gz</code></li>
+<li><code>.cor</code></li>
+</ul>
+<h3 id="4-invalid-jedec-handling-tightened">4. Invalid JEDEC Handling Tightened<a class="headerlink" href="#4-invalid-jedec-handling-tightened" title="Permanent link">&para;</a></h3>
+<p>SPI flash JEDEC ID reads now explicitly reject these invalid values:</p>
+<ul>
+<li><code>0x000000</code></li>
+<li><code>0x00ffff</code></li>
+<li><code>0xffffff</code></li>
+</ul>
+<p>and report the raw bytes before failure.</p>
+<h3 id="5-xpcu-control-bitbang-work">5. XPCU Control-Bitbang Work<a class="headerlink" href="#5-xpcu-control-bitbang-work" title="Permanent link">&para;</a></h3>
+<p>Low-level support was added for:</p>
+<ul>
+<li>forcing control-transfer JTAG mode</li>
+<li>selecting alternate TDO masks</li>
+<li>restoring the primary TDO mask</li>
+<li>a special USER scan capture mode</li>
+</ul>
+<p>This was useful for experimentation, but forcing control-bitbang turned out not to be the best default for this hardware.</p>
+<h3 id="6-retry-logic-for-bad-spartan-6-bridge-replies">6. Retry Logic for Bad Spartan-6 Bridge Replies<a class="headerlink" href="#6-retry-logic-for-bad-spartan-6-bridge-replies" title="Permanent link">&para;</a></h3>
+<p>When a Spartan-6 bridge reply looked invalid, retry logic was added for:</p>
+<ul>
+<li>alternate TDO mask in XPCU control-bitbang mode</li>
+<li>alternate decode alignment for the bridge version and v2 SPI transfer path</li>
+</ul>
+<h3 id="7-startup-sequence-experiments">7. Startup Sequence Experiments<a class="headerlink" href="#7-startup-sequence-experiments" title="Permanent link">&para;</a></h3>
+<p>The post-configuration startup path in <code>program_mem()</code> was changed more than once:</p>
+<ul>
+<li>initially modified to try Spartan-6-specific <code>ISC_DISABLE</code> handling</li>
+<li>later adjusted again because the short startup sequence likely prevented the bridge from becoming active</li>
+</ul>
+<p>Current direction:</p>
+<ul>
+<li>keep the long post-<code>JSTART</code> clock run</li>
+<li>then do an extra Spartan-6 <code>ISC_DISABLE</code> pulse</li>
+</ul>
+<h2 id="observed-failure-modes-by-stage">Observed Failure Modes by Stage<a class="headerlink" href="#observed-failure-modes-by-stage" title="Permanent link">&para;</a></h2>
+<h3 id="stage-a-initial-spi-access-failures">Stage A: Initial SPI Access Failures<a class="headerlink" href="#stage-a-initial-spi-access-failures" title="Permanent link">&para;</a></h3>
+<p>Early failures were simple flash-ID read failures:</p>
+<ul>
+<li><code>Read ID failed</code></li>
+<li><code>SPI flash write failed</code></li>
+</ul>
+<p>This first suggested a flash DB problem, but that became less likely after confirming the expected flash type and that Xilinx tools worked.</p>
+<h3 id="stage-b-control-bitbang-mode-made-things-worse">Stage B: Control-Bitbang Mode Made Things Worse<a class="headerlink" href="#stage-b-control-bitbang-mode-made-things-worse" title="Permanent link">&para;</a></h3>
+<p>When XPCU control-transfer bitbang was forced:</p>
+<ul>
+<li>sometimes no JTAG devices were found</li>
+<li>sometimes USER scan traffic returned only <code>ff</code></li>
+</ul>
+<p>This suggested the control path itself was fragile on this cable / firmware combination.</p>
+<h3 id="stage-c-accelerated-path-returned-all-zeroes">Stage C: Accelerated Path Returned All Zeroes<a class="headerlink" href="#stage-c-accelerated-path-returned-all-zeroes" title="Permanent link">&para;</a></h3>
+<p>After returning to the accelerated path:</p>
+<ul>
+<li>chain detection still worked</li>
+<li>bridge version probe returned all zeros</li>
+<li>JEDEC read returned all zeros</li>
+</ul>
+<p>This moved suspicion away from basic cable access and toward USER scan transport, bridge startup, or returned-bit alignment.</p>
+<h3 id="stage-d-internal-bridge-version-path-also-dead">Stage D: Internal Bridge Version Path Also Dead<a class="headerlink" href="#stage-d-internal-bridge-version-path-also-dead" title="Permanent link">&para;</a></h3>
+<p>This was the strongest clue:</p>
+<ul>
+<li><code>SOJ version raw</code> came back all zero or all <code>ff</code></li>
+</ul>
+<p>Since <code>USER4</code> version access does not depend on talking to the flash correctly, this means the failure is not just "wrong SPI command sequence".</p>
+<h2 id="current-best-hypotheses">Current Best Hypotheses<a class="headerlink" href="#current-best-hypotheses" title="Permanent link">&para;</a></h2>
+<p>Ordered from strongest to weaker:</p>
+<ol>
+<li>Spartan-6 bridge startup after SRAM configuration is still not complete enough for the user design to run.</li>
+<li>XPCU accelerated USER scan readback is returning valid bits, but software is unpacking them with the wrong phase or byte alignment.</li>
+<li>XPCU control-bitbang path samples <code>TDO</code> differently than needed for Spartan-6 USER scans, which explains the <code>ff</code>-heavy failures in that mode.</li>
+<li>The bundled <code>spiOverJtag_xc6slx45tfgg484.bit.gz</code> bridge is valid, but the specific cable / firmware combination needs a more exact iMPACT-like startup or TAP-state sequence.</li>
+</ol>
+<p>Less likely now:</p>
+<ul>
+<li>flash database mismatch</li>
+<li>wrong JEDEC constant for <code>W25Q64</code></li>
+<li>missing quad enable as the root cause</li>
+</ul>
+<p>Reason these are less likely:</p>
+<ul>
+<li>the internal bridge version path is already failing before useful SPI traffic begins</li>
+</ul>
+<h2 id="representative-logs">Representative Logs<a class="headerlink" href="#representative-logs" title="Permanent link">&para;</a></h2>
+<h3 id="representative-all-zero-accelerated-path-failure">Representative "all zero" accelerated-path failure<a class="headerlink" href="#representative-all-zero-accelerated-path-failure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>SOJ version raw: 00 00 00 00 00 00 00
+SOJ version decoded: 00 00 00 00 00 -&gt; ''
+SOJ version probe failed on Spartan-6; assuming bundled bridge uses v2 framing
+SOJ version: 2.000000
+...
+Read ID failed: SPI RDID raw bytes: 00 00 00 00 -&gt; 0x00000000
+Fail
+Read ID failed
+</code></pre></div>
+<h3 id="representative-all-ff-control-bitbang-failure">Representative "all ff" control-bitbang failure<a class="headerlink" href="#representative-all-ff-control-bitbang-failure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>XPCU JTAG mode switched to control-transfer bitbang
+...
+SOJ version raw: ff ff ff ff ff ff 00
+SOJ version decoded: ff ff ff ff fe -&gt; '    ■'
+...
+Read ID failed: SPI RDID raw bytes: ff ff ff ff -&gt; 0xffffffff
+Fail
+Read ID failed
+</code></pre></div>
+<h3 id="representative-design-loaded-but-bridge-still-dead-clue">Representative "design loaded but bridge still dead" clue<a class="headerlink" href="#representative-design-loaded-but-bridge-still-dead-clue" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Shift IR 35
+ir: 1 isc_done 1 isc_ena 0 init 1 done 1
+</code></pre></div>
+<p>Interpretation:</p>
+<ul>
+<li>configuration appears complete</li>
+<li>but USER bridge scans still do not return valid payloads</li>
+</ul>
+<h2 id="what-was-learned">What Was Learned<a class="headerlink" href="#what-was-learned" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The main blocker is no longer believed to be flash-chip support.</li>
+<li>The main blocker is no longer believed to be <code>.cor</code> import support.</li>
+<li>The problem sits near the boundary between:</li>
+<li>Spartan-6 post-configuration startup</li>
+<li>USER scan activation</li>
+<li>XPCU USER scan transport / decode</li>
+</ul>
+<h2 id="current-state-of-the-tree">Current State Of The Tree<a class="headerlink" href="#current-state-of-the-tree" title="Permanent link">&para;</a></h2>
+<p>Files touched significantly during this work:</p>
+<ul>
+<li><a href="https://github.com/xsession/openFPGALoader/blob/master/src/vendors/xilinx.cpp">src/vendors/xilinx.cpp</a></li>
+<li><a href="https://github.com/xsession/openFPGALoader/blob/master/src/cables/xilinxPlatformCableUSB.cpp">src/cables/xilinxPlatformCableUSB.cpp</a></li>
+<li><a href="https://github.com/xsession/openFPGALoader/blob/master/src/cables/xilinxPlatformCableUSB.hpp">src/cables/xilinxPlatformCableUSB.hpp</a></li>
+<li><a href="https://github.com/xsession/openFPGALoader/blob/master/src/protocols/jtagInterface.hpp">src/protocols/jtagInterface.hpp</a></li>
+<li><a href="https://github.com/xsession/openFPGALoader/blob/master/src/protocols/spiFlash.cpp">src/protocols/spiFlash.cpp</a></li>
+</ul>
+<p>At the time this note was written, these files contained local uncommitted changes related to the investigation.</p>
+<h2 id="recommended-next-steps">Recommended Next Steps<a class="headerlink" href="#recommended-next-steps" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Continue validating the revised Spartan-6 startup sequence and check whether <code>SOJ version raw</code> becomes non-zero.</li>
+<li>If <code>SOJ version raw</code> is still dead, add raw accelerated XPCU RX tracing specifically around the <code>USER4</code> version probe and <code>USER1</code> flash reads.</li>
+<li>Compare the exact TAP sequence used by iMPACT, if it can be observed, against <code>program_mem()</code> and the first bridge probe transaction.</li>
+<li>If needed, add a Spartan-6-specific "post-load settle" experiment matrix:</li>
+<li>more RTI clocks</li>
+<li><code>JSTART</code> only</li>
+<li><code>JSTART</code> then <code>ISC_DISABLE</code></li>
+<li><code>ISC_DISABLE</code> then extra RTI clocks</li>
+<li>optional return to <code>TLR</code> before first USER probe</li>
+</ol>
+<h2 id="external-references-used">External References Used<a class="headerlink" href="#external-references-used" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Xilinx / AMD Spartan-6 Configuration User Guide UG380</li>
+<li>AMD documentation for boundary-scan / USER register behavior</li>
+</ul>
+<p>Useful links:</p>
+<ul>
+<li>https://docs.amd.com/v/u/en-US/ug380</li>
+<li>https://manualzz.com/doc/27686281/xilinx-spartan-6-fpga-user-guide</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../javascripts/mermaid.js"></script>
+      
+    
+  </body>
+</html>

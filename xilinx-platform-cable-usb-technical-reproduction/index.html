@@ -1,0 +1,3302 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Universal utility for programming FPGAs">
+      
+      
+      
+        <link rel="canonical" href="https://xsession.github.io/openFPGALoader/xilinx-platform-cable-usb-technical-reproduction/">
+      
+      
+        <link rel="prev" href="../spartan6-hs3-m25p40-write-stall/">
+      
+      
+        <link rel="next" href="../xilinx-platform-cable-usb-windows-debug/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Xilinx Platform Cable USB - openFPGALoader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xilinx-platform-cable-usb-technical-reproduction-and-debug-record" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="openFPGALoader" class="md-header__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            openFPGALoader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Xilinx Platform Cable USB
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guide/first-steps/" class="md-tabs__link">
+          
+  
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../compatibility/board/" class="md-tabs__link">
+          
+  
+  
+  Compatibility
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../vendors/anlogic/" class="md-tabs__link">
+          
+  
+  
+  Vendors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../SOJ_REVIEW/" class="md-tabs__link">
+          
+  
+  
+  Hardware and debugging
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/architecture-rules/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../DEVICE_SUPPORT_CHAT/" class="md-tabs__link">
+          
+  
+  
+  Project documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="openFPGALoader" class="md-nav__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    openFPGALoader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/first-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compatibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/board/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/fpga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FPGAs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/cable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vendors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vendors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/anlogic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anlogic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/colognechip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cologne Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/efinix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efinix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/gowin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gowin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/intel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intel/Altera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/lattice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lattice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and debugging
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware and debugging
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SOJ_REVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOJ review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../digilent-hs3-vs-xpcu-dump-flash-codepath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-xpcu-spi-debug-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-hs3-m25p40-write-stall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 HS3 write stall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope-and-present-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scope and present result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-hardware-and-software-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Hardware and software architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-usb-identities-and-firmware-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. USB identities and firmware matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. USB identities and firmware matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-byte-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version byte order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-reproducible-windows-driver-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Reproducible Windows driver deployment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-docker-cross-build-and-firmware-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Docker cross-build and firmware packaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-recovering-the-dlc10-loader-from-the-installed-xilinx-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Recovering the DLC10 loader from the installed Xilinx driver
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-cold-start-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Cold-start procedures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Cold-start procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-embedded-cable-pid-000d-verified-fast-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Embedded cable, PID 000d -- verified fast path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-genuine-platform-cable-usb-ii-pid-0013-current-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Genuine Platform Cable USB II, PID 0013 -- current boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-capturing-the-remaining-official-dlc10-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Capturing the remaining official DLC10 initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-xpcu-usb-protocol-facts-established-during-debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. XPCU USB protocol facts established during debugging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-why-the-slow-fallback-produced-misleading-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Why the slow fallback produced misleading results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-diagnostic-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Diagnostic environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-failure-signatures-and-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Failure signatures and decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-integrity-values-for-this-exact-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Integrity values for this exact reproduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-minimal-regression-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Minimal regression checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-external-w25q64-flash-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. External W25Q64 flash investigation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-related-project-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Related project documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-windows-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machxo3-recovery-after-bulk-erase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MachXO3 recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XCF_PLATFORM_FLASH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XCF platform flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XILINX_PLATFORM_CABLE_USB_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows cable notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/source-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/runtime-flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/build-and-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/architecture-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API and code reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVICE_SUPPORT_CHAT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-flash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-fpga-and-flash-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_CROSS_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker cross-Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_DEPLOY_LINUX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Linux deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/ci-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI issue report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../todo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Todo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope-and-present-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scope and present result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-hardware-and-software-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Hardware and software architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-usb-identities-and-firmware-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. USB identities and firmware matrix
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. USB identities and firmware matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#version-byte-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version byte order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-reproducible-windows-driver-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Reproducible Windows driver deployment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-docker-cross-build-and-firmware-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Docker cross-build and firmware packaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-recovering-the-dlc10-loader-from-the-installed-xilinx-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Recovering the DLC10 loader from the installed Xilinx driver
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-cold-start-procedures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Cold-start procedures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Cold-start procedures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-embedded-cable-pid-000d-verified-fast-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Embedded cable, PID 000d -- verified fast path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-genuine-platform-cable-usb-ii-pid-0013-current-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Genuine Platform Cable USB II, PID 0013 -- current boundary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-capturing-the-remaining-official-dlc10-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Capturing the remaining official DLC10 initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-xpcu-usb-protocol-facts-established-during-debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. XPCU USB protocol facts established during debugging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-why-the-slow-fallback-produced-misleading-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Why the slow fallback produced misleading results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-diagnostic-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Diagnostic environment variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-failure-signatures-and-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Failure signatures and decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-integrity-values-for-this-exact-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Integrity values for this exact reproduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-minimal-regression-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Minimal regression checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-external-w25q64-flash-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. External W25Q64 flash investigation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-related-project-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Related project documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="xilinx-platform-cable-usb-technical-reproduction-and-debug-record">Xilinx Platform Cable USB: technical reproduction and debug record<a class="headerlink" href="#xilinx-platform-cable-usb-technical-reproduction-and-debug-record" title="Permanent link">&para;</a></h1>
+<p>Date: 2026-07-15<br />
+Host used for the measurements: Windows, WinUSB, Docker Desktop<br />
+Repository: <code>openFPGALoader</code><br />
+Target used for the successful test: Spartan-6 <code>XC6SLX45T-FGG484</code></p>
+<h2 id="1-scope-and-present-result">1. Scope and present result<a class="headerlink" href="#1-scope-and-present-result" title="Permanent link">&para;</a></h2>
+<p>This document reconstructs the complete debug procedure used to make Xilinx
+Platform Cable USB devices usable from a native Windows openFPGALoader binary
+built in Docker. It deliberately distinguishes two electrically similar but
+firmware-incompatible cable families:</p>
+<ul>
+<li>the embedded/clone path, cold PID <code>03fd:000d</code>;</li>
+<li>genuine Platform Cable USB II/DLC10, cold PID <code>03fd:0013</code>.</li>
+</ul>
+<p>The <code>000d</code> path is verified end to end. It loads two FX2 images, detects the
+XC6SLX45T, and programs a 1.48 MB bitstream in approximately 4.1--4.6 seconds.</p>
+<p>The <code>0013</code> path is verified through both FX2 stages. The first-stage loader was
+recovered from the installed Xilinx kernel driver and the cable reaches FX2
+version <code>0x0961</code>. On the tested cable, however, the internal programmable logic
+then reports <code>0xFFFE</code>. Xilinx iMPACT normally replays <code>xusb_xp2.fmwr</code> through an
+internal JTAG chain at this point. That last <code>.fmwr</code> interpreter is not yet
+implemented in openFPGALoader, so a cold genuine DLC10 is not yet an end-to-end
+standalone result. This is an explicit boundary of the current implementation,
+not a target-board failure.</p>
+<p>The state diagram is available as editable
+<a href="https://github.com/xsession/openFPGALoader/blob/master/docs/diagrams/xpcu-firmware-state-machine.mmd"><code>diagrams/xpcu-firmware-state-machine.mmd</code></a>
+and rendered
+<a href="https://github.com/xsession/openFPGALoader/blob/master/docs/diagrams/xpcu-firmware-state-machine.svg"><code>diagrams/xpcu-firmware-state-machine.svg</code></a>.</p>
+<h2 id="2-hardware-and-software-architecture">2. Hardware and software architecture<a class="headerlink" href="#2-hardware-and-software-architecture" title="Permanent link">&para;</a></h2>
+<p>The cable has three distinct layers which must not be confused:</p>
+<ol>
+<li><strong>Windows USB driver binding.</strong> WinUSB only gives libusb access to a USB
+   identity. It does not load cable firmware.</li>
+<li><strong>Cypress FX2 firmware.</strong> This RAM-resident 8051 program implements USB
+   control requests and bulk endpoints. It disappears after complete power
+   removal.</li>
+<li><strong>Cable programmable logic.</strong> Embedded cables expose a CPLD implementation;
+   Platform Cable USB II contains a Spartan-3A-class internal FPGA/PROM path.
+   It generates the fast JTAG waveforms for the external target connector.</li>
+</ol>
+<p>The target FPGA is a fourth, independent JTAG TAP. A successful FX2 version
+read proves only layers 1 and 2. <code>connected: yes</code> proves that target voltage is
+sensed; neither result proves valid target TDO.</p>
+<h2 id="3-usb-identities-and-firmware-matrix">3. USB identities and firmware matrix<a class="headerlink" href="#3-usb-identities-and-firmware-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>VID:PID</th>
+<th>openFPGALoader cable name</th>
+<th>Meaning</th>
+<th>Correct first image</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>03fd:000d</code></td>
+<td><code>xilinxPlatformCableUsb_alt</code></td>
+<td>Embedded cable cold loader</td>
+<td><code>xusb_emb.hex</code></td>
+</tr>
+<tr>
+<td><code>03fd:0013</code></td>
+<td><code>xilinxPlatformCableUsb</code></td>
+<td>Platform Cable USB II cold loader</td>
+<td><code>xusb_xp2_loader.hex</code></td>
+</tr>
+<tr>
+<td><code>03fd:0008</code></td>
+<td><code>xilinxPlatformCableUsb_initialized</code></td>
+<td>An FX2 image is running</td>
+<td>Do not upload a boot image blindly</td>
+</tr>
+</tbody>
+</table>
+<p>The PID <code>0008</code> identity alone does not identify which operational firmware is
+running. Read request <code>0x50</code> first.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th style="text-align: right;">HEX version record</th>
+<th>Role</th>
+<th>Tested cable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xusb_emb.hex</code></td>
+<td style="text-align: right;"><code>0x0404</code></td>
+<td>initial FX2 image</td>
+<td>cold PID <code>000d</code></td>
+</tr>
+<tr>
+<td><code>xusb_xlp.hex</code></td>
+<td style="text-align: right;"><code>0x0517</code></td>
+<td>accelerated second-stage FX2 image</td>
+<td>embedded/clone path</td>
+</tr>
+<tr>
+<td><code>xusb_xp2_loader.hex</code></td>
+<td style="text-align: right;"><code>0x08FD</code> (decimal 2301)</td>
+<td>initial FX2 image extracted from <code>xusb_xp2.sys</code></td>
+<td>cold PID <code>0013</code></td>
+</tr>
+<tr>
+<td><code>xusb_xp2.hex</code></td>
+<td style="text-align: right;"><code>0x0961</code> (decimal 2401)</td>
+<td>operational second-stage FX2 image</td>
+<td>genuine DLC10</td>
+</tr>
+<tr>
+<td><code>xusb_xp2.fmwr</code></td>
+<td style="text-align: right;">proprietary microprogram</td>
+<td>internal FPGA/PROM overlay/update</td>
+<td>genuine DLC10</td>
+</tr>
+</tbody>
+</table>
+<h3 id="version-byte-order">Version byte order<a class="headerlink" href="#version-byte-order" title="Permanent link">&para;</a></h3>
+<p>The Intel HEX record at FX2 address <code>0x19B9</code> stores the printable four-digit
+firmware value directly. For example:</p>
+<div class="highlight"><pre><span></span><code>:0219B9000517...  -&gt; 0x0517
+:0219B9000961...  -&gt; 0x0961
+</code></pre></div>
+<p>The FX2 <code>GET_VERSION</code> control response returns the low byte first, so host code
+must decode <code>buf[1] &lt;&lt; 8 | buf[0]</code>. Earlier debug output swapped the bytes and
+called <code>0x0517</code> "1705". That display was wrong; it did not describe a different
+firmware file.</p>
+<h2 id="4-reproducible-windows-driver-deployment">4. Reproducible Windows driver deployment<a class="headerlink" href="#4-reproducible-windows-driver-deployment" title="Permanent link">&para;</a></h2>
+<p>Build the host-driver packages from the external project:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">Set-Location</span> <span class="n">externals</span><span class="p">\</span><span class="n">xilinx-usb-driver</span>
+<span class="p">.\</span><span class="n">docker-build</span><span class="p">.</span><span class="n">ps1</span>
+</code></pre></div>
+<p>Extract the Windows ZIP, start an elevated PowerShell in its Windows package,
+and run:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">install</span><span class="p">.</span><span class="n">ps1</span>
+<span class="p">.\</span><span class="n">detect</span><span class="p">.</span><span class="n">ps1</span>
+</code></pre></div>
+<p><code>install.ps1</code> calls the Docker-built <code>wdi-simple.exe</code> once for each PID:
+<code>0013</code>, <code>000d</code>, and <code>0008</code>. A success message for an absent PID can mean that
+the package was staged, not that a live device changed driver. After firmware
+causes PID <code>0008</code> to appear, rerun the elevated installer while <code>0008</code> is
+physically present.</p>
+<p>Verify with:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">Get-PnpDevice</span> <span class="n">-PresentOnly</span> <span class="p">|</span> <span class="nb">Where-Object</span> <span class="n">InstanceId</span> <span class="o">-Like</span> <span class="s1">'USB\VID_03FD*'</span>
+</code></pre></div>
+<p>Device Manager should list the live identity under <strong>Universal Serial Bus
+devices</strong> using WinUSB. Xilinx iMPACT normally needs the vendor driver instead;
+WinUSB intentionally replaces that binding.</p>
+<h2 id="5-docker-cross-build-and-firmware-packaging">5. Docker cross-build and firmware packaging<a class="headerlink" href="#5-docker-cross-build-and-firmware-packaging" title="Permanent link">&para;</a></h2>
+<p>From the repository root:</p>
+<div class="highlight"><pre><span></span><code><span class="p">.\</span><span class="n">deploy</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="n">verify-docker-linux-engine</span><span class="p">.</span><span class="n">ps1</span>
+<span class="n">docker</span> <span class="n">compose</span> <span class="o">-f</span> <span class="n">docker-compose</span><span class="p">.</span><span class="n">cross-windows</span><span class="p">.</span><span class="n">yml</span> <span class="n">build</span> <span class="n">windows-cross</span>
+<span class="n">docker</span> <span class="n">compose</span> <span class="o">-f</span> <span class="n">docker-compose</span><span class="p">.</span><span class="n">cross-windows</span><span class="p">.</span><span class="n">yml</span> <span class="n">run</span> <span class="p">-</span><span class="n">-rm</span> <span class="n">windows-cross</span>
+</code></pre></div>
+<p>The cross-build uses an Alpine Linux image. Docker Desktop must use its WSL2
+Linux-container engine; Windows-container mode cannot pull <code>alpine:edge</code>.</p>
+<p>The executable is installed at:</p>
+<div class="highlight"><pre><span></span><code>dist/docker-windows/install/bin/openFPGALoader.exe
+</code></pre></div>
+<p>Firmware must be copied in <code>deploy/scripts/docker-cross-windows.sh</code>, while the
+container is running. The Compose <code>/src</code> bind mount does not exist during a
+Dockerfile <code>RUN</code> layer, so this does not work in <code>alpine.Dockerfile</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">RUN</span><span class="w"> </span>cp<span class="w"> </span>/src/deploy/ise_programmer_bins/*.hex<span class="w"> </span>...
+</code></pre></div>
+<p>The runtime script instead copies <code>deploy/ise_programmer_bins/*.hex</code> to:</p>
+<div class="highlight"><pre><span></span><code>dist/docker-windows/install/share/openFPGALoader/
+</code></pre></div>
+<p>Always invoke the built executable by absolute path. Otherwise an older binary
+on <code>PATH</code> can make a fixed source tree appear broken:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">$ofl</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="s1">'.\dist\docker-windows\install\bin\openFPGALoader.exe'</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="p">-</span><span class="n">-scan-usb</span>
+</code></pre></div>
+<h2 id="6-recovering-the-dlc10-loader-from-the-installed-xilinx-driver">6. Recovering the DLC10 loader from the installed Xilinx driver<a class="headerlink" href="#6-recovering-the-dlc10-loader-from-the-installed-xilinx-driver" title="Permanent link">&para;</a></h2>
+<p>ISE 14.7 was found at <code>E:\Xilinx\14.7</code>, not at a guessed root directory. The
+relevant files are:</p>
+<div class="highlight"><pre><span></span><code>E:\Xilinx\14.7\ISE_DS\common\bin\nt64\xusb_xp2.sys
+E:\Xilinx\14.7\ISE_DS\ISE\data\xusb_xp2.hex
+E:\Xilinx\14.7\ISE_DS\ISE\data\xusb_xp2.fmwr
+E:\Xilinx\14.7\ISE_DS\ISE\data\xusbcpld.fmwr
+</code></pre></div>
+<p>Only the operational <code>0x0961</code> HEX is installed as a normal file. Loading it
+directly into cold PID <code>0013</code> fails because the missing <code>2301</code> loader is
+embedded in the Windows <code>.sys</code> driver.</p>
+<p>Run the repository extractor:</p>
+<div class="highlight"><pre><span></span><code><span class="n">powershell</span><span class="p">.</span><span class="n">exe</span> <span class="n">-NoProfile</span> <span class="n">-ExecutionPolicy</span> <span class="n">Bypass</span> <span class="p">`</span>
+  <span class="o">-File</span> <span class="p">.\</span><span class="n">scripts</span><span class="p">\</span><span class="n">extract-xusb-loader-from-sys</span><span class="p">.</span><span class="n">ps1</span> <span class="p">`</span>
+  <span class="n">-DriverPath</span> <span class="s1">'E:\Xilinx\14.7\ISE_DS\common\bin\nt64\xusb_xp2.sys'</span> <span class="p">`</span>
+  <span class="n">-OutputPath</span> <span class="s1">'.\deploy\ise_programmer_bins\xusb_xp2_loader.hex'</span>
+</code></pre></div>
+<p>The explicit process-scoped execution-policy override is needed on hosts which
+disable direct PowerShell script execution. It does not change the machine-wide
+policy.</p>
+<p>The extractor performs these steps:</p>
+<ol>
+<li>validates the DOS <code>MZ</code> and PE signatures;</li>
+<li>locates the PE <code>.data</code> section from the section table;</li>
+<li>skips the first <code>0x100</code> bytes of <code>.data</code> globals;</li>
+<li>reads records encoded as <code>uint16_le length</code>, <code>uint16_le address</code>, one zero
+   type byte, <code>length</code> data bytes, and one zero padding byte;</li>
+<li>rejects scanner artifacts whose FX2 address range overlaps an accepted
+   record;</li>
+<li>requires at least 500 records, an address-zero reset vector, a USB
+   descriptor at <code>0x0090</code> containing <code>03fd:0008</code>, and a two-byte version record
+   at <code>0x19B9</code>;</li>
+<li>writes checksummed Intel HEX and an EOF record.</li>
+</ol>
+<p>The tested driver yields 595 firmware records plus the HEX EOF line and version
+<code>0x08FD</code>.</p>
+<h2 id="7-cold-start-procedures">7. Cold-start procedures<a class="headerlink" href="#7-cold-start-procedures" title="Permanent link">&para;</a></h2>
+<h3 id="71-embedded-cable-pid-000d-verified-fast-path">7.1 Embedded cable, PID <code>000d</code> -- verified fast path<a class="headerlink" href="#71-embedded-cable-pid-000d-verified-fast-path" title="Permanent link">&para;</a></h3>
+<p>Fully remove USB and target power, reconnect, then run:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="p">-</span><span class="n">-scan-usb</span>
+<span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">-</span><span class="n">-detect</span> <span class="n">-v</span>
+</code></pre></div>
+<p>The expected state sequence is:</p>
+<ol>
+<li>open <code>03fd:000d</code>;</li>
+<li>upload <code>xusb_emb.hex</code> (<code>0x0404</code>) into FX2 RAM;</li>
+<li>release FX2 reset and wait for <code>03fd:0008</code>;</li>
+<li>reopen and reload <code>xusb_xlp.hex</code> (<code>0x0517</code>);</li>
+<li>wait for <code>03fd:0008</code> again;</li>
+<li>discover bulk endpoints <code>OUT=0x02</code>, <code>IN=0x86</code>;</li>
+<li>select the external chain and prime accelerated transfer;</li>
+<li>detect the target TAP.</li>
+</ol>
+<p>The accelerator priming sequence reproduced from the reference driver is:</p>
+<div class="highlight"><pre><span></span><code>disable -&gt; speed class 0x11 -&gt; enable -&gt; A6 transfer count 2
+-&gt; bulk OUT 00 00 -&gt; speed class 0x12 -&gt; restore requested speed
+</code></pre></div>
+<p>The tested XLP firmware requires the zero-based transfer value
+<code>number_of_bits - 1</code>. Sending <code>N</code> makes common 32-bit scans a multiple-of-four
+XPCU CPLD failure case and stalls bulk IN. A USER/SPI readback problem must not
+be diagnosed by changing this count after the accelerator is working.</p>
+<p>Program SRAM with the same cable name and the desired <code>.bit</code> file:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">-</span><span class="n">-freq</span> <span class="n">6000000</span> <span class="p">.\</span><span class="n">path</span><span class="p">\</span><span class="n">design</span><span class="p">.</span><span class="n">bit</span> <span class="n">-v</span>
+</code></pre></div>
+<p>The verified XC6SLX45T IDCODE is <code>0x04028093</code> after the normal version-nibble
+mask. The 1.48 MB test image completed in about 4.1--4.6 seconds.</p>
+<h3 id="72-genuine-platform-cable-usb-ii-pid-0013-current-boundary">7.2 Genuine Platform Cable USB II, PID <code>0013</code> -- current boundary<a class="headerlink" href="#72-genuine-platform-cable-usb-ii-pid-0013-current-boundary" title="Permanent link">&para;</a></h3>
+<p>After a full power cycle:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="p">-</span><span class="n">-scan-usb</span>
+<span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb</span> <span class="p">-</span><span class="n">-detect</span> <span class="n">-v</span>
+</code></pre></div>
+<p>The expected implemented portion is:</p>
+<div class="highlight"><pre><span></span><code>0013 -&gt; xusb_xp2_loader.hex 0x08FD -&gt; 0008
+     -&gt; xusb_xp2.hex 0x0961 -&gt; 0008
+</code></pre></div>
+<p>The observed diagnostic after those successful reloads was:</p>
+<div class="highlight"><pre><span></span><code>FX2 version:    0961
+CPLD version:   fffe
+Const0 version: 03b5
+Const1 version: 0004
+Const2 version: 200d
+status 00 connected: no
+TDO stuck at 0
+</code></pre></div>
+<p><code>0xFFFE</code> is the decisive value: the cable-internal programmable logic has not
+been configured. The external Spartan-6 cannot be reached through that state.
+Do not debug the SP605 ribbon or its IDCODE until the internal overlay loads.</p>
+<p>Binary strings in <code>libImpactComm.dll</code> show the vendor sequence uses
+<code>playxsvf</code>, with <code>fpga</code>, <code>cpld</code>, and <code>cpld2</code> modes. The 734,080-byte
+<code>xusb_xp2.fmwr</code> begins with version/comment metadata and a proprietary Xilinx
+microprogram; it is not a plain FX2 HEX or a directly usable standard XSVF
+file. USBPcap is installed at <code>C:\Program Files\USBPcap\USBPcapCMD.exe</code>; a
+capture made while the official driver and iMPACT initialize a cold cable is
+the next reliable way to recover the exact replay protocol.</p>
+<h3 id="73-capturing-the-remaining-official-dlc10-initialization">7.3 Capturing the remaining official DLC10 initialization<a class="headerlink" href="#73-capturing-the-remaining-official-dlc10-initialization" title="Permanent link">&para;</a></h3>
+<p>This operation intentionally requires a manual driver transition. Do not run
+the WinUSB and Xilinx stacks against the cable simultaneously.</p>
+<ol>
+<li>Rebind <code>03fd:0013</code> and <code>03fd:0008</code> to the official ISE 14.7 Xilinx driver.</li>
+<li>Remove power from the cable so the next session starts at PID <code>0013</code>.</li>
+<li>In an elevated terminal, identify the USBPcap root-hub interface containing
+   the cable, for example <code>\\.\USBPcap1</code>.</li>
+<li>Start a full-length capture before opening iMPACT:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="p">&amp;</span> <span class="s1">'C:\Program Files\USBPcap\USBPcapCMD.exe'</span> <span class="p">`</span>
+  <span class="n">-d</span> <span class="s1">'\\.\USBPcap1'</span> <span class="n">-A</span> <span class="p">-</span><span class="n">-inject-descriptors</span> <span class="p">`</span>
+  <span class="n">-o</span> <span class="s1">'.\xpcu-xp2-official-init.pcap'</span>
+</code></pre></div>
+<ol>
+<li>Open iMPACT and perform exactly one cable connect/detect. Wait until it can
+   see the external chain, then stop USBPcap with Ctrl+C.</li>
+<li>In Wireshark use display filter <code>usb.idVendor == 0x03fd</code>. Preserve the
+   enumeration, control transfers, and both bulk endpoints; do not filter the
+   capture at acquisition time.</li>
+<li>Record the last <code>GET_VERSION</code> response before the <code>.fmwr</code> traffic, all
+   <code>0x52</code> route-selection requests, every <code>0xA6</code> transfer length, bulk OUT
+   payload, bulk IN verification data, delays, and the first version response
+   after completion.</li>
+<li>Close iMPACT, rebind all three PIDs to WinUSB with <code>install.ps1</code>, and fully
+   power-cycle before testing a replay implementation.</li>
+</ol>
+<p>The capture contains copyrighted Xilinx firmware bytes. Keep it as a local
+reverse-engineering artifact and implement the transport/parser independently;
+do not add the capture or extracted proprietary payload to a public commit.</p>
+<h2 id="8-xpcu-usb-protocol-facts-established-during-debugging">8. XPCU USB protocol facts established during debugging<a class="headerlink" href="#8-xpcu-usb-protocol-facts-established-during-debugging" title="Permanent link">&para;</a></h2>
+<p>The operational device uses vendor request <code>bRequest=0xB0</code>. Important command
+values are:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;"><code>wValue</code></th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>0x10</code></td>
+<td>disable</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x18</code></td>
+<td>enable</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x28</code></td>
+<td>set speed; class is carried in <code>wIndex</code></td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x30</code></td>
+<td>synchronous GPIO write</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x38</code></td>
+<td>status/TDO read</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x40</code></td>
+<td>return fixed cable constants</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x50</code></td>
+<td>return FX2/internal-logic version</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0x52</code></td>
+<td>select internal/external GPIO/JTAG routing</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>0xA6</code></td>
+<td>prepare accelerated bulk JTAG transfer</td>
+</tr>
+</tbody>
+</table>
+<p>Endpoint discovery should select bulk OUT <code>0x02</code> and bulk IN <code>0x86</code> from the
+active interface descriptors rather than assuming them without verification.</p>
+<p>On Windows, a newly enumerated device can report configuration zero. The
+libusb open path therefore reads the active configuration, sets configuration
+1 when necessary, claims interface zero, and retries after
+<code>LIBUSB_ERROR_NOT_FOUND</code>. Handles must be closed even when interface release
+fails because firmware reload already disconnected the device.</p>
+<h2 id="9-why-the-slow-fallback-produced-misleading-results">9. Why the slow fallback produced misleading results<a class="headerlink" href="#9-why-the-slow-fallback-produced-misleading-results" title="Permanent link">&para;</a></h2>
+<p>FX2 firmware <code>0x0404</code> stalls endpoint zero when the accelerated <code>0xA6</code> path is
+used in the tested WinUSB and libusbK configurations. Continuing on the same
+handle after that stall produced random-looking values such as <code>0x0C23EA80</code>
+and <code>0xB8B1E8C0</code>. They were transport corruption, not FPGA IDCODEs. Perform a
+complete power cycle after this failure.</p>
+<p>The reliable fallback toggles TCK using synchronous control transfers: two USB
+writes per JTAG bit, plus reads when TDO is captured. The printed 6 MHz value is
+the requested cable clock, not effective host throughput. Reaching only 9% of
+a bitstream after 5--10 minutes was therefore expected and implied a total
+time approaching an hour.</p>
+<p>The fallback also exposed two decoding details:</p>
+<ul>
+<li>command <code>0x38</code> returns the sample following the last shifted bit, so the
+  <code>0x0404</code> TDO stream must be compensated by one bit;</li>
+<li>after a valid device, the tested cable returned trailing word <code>0x0A001093</code>
+  instead of the usual all-ones terminator. It is ignored only as a trailing
+  artifact after at least one valid TAP has been accepted.</li>
+</ul>
+<p>Before correction, the one-bit-shifted value was <code>0xA2014049</code>. Restoring the
+bit alignment yields the valid Spartan-6 family IDCODE <code>0x04028093</code> after
+version masking.</p>
+<h2 id="10-diagnostic-environment-variables">10. Diagnostic environment variables<a class="headerlink" href="#10-diagnostic-environment-variables" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OPENFPGALOADER_XUSB_FIRMWARE</code></td>
+<td>override the initial boot HEX</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XUSB_XLP_FIRMWARE</code></td>
+<td>override embedded-cable second stage</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XUSB_XP2_FIRMWARE</code></td>
+<td>override DLC10 second stage</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_XLP_UPGRADE=1</code></td>
+<td>force XLP reload</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_XP2_UPGRADE=1</code></td>
+<td>force XP2 reload</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_SKIP_FIRMWARE_UPGRADE=1</code></td>
+<td>skip any second-stage reload</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_SKIP_XLP_UPGRADE=1</code></td>
+<td>skip only XLP reload</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_SKIP_XP2_UPGRADE=1</code></td>
+<td>skip only XP2 reload</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_CONTROL_BITBANG=1</code></td>
+<td>force the slow control path</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_ACCELERATED=1</code></td>
+<td>developer override for accelerated mode</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_FX2_VERBOSE_USB_ERRORS=1</code></td>
+<td>print detailed libusb failures</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_CTRL_RETRIES</code></td>
+<td>control-request retry count</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_CTRL_RETRY_DELAY_MS</code></td>
+<td>delay between control retries</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_OUT_EP</code> / <code>..._IN_EP</code></td>
+<td>developer endpoint override</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_TDO_MASK</code></td>
+<td>developer-only TDO mask override</td>
+</tr>
+<tr>
+<td><code>OPENFPGALOADER_XPCU_TRACE_A6=1</code></td>
+<td>print raw accelerated bulk-IN data for alignment debugging</td>
+</tr>
+</tbody>
+</table>
+<p>Unset experiments before a normal test:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">Get-ChildItem</span> <span class="n">Env</span><span class="p">:</span><span class="n">OPENFPGALOADER_XPCU</span><span class="p">*</span> <span class="p">|</span> <span class="nb">Remove-Item</span>
+<span class="nb">Get-ChildItem</span> <span class="n">Env</span><span class="p">:</span><span class="n">OPENFPGALOADER_XUSB</span><span class="p">*</span> <span class="p">|</span> <span class="nb">Remove-Item</span>
+</code></pre></div>
+<h2 id="11-failure-signatures-and-decisions">11. Failure signatures and decisions<a class="headerlink" href="#11-failure-signatures-and-decisions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Interpretation</th>
+<th>Correct action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--scan-usb</code> shows nothing</td>
+<td>live PID lacks WinUSB or another process owns it</td>
+<td>inspect Device Manager; rerun elevated installer for the live PID</td>
+</tr>
+<tr>
+<td>remains <code>000d</code> or <code>0013</code> after complete power removal</td>
+<td>normal cold state</td>
+<td>select matching cable name and boot HEX</td>
+</tr>
+<tr>
+<td>reload reaches 100% then returns to boot PID</td>
+<td>wrong/incompatible HEX stage</td>
+<td>restore the proper boot/upgrade pair</td>
+</tr>
+<tr>
+<td><code>LIBUSB_ERROR_NOT_FOUND</code> on claim</td>
+<td>device has no active configuration</td>
+<td>use build containing configuration-1 activation/retry</td>
+</tr>
+<tr>
+<td>changing invalid IDCODE after A6 timeout</td>
+<td>endpoint zero is poisoned</td>
+<td>remove all cable/target power; do not trust that scan</td>
+</tr>
+<tr>
+<td>stable <code>0x0A001093</code> after valid Spartan-6 word</td>
+<td>XPCU control-mode trailing artifact</td>
+<td>use corrected decoder/build</td>
+</tr>
+<tr>
+<td><code>0x0961</code>, internal version <code>0xFFFE</code>, status <code>00</code></td>
+<td>DLC10 internal FPGA overlay absent</td>
+<td>replay <code>xusb_xp2.fmwr</code>; target JTAG is not yet reachable</td>
+</tr>
+<tr>
+<td><code>connected: yes</code>, no TAP</td>
+<td>target voltage exists but JTAG data is invalid</td>
+<td>then check power, ground, ribbon, jumpers, TDO and clock</td>
+</tr>
+</tbody>
+</table>
+<h2 id="12-integrity-values-for-this-exact-reproduction">12. Integrity values for this exact reproduction<a class="headerlink" href="#12-integrity-values-for-this-exact-reproduction" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th style="text-align: right;">Bytes</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>xusb_emb.hex</code></td>
+<td style="text-align: right;">21,708</td>
+<td><code>C0A7A1F0110D110A2CE2A577EC1EBAF528FD066FEAC54F6FFC9816BE22FAC9D4</code></td>
+</tr>
+<tr>
+<td><code>xusb_xlp.hex</code></td>
+<td style="text-align: right;">26,216</td>
+<td><code>03116AB70D74E68204E03F72AD8E45E3A22428CBE612B28DDEBCEC620954270A</code></td>
+</tr>
+<tr>
+<td><code>xusb_xp2.hex</code></td>
+<td style="text-align: right;">24,830</td>
+<td><code>F551E3C71EFEE0556B465DC9975D528115F9849EA143F51B5C44D6F3F4F4A9CF</code></td>
+</tr>
+<tr>
+<td><code>xusb_xp2_loader.hex</code></td>
+<td style="text-align: right;">23,836</td>
+<td><code>B6E3FAA81C34FAD863D2DDA261E62BBBCA6FAEA4BD6ECF2FF40572BFE71EC0FE</code></td>
+</tr>
+<tr>
+<td>ISE <code>xusb_xp2.sys</code></td>
+<td style="text-align: right;">19,840</td>
+<td><code>02A762D7BB32CCAA97460ED143AAC00286D961302D97B964C467654F42B1EE6A</code></td>
+</tr>
+<tr>
+<td>ISE <code>xusb_xp2.fmwr</code></td>
+<td style="text-align: right;">734,080</td>
+<td><code>91B15AAAA52A00E55B633F74D833D0C23061D021EEF4325592C5BA3126E6A75A</code></td>
+</tr>
+<tr>
+<td>ISE <code>xusbcpld.fmwr</code></td>
+<td style="text-align: right;">90,076</td>
+<td><code>FC1556D3BFE7486E3841F2E1B6DC62400D779ED853EB8D2662BC8943B3B0CFB4</code></td>
+</tr>
+</tbody>
+</table>
+<p>The locally installed and repository <code>xusb_xp2.hex</code> hashes are identical.</p>
+<h2 id="13-minimal-regression-checklist">13. Minimal regression checklist<a class="headerlink" href="#13-minimal-regression-checklist" title="Permanent link">&para;</a></h2>
+<p>For each cable family, start from a complete USB and target power removal.</p>
+<div class="highlight"><pre><span></span><code><span class="nv">$ofl</span> <span class="p">=</span> <span class="p">(</span><span class="nb">Resolve-Path</span> <span class="s1">'.\dist\docker-windows\install\bin\openFPGALoader.exe'</span><span class="p">).</span><span class="n">Path</span>
+<span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="p">-</span><span class="n">-scan-usb</span>
+<span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">-</span><span class="n">-detect</span> <span class="n">-v</span> <span class="p">-</span><span class="n">-freq</span> <span class="n">6000000</span>
+<span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_initialized</span> <span class="p">-</span><span class="n">-detect</span> <span class="n">-v</span> <span class="p">-</span><span class="n">-freq</span> <span class="n">6000000</span>
+</code></pre></div>
+<p>Record all of these in a test log:</p>
+<ul>
+<li>PID before and after each reload;</li>
+<li>selected firmware path and parsed version;</li>
+<li>endpoint pair;</li>
+<li>FX2, internal logic, and constant versions;</li>
+<li>status byte and sensed connection state;</li>
+<li>requested and real JTAG frequency;</li>
+<li>whether control or accelerated transfer was selected;</li>
+<li>every IDCODE and process exit code;</li>
+<li>bitstream size, elapsed time, and DONE result.</li>
+</ul>
+<p>Do not combine results taken before and after a failed <code>0xA6</code> request without a
+power cycle. That was the main source of false conclusions in the original
+session.</p>
+<h2 id="14-external-w25q64-flash-investigation">14. External W25Q64 flash investigation<a class="headerlink" href="#14-external-w25q64-flash-investigation" title="Permanent link">&para;</a></h2>
+<p>The <code>5042-9033</code> target uses an <code>XC6SLX45T-FGG484</code> and identifies its attached
+configuration memory in iMPACT as a Winbond <code>W25Q64BV/CV</code>, data width 4.</p>
+<p>Do not use <code>test_fw/5042-9033/pab0_top.bit</code> with <code>--bridge</code>. Its BIT header is:</p>
+<div class="highlight"><pre><span></span><code>pab0_top.ncd;HW_TIMEOUT=FALSE;UserID=0xFFFFFFFF
+6slx45tfgg484
+</code></pre></div>
+<p>It is a normal application image and contains no openFPGALoader SPI-over-JTAG
+protocol. <code>Unknown key HW_TIMEOUT</code> is only an unrecognised BIT-header field; it
+is not the flash failure. With that file loaded, the absent USER interface is
+reported as legacy <code>SOJ version: 1.000000</code> and JEDEC detection returns zero.</p>
+<p>Omit <code>--bridge</code> so <code>--fpga-part xc6slx45tfgg484</code> selects the packaged
+<code>spiOverJtag_xc6slx45tfgg484.bit.gz</code> automatically:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&amp;</span> <span class="nv">$ofl</span> <span class="n">-c</span> <span class="n">xilinxPlatformCableUsb_alt</span> <span class="p">`</span>
+  <span class="p">-</span><span class="n">-fpga-part</span> <span class="n">xc6slx45tfgg484</span> <span class="p">-</span><span class="n">-external-flash</span> <span class="p">`</span>
+  <span class="o">-f</span> <span class="p">.\</span><span class="n">test_fw</span><span class="p">\</span><span class="n">5042</span><span class="p">-</span><span class="n">9033</span><span class="p">\</span><span class="n">FW</span><span class="p">-</span><span class="n">5042</span><span class="p">-</span><span class="n">9033-T30</span><span class="p">.</span><span class="n">mcs</span>
+</code></pre></div>
+<p>The packaged bridge is dated 2024-03-28 and predates the 2025 v2 bridge core.
+It is legitimately reported as SOJ v1 because it has no USER4 version endpoint.
+Raw A6 tracing nevertheless proved that its USER1 flash response is also zero:</p>
+<div class="highlight"><pre><span></span><code>XPCU A6 RX: bytes=4 data=93800244  # valid FPGA IDCODE stream
+XPCU A6 RX: bytes=6 data=000000000000  # USER1 / JEDEC response
+</code></pre></div>
+<p>Reducing the requested JTAG frequency to 100 kHz (750 kHz was the cable's
+minimum realised frequency) did not change the zero response. Current bridge
+source uses an updated v2 protocol and opposite Spartan-6 SPI clock phase, so
+the next controlled experiment is to rebuild the bridge with ISE 14.7 and test
+USER4 <code>02.00</code> plus JEDEC ID before erasing flash.</p>
+<p>The local ISE installation can run iMPACT but has no user/WebPACK synthesis
+license configured. Both Edalize/<code>xtclsh</code> and direct XST stopped before creating
+a synthesis report. The temporary <code>libPortabilityNOSH.dll</code> compatibility test
+was reverted and the original installed DLL was hash-verified and restored.
+Configure a valid Spartan-6 WebPACK license with
+<code>E:\Xilinx\14.7\ISE_DS\common\bin\nt64\xlcm.exe</code> before rebuilding:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">Set-Location</span> <span class="p">.\</span><span class="n">spiOverJtag</span>
+<span class="n">cmd</span><span class="p">.</span><span class="n">exe</span> <span class="p">/</span><span class="n">d</span> <span class="p">/</span><span class="n">c</span> <span class="s2">"call E:\Xilinx\14.7\ISE_DS\settings64.bat &amp;&amp; python build.py xc6slx45tfgg484 spi"</span>
+</code></pre></div>
+<p>Only after <code>--detect -f</code> prints a nonzero JEDEC ID should the MCS write be
+allowed to proceed.</p>
+<h2 id="15-related-project-documentation">15. Related project documentation<a class="headerlink" href="#15-related-project-documentation" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../xilinx-platform-cable-usb-windows-debug/">Windows debug-session summary</a></li>
+<li><a href="https://github.com/xsession/xilinx-usb-driver/blob/master/DEPLOYMENT.md">Driver deployment guide</a></li>
+<li><a href="https://github.com/xsession/xilinx-usb-driver/blob/master/TROUBLESHOOTING.md">Driver troubleshooting guide</a></li>
+<li><a href="https://github.com/xsession/openFPGALoader/blob/master/deploy/scripts/extract-xusb-loader-from-sys.ps1">DLC10 loader extractor</a></li>
+<li><a href="https://docs.amd.com/v/u/en-US/ds593">AMD Platform Cable USB II Data Sheet, DS593</a></li>
+<li><a href="https://docs.amd.com/v/u/en-US/xapp503">AMD SVF and XSVF Formats, XAPP503</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../javascripts/mermaid.js"></script>
+      
+    
+  </body>
+</html>
