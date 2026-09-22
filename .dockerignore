@@ -1,0 +1,9 @@
+# The cross-build image only needs its Dockerfile and toolchain file at image
+# build time. The complete repository is bind-mounted at runtime by Compose.
+**
+!deploy/
+!deploy/docker/
+!deploy/docker/cross/
+!deploy/docker/cross/windows/
+!deploy/docker/cross/windows/alpine.Dockerfile
+!deploy/docker/cross/windows/toolchain-mingw64.cmake
