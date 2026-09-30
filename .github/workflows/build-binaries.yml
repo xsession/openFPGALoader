@@ -258,6 +258,26 @@ jobs:
 
       - name: Build Windows package with Compose
         run: |
+          # When this job runs via `act` on Docker Desktop for Windows, the
+          # workspace lives at /mnt/<drive>/... and the inner `docker compose`
+          # command is resolved by the daemon inside the WSL2 VM, where the
+          # host drive is mounted at /host_mnt/<drive>... . /mnt/... does not
+          # exist in the VM, so the daemon would mount an empty directory and
+          # the build would fail on a missing /src. Probe the remapped path
+          # through the Docker socket and use it when valid. On Linux CI
+          # runners the workspace never looks like /mnt/<drive>/..., so this
+          # is a no-op there.
+          CROSS_HOST_SRC="${GITHUB_WORKSPACE}"
+          CROSS_HOST_OUT="${GITHUB_WORKSPACE}/dist/docker-windows"
+          if [[ "${GITHUB_WORKSPACE}" =~ ^/mnt/([a-z])/(.*)$ ]]; then
+            probe="/host_mnt/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+            if docker run --rm -v "${probe}:/probe" alpine:edge test -f /probe/CMakeLists.txt >/dev/null 2>&1; then
+              CROSS_HOST_SRC="${probe}"
+              CROSS_HOST_OUT="${probe}/dist/docker-windows"
+            fi
+          fi
+          echo "Mounting repository from daemon-side path: ${CROSS_HOST_SRC}"
+          export CROSS_HOST_SRC CROSS_HOST_OUT
           docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
           shopt -s nullglob
           packages=(dist/docker-windows/*.zip)

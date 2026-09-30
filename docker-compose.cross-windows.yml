@@ -9,6 +9,7 @@ services:
       args:
         ALPINE_VERSION: edge
         TARGET_TRIPLE: x86_64-w64-mingw32
+      target: alpine-cross
     image: openfpgaloader-windows-cross:alpine
     pull_policy: build
     working_dir: /src
@@ -30,6 +31,24 @@ services:
       PACKAGE_DIR: /out
       CMAKE_BUILD_TYPE: Release
       CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF -DENABLE_OPTIM=OFF"
+
+  # Same as windows-cross, but the image is built with the
+  # `cross-with-driver` Dockerfile stage, which bakes the XPCU driver
+  # archive (externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip)
+  # into /opt/xpcu so it is shipped inside the portable package even when the
+  # submodule checkout is missing from the bind-mounted repository. Build the
+  # archive first:  bash externals/xilinx-usb-driver/docker-build.sh
+  windows-cross-driver:
+    extends: windows-cross
+    image: openfpgaloader-windows-cross-driver:alpine
+    build:
+      context: .
+      dockerfile: deploy/docker/cross/windows/alpine.Dockerfile
+      args:
+        ALPINE_VERSION: edge
+        TARGET_TRIPLE: x86_64-w64-mingw32
+        XPCU_DRIVER_ARCHIVE: externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+      target: cross-with-driver
 
 volumes:
   openfpgaloader-cross-cache:

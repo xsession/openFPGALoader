@@ -100,3 +100,10 @@ physical fixtures or captured traces.
   collection of generated INF files.
 - The Windows cross-build must run with Docker's Linux container engine because
   its build image is Alpine Linux with a MinGW toolchain.
+- When the cross-build is driven from inside a container (`act` on Docker
+  Desktop for Windows), the daemon resolves the Compose bind mount from the
+  WSL2 VM, where the host drive is visible as `/host_mnt/<drive>` rather than
+  the container's `/mnt/<drive>`. A mis-resolved mount silently provides an
+  empty `/src` and fails on a missing build script; the workflow remaps the
+  host path via `CROSS_HOST_SRC`/`CROSS_HOST_OUT` after probing it through the
+  Docker socket.

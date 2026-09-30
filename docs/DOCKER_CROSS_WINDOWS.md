@@ -46,7 +46,80 @@ Artifacts are written to:
 dist/docker-windows/
 ```
 
+### Baking the XPCU driver archive into the image
+
+The `externals/xilinx-usb-driver` and `externals/libwdi` submodules are not
+required to build the portable package, but if they are initialized and their
+driver archive is built first:
+
+```bash
+git submodule update --init --recursive
+bash externals/xilinx-usb-driver/docker-build.sh
+```
+
+a second Compose service can bake the resulting
+`externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip` into the
+image (Dockerfile stage `cross-with-driver`, stored at `/opt/xpcu`):
+
+```bash
+docker compose -f docker-compose.cross-windows.yml run --rm windows-cross-driver
+```
+
+The build container then copies that archive into `dist/docker-windows/` next
+to the portable ZIP, so a downstream
+`deploy/scripts/build-windows-installer.sh` run can consume it with
+`XPCU_DRIVER_ARCHIVE` pointing at `dist/docker-windows/xilinx-platform-cable-windows.zip`
+even on a machine without the submodules checked out. The plain
+`windows-cross` service is unchanged and does not require the archive to
+exist; it targets the base `alpine-cross` image stage.
+
 The package contains the install tree plus any non-system DLLs imported by the EXE. The wrapper also requests static linking for the GCC/libstdc++ runtime so the Windows package is as self-contained as possible.
+
+The `.sha256` file records the archive under its bare file name (relative
+path), so it can be verified from any directory with:
+
+```bash
+sha256sum -c dist/docker-windows/openFPGALoader-windows-x86_64-*.zip.sha256
+```
+
+## Host path overrides (`CROSS_HOST_SRC`, `CROSS_HOST_OUT`)
+
+The Compose service bind-mounts the repository into the container at `/src`
+and the package output directory at `/out`. The host-side source of those
+mounts is normally `.` (the repository) and `./dist/docker-windows`, but it
+can be overridden with two environment variables:
+
+```bash
+CROSS_HOST_SRC="$PWD" \
+CROSS_HOST_OUT="$PWD/dist/docker-windows" \
+  docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
+```
+
+This override exists for one specific failure mode: running the build with
+[`act`](https://github.com/nektos/act) on Docker Desktop for Windows. Inside
+the act job container the workspace lives at `/mnt/<drive>/...`, but the
+Docker daemon runs in the WSL2 virtual machine, where the host drive is
+mounted at `/host_mnt/<drive>/...`. The daemon cannot see `/mnt/<drive>`, so
+it silently creates an empty directory and the container fails with:
+
+```text
+exec: "/src/deploy/scripts/docker-cross-windows.sh": stat /src/deploy/scripts/docker-cross-windows.sh: no such file or directory
+```
+
+On GitHub Actions runners (Linux) the workspace never looks like
+`/mnt/<drive>/...`, so the defaults are correct there. The
+`windows-cross` job in `.github/workflows/build-binaries.yml` already handles
+the act case automatically: it detects a `/mnt/<drive>` workspace, probes the
+remapped `/host_mnt/<drive>` path through the Docker socket, and exports
+`CROSS_HOST_SRC`/`CROSS_HOST_OUT` to it when the probe succeeds. When running
+`act` manually, no extra environment variables are needed. To set the paths
+by hand, for example when the repository is checked out on a different drive:
+
+```bash
+CROSS_HOST_SRC=/host_mnt/d/openFPGALoader \
+CROSS_HOST_OUT=/host_mnt/d/openFPGALoader/dist/docker-windows \
+  docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
+```
 
 ## Clean rebuild
 

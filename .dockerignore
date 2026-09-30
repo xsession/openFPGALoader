@@ -7,3 +7,7 @@
 !deploy/docker/cross/windows/
 !deploy/docker/cross/windows/alpine.Dockerfile
 !deploy/docker/cross/windows/toolchain-mingw64.cmake
+
+# Re-include the built XPCU driver archive so the optional
+# `cross-with-driver` stage can bake it in (see alpine.Dockerfile).
+!externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip

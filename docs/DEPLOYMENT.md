@@ -84,6 +84,15 @@ docker compose -f docker-compose.cross-windows.yml build windows-cross
 docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
 ```
 
+On Windows hosts the two bind-mounted host paths can be overridden with
+`CROSS_HOST_SRC` (repository) and `CROSS_HOST_OUT` (package output) when the
+default `.`/`./dist/docker-windows` do not point where you need them. This is
+required when running the job through `act` on Docker Desktop for Windows,
+where the daemon's WSL2 VM sees the host drive at `/host_mnt/<drive>` instead
+of `/mnt/<drive>`; see
+[docs/DOCKER_CROSS_WINDOWS.md](DOCKER_CROSS_WINDOWS.md) for the full
+explanation and the exact environment variables.
+
 ## Windows installer and external driver dependencies
 
 The portable Windows package does not contain the generated XPCU driver

@@ -81,6 +81,18 @@ if [[ ! -f "${PREFIX_DIR}/share/openFPGALoader/xusb_emb.hex" ]]; then
   echo "         xilinxPlatformCableUsb_alt may fail unless OPENFPGALOADER_XUSB_FIRMWARE is set." >&2
 fi
 
+# When the image was built with the `cross-with-driver` stage, the XPCU
+# driver archive is baked in at /opt/xpcu (see alpine.Dockerfile). Ship it
+# into the package output directory next to the portable ZIP so downstream
+# packaging (deploy/scripts/build-windows-installer.sh) can consume it with
+# XPCU_DRIVER_ARCHIVE="${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
+# without requiring the externals submodules on the build machine.
+BAKED_XPCU_ARCHIVE="/opt/xpcu/xilinx-platform-cable-windows.zip"
+if [[ -f "${BAKED_XPCU_ARCHIVE}" ]]; then
+  cp -f "${BAKED_XPCU_ARCHIVE}" "${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
+  echo "Copied baked XPCU driver archive: ${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
+fi
+
 EXE="${PREFIX_DIR}/bin/openFPGALoader.exe"
 
 if [[ ! -f "${EXE}" ]]; then
@@ -158,7 +170,12 @@ rm -f "${ARCHIVE}" "${ARCHIVE}.sha256"
   zip -r "${ARCHIVE}" .
 )
 
-sha256sum "${ARCHIVE}" > "${ARCHIVE}.sha256"
+# Record the checksum with a relative path so the .sha256 stays valid when
+# the package directory is relocated (e.g. between container and host).
+(
+  cd "${PACKAGE_DIR}"
+  sha256sum "$(basename "${ARCHIVE}")" > "$(basename "${ARCHIVE}").sha256"
+)
 
 echo "Built ${EXE}"
 echo "Package: ${ARCHIVE}"

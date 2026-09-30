@@ -70,3 +70,5 @@ build-docker-windows3/
 tmp_dlls/
 
 build-test/
+openFPGALoader-windows-cross-x86_64.zip
+openFPGALoader-windows-cross-x86_64.zip.sha256
