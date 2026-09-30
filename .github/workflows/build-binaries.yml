@@ -269,18 +269,46 @@ jobs:
           # is a no-op there.
           CROSS_HOST_SRC="${GITHUB_WORKSPACE}"
           CROSS_HOST_OUT="${GITHUB_WORKSPACE}/dist/docker-windows"
+          HOST_REMAPPED=0
           if [[ "${GITHUB_WORKSPACE}" =~ ^/mnt/([a-z])/(.*)$ ]]; then
             probe="/host_mnt/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
             if docker run --rm -v "${probe}:/probe" alpine:edge test -f /probe/CMakeLists.txt >/dev/null 2>&1; then
               CROSS_HOST_SRC="${probe}"
               CROSS_HOST_OUT="${probe}/dist/docker-windows"
+              HOST_REMAPPED=1
             fi
           fi
           echo "Mounting repository from daemon-side path: ${CROSS_HOST_SRC}"
           export CROSS_HOST_SRC CROSS_HOST_OUT
           docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
+          # Under `act` on Docker Desktop the workspace is a throwaway named
+          # volume (a copy of the repo), but the compose build above reads and
+          # writes against the real drive through /host_mnt/.... The package
+          # therefore lands on the host drive, not in this volume, so stream it
+          # back into the workspace before verifying/uploading it. On Linux CI
+          # runners nothing is remapped and this is a no-op.
+          if (( HOST_REMAPPED == 1 )); then
+            mkdir -p dist/docker-windows
+            # The portable package is always named
+            # openFPGALoader-windows-x86_64-<ver>.zip, so these globs never match
+            # the XPCU driver archive (xilinx-platform-cable-windows.zip) that
+            # may also sit in the directory. BusyBox tar (alpine) rejects
+            # --null/-print0, so use plain globs. || true keeps a missing-file
+            # case from aborting under set -e; the count check below reports it.
+            docker run --rm -v "${CROSS_HOST_OUT}:/host_out" alpine:edge \
+              sh -c 'cd /host_out && tar -cf - openFPGALoader-windows-x86_64-*.zip openFPGALoader-windows-x86_64-*.zip.sha256 2>/dev/null' \
+              > pkg.tar || true
+            if [[ -s pkg.tar ]]; then
+              # Drop any stale copy from a previous run so exactly one package
+              # remains, then extract the freshly built one.
+              rm -f dist/docker-windows/openFPGALoader-windows-x86_64-*.zip \
+                    dist/docker-windows/openFPGALoader-windows-x86_64-*.zip.sha256
+              tar -xf pkg.tar -C dist/docker-windows
+            fi
+            rm -f pkg.tar
+          fi
           shopt -s nullglob
-          packages=(dist/docker-windows/*.zip)
+          packages=(dist/docker-windows/openFPGALoader-windows-x86_64-*.zip)
           if (( ${#packages[@]} != 1 )); then
             echo "Expected exactly one cross-compiled Windows ZIP, found ${#packages[@]}" >&2
             printf '%s\n' "${packages[@]}" >&2
