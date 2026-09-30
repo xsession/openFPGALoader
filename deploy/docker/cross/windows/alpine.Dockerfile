@@ -121,17 +121,19 @@ RUN set -eux; \
 # image is being built, so /src/deploy/ise_programmer_bins cannot be read in a RUN
 # instruction here.
 
-WORKDIR /src
-
-CMD ["/src/deploy/scripts/docker-cross-windows.sh"]
-
 # Optional second stage: the same toolchain image with the built Xilinx
 # Platform Cable (XPCU) Windows driver archive baked in, so the build
 # container can ship it inside the portable package without the submodule
 # checkout having to be present in the repository bind mount. The archive is
 # produced by `bash externals/xilinx-usb-driver/docker-build.sh`, which
 # requires the submodule to be initialized.
-FROM alpine-cross AS cross-with-driver
 
-ARG XPCU_DRIVER_ARCHIVE=externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-COPY ${XPCU_DRIVER_ARCHIVE} /opt/xpcu/xilinx-platform-cable-windows.zip
+# FROM alpine-cross AS cross-with-driver
+
+# ARG XPCU_DRIVER_ARCHIVE=externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+# COPY ${XPCU_DRIVER_ARCHIVE} /opt/xpcu/xilinx-platform-cable-windows.zip
+
+WORKDIR /src
+
+CMD ["/src/deploy/scripts/docker-cross-windows.sh"]
+

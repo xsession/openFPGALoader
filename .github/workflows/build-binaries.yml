@@ -318,7 +318,13 @@ jobs:
           sha256sum openFPGALoader-windows-cross-x86_64.zip > openFPGALoader-windows-cross-x86_64.zip.sha256
           unzip -l openFPGALoader-windows-cross-x86_64.zip
 
+      # Upload the package for the downstream windows-installer job. This only
+      # makes sense on GitHub, where the runner injects ACTIONS_RUNTIME_TOKEN
+      # (required by upload-artifact@v7). Under `act` there is no such token and
+      # the action aborts; ACT=true is set by `act` and never by GitHub, so skip
+      # the upload locally. The ZIP is still built and left on the host drive.
       - name: Upload artifact
+        if: env.ACT != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-windows-cross-x86_64
