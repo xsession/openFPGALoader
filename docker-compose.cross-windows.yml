@@ -13,8 +13,16 @@ services:
     pull_policy: build
     working_dir: /src
     volumes:
-      - .:/src
-      - ./dist/docker-windows:/out
+      # Host-side source/output paths. Defaults work on Linux CI runners and
+      # when compose is invoked directly from the host. When the compose
+      # command itself runs inside a container (e.g. act on Docker Desktop for
+      # Windows), the daemon cannot see the container's /mnt/<drive> paths and
+      # silently mounts an empty directory; set CROSS_HOST_SRC / CROSS_HOST_OUT
+      # to paths visible to the Docker daemon, e.g.
+      #   CROSS_HOST_SRC=/host_mnt/d/openFPGALoader
+      #   CROSS_HOST_OUT=/host_mnt/d/openFPGALoader/dist/docker-windows
+      - ${CROSS_HOST_SRC:-.}:/src
+      - ${CROSS_HOST_OUT:-./dist/docker-windows}:/out
       - openfpgaloader-cross-cache:/root/.cache
     environment:
       BUILD_DIR: /src/build-docker-windows
