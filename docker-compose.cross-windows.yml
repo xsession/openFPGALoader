@@ -14,21 +14,25 @@ services:
     pull_policy: build
     working_dir: /src
     volumes:
-      # Host-side source/output paths. Defaults work on Linux CI runners and
-      # when compose is invoked directly from the host. When the compose
-      # command itself runs inside a container (e.g. act on Docker Desktop for
-      # Windows), the daemon cannot see the container's /mnt/<drive> paths and
-      # silently mounts an empty directory; set CROSS_HOST_SRC / CROSS_HOST_OUT
-      # to paths visible to the Docker daemon, e.g.
-      #   CROSS_HOST_SRC=/host_mnt/d/openFPGALoader
-      #   CROSS_HOST_OUT=/host_mnt/d/openFPGALoader/dist/docker-windows
+      # The repository is the single bind mount, at /src. The build script
+      # writes the portable package directly under /src/dist/docker-windows
+      # (PACKAGE_DIR below), so there is no second /out bind. Mounting the same
+      # host directory a second time as a *subdirectory* of /src made Docker
+      # auto-create the missing output directory, which crashes on the 9p-
+      # mounted Windows drive ("mkdir ...: file exists"). Writing into /src
+      # avoids that entirely.
+      #
+      # CROSS_HOST_SRC defaults to "." (the compose project dir), which works on
+      # Linux CI runners and when compose is invoked directly from the host.
+      # When the compose command itself runs inside a container (e.g. act on
+      # Docker Desktop for Windows), set CROSS_HOST_SRC to a path the Docker
+      # daemon can see, e.g. CROSS_HOST_SRC=/run/desktop/mnt/host/d/openFPGALoader.
       - ${CROSS_HOST_SRC:-.}:/src
-      - ${CROSS_HOST_OUT:-./dist/docker-windows}:/out
       - openfpgaloader-cross-cache:/root/.cache
     environment:
       BUILD_DIR: /src/build-docker-windows
       PREFIX_DIR: /src/dist/docker-windows/install
-      PACKAGE_DIR: /out
+      PACKAGE_DIR: /src/dist/docker-windows
       CMAKE_BUILD_TYPE: Release
       CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF -DENABLE_OPTIM=OFF"
 

@@ -259,34 +259,38 @@ jobs:
       - name: Build Windows package with Compose
         run: |
           # When this job runs via `act` on Docker Desktop for Windows, the
-          # workspace lives at /mnt/<drive>/... and the inner `docker compose`
-          # command is resolved by the daemon inside the WSL2 VM, where the
-          # host drive is mounted at /host_mnt/<drive>... . /mnt/... does not
-          # exist in the VM, so the daemon would mount an empty directory and
-          # the build would fail on a missing /src. Probe the remapped path
-          # through the Docker socket and use it when valid. On Linux CI
-          # runners the workspace never looks like /mnt/<drive>/..., so this
-          # is a no-op there.
+          # workspace lives at /mnt/<drive>/... but the inner `docker compose`
+          # command is resolved by the daemon inside the WSL2 VM, where the host
+          # drive is exposed under a path that differs between Desktop versions
+          # (e.g. /host_mnt/<drive> and /run/desktop/mnt/host/<drive>). The
+          # daemon transparently translates /mnt/<drive> to the real drive, so
+          # probe each convention through the Docker socket and use the first
+          # that actually shows the repository. On Linux CI runners the
+          # workspace never looks like /mnt/<drive>/..., so this is a no-op.
           CROSS_HOST_SRC="${GITHUB_WORKSPACE}"
-          CROSS_HOST_OUT="${GITHUB_WORKSPACE}/dist/docker-windows"
           HOST_REMAPPED=0
           if [[ "${GITHUB_WORKSPACE}" =~ ^/mnt/([a-z])/(.*)$ ]]; then
-            probe="/host_mnt/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
-            if docker run --rm -v "${probe}:/probe" alpine:edge test -f /probe/CMakeLists.txt >/dev/null 2>&1; then
-              CROSS_HOST_SRC="${probe}"
-              CROSS_HOST_OUT="${probe}/dist/docker-windows"
-              HOST_REMAPPED=1
-            fi
+            for probe in \
+              "/host_mnt/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}" \
+              "/run/desktop/mnt/host/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+            do
+              if docker run --rm -v "${probe}:/probe" alpine:edge test -f /probe/CMakeLists.txt >/dev/null 2>&1; then
+                CROSS_HOST_SRC="${probe}"
+                HOST_REMAPPED=1
+                break
+              fi
+            done
           fi
           echo "Mounting repository from daemon-side path: ${CROSS_HOST_SRC}"
-          export CROSS_HOST_SRC CROSS_HOST_OUT
+          export CROSS_HOST_SRC
           docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
           # Under `act` on Docker Desktop the workspace is a throwaway named
           # volume (a copy of the repo), but the compose build above reads and
-          # writes against the real drive through /host_mnt/.... The package
-          # therefore lands on the host drive, not in this volume, so stream it
-          # back into the workspace before verifying/uploading it. On Linux CI
-          # runners nothing is remapped and this is a no-op.
+          # writes against the real drive (mounted at /src in the container,
+          # backed by CROSS_HOST_SRC). The package therefore lands on the host
+          # drive, not in this volume, so stream it back into the workspace
+          # before verifying/uploading it. On Linux CI runners nothing is
+          # remapped and this is a no-op.
           if (( HOST_REMAPPED == 1 )); then
             mkdir -p dist/docker-windows
             # The portable package is always named
@@ -295,8 +299,10 @@ jobs:
             # may also sit in the directory. BusyBox tar (alpine) rejects
             # --null/-print0, so use plain globs. || true keeps a missing-file
             # case from aborting under set -e; the count check below reports it.
-            docker run --rm -v "${CROSS_HOST_OUT}:/host_out" alpine:edge \
-              sh -c 'cd /host_out && tar -cf - openFPGALoader-windows-x86_64-*.zip openFPGALoader-windows-x86_64-*.zip.sha256 2>/dev/null' \
+            # Mount the repo root (read-only) rather than the output subdir to
+            # avoid a nested bind of a directory under the already-mounted /src.
+            docker run --rm -v "${CROSS_HOST_SRC}:/host_repo:ro" alpine:edge \
+              sh -c 'cd /host_repo/dist/docker-windows && tar -cf - openFPGALoader-windows-x86_64-*.zip openFPGALoader-windows-x86_64-*.zip.sha256 2>/dev/null' \
               > pkg.tar || true
             if [[ -s pkg.tar ]]; then
               # Drop any stale copy from a previous run so exactly one package
