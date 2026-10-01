@@ -1,5 +1,5 @@
 Package: openfpgaloader
-Version: 1.1.6
+Version: 1.1.7
 Section: electronics
 Priority: optional
 Architecture: amd64
