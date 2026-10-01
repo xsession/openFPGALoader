@@ -9,7 +9,6 @@ services:
         TARGET_TRIPLE: x86_64-w64-mingw32
       target: alpine-cross
     image: openfpgaloader-windows-cross:alpine-3.24.2
-    pull_policy: build
     working_dir: /src
     volumes:
       # Mount the repository exactly once. Package output lives below /src/dist.
@@ -17,10 +16,13 @@ services:
       # /host_mnt/<drive>/... or /run/desktop/mnt/host/<drive>/... path.
       - ${CROSS_HOST_SRC:-.}:/src
       - openfpgaloader-cross-cache:/root/.cache
+      - openfpgaloader-cross-work:/work
     environment:
-      BUILD_DIR: /src/build-docker-windows
-      PREFIX_DIR: /src/dist/docker-windows/install
+      # Keep write-heavy CMake/Ninja output off the Windows/9p bind mount.
+      BUILD_DIR: /work/build-docker-windows
+      PREFIX_DIR: /work/install
       PACKAGE_DIR: /src/dist/docker-windows
+      TMPDIR: /work/tmp
       CMAKE_BUILD_TYPE: Release
       CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF -DENABLE_OPTIM=OFF"
 
@@ -38,3 +40,4 @@ services:
 
 volumes:
   openfpgaloader-cross-cache:
+  openfpgaloader-cross-work:

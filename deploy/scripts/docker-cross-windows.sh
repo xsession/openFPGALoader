@@ -14,6 +14,12 @@ CROSS_PREFIX="${CROSS_PREFIX:-/opt/x86_64-w64-mingw32}"
 TOOLCHAIN_FILE="${CMAKE_TOOLCHAIN_FILE:-/opt/toolchain-mingw64.cmake}"
 CMAKE_EXTRA_ARGS="${CMAKE_EXTRA_ARGS:-}"
 
+log_step() {
+  printf '[windows-cross] %s\n' "$*"
+}
+
+log_step "start: source=${ROOT_DIR} build=${BUILD_DIR} install=${PREFIX_DIR} output=${PACKAGE_DIR}"
+
 # openFPGALoader is a command-line tool. Force the Windows PE subsystem to
 # console/CUI so stdout/stderr are visible in cmd.exe and PowerShell. This also
 # protects us if an upstream CMake change accidentally marks the target WIN32.
@@ -24,11 +30,13 @@ if [[ "${1:-}" == "--clean" ]]; then
   shift
 fi
 
-mkdir -p "${BUILD_DIR}" "${PREFIX_DIR}" "${PACKAGE_DIR}"
+log_step "prepare directories"
+mkdir -p "${BUILD_DIR}" "${PREFIX_DIR}" "${PACKAGE_DIR}" "${TMPDIR:-/tmp}"
 
 export PKG_CONFIG_LIBDIR="${CROSS_PREFIX}/lib/pkgconfig"
 export PKG_CONFIG_PATH="${CROSS_PREFIX}/lib/pkgconfig"
 
+log_step "verify cross dependencies"
 pkg-config --exists libftdi1
 pkg-config --exists libusb-1.0
 pkg-config --exists hidapi
@@ -47,6 +55,7 @@ if [[ ! -f "${CROSS_PREFIX}/lib/libz.a" ]]; then
   exit 1
 fi
 
+log_step "configure CMake"
 # shellcheck disable=SC2086
 cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" \
@@ -60,7 +69,9 @@ cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G Ninja \
   ${CMAKE_EXTRA_ARGS} \
   "$@"
 
+log_step "build with Ninja"
 cmake --build "${BUILD_DIR}" --parallel "$(nproc)"
+log_step "install staging tree"
 cmake --install "${BUILD_DIR}"
 
 # Copy Xilinx Platform Cable USB FX2 firmware into the portable package.
@@ -154,12 +165,14 @@ if command -v "${TARGET_TRIPLE}-objdump" >/dev/null 2>&1; then
   done < <("${TARGET_TRIPLE}-objdump" -p "${EXE}" | sed -n 's/^\tDLL Name: //p')
 fi
 
+log_step "resolve package version"
 VERSION="${VERSION:-$(package_version_from_executable "${EXE}" "${ROOT_DIR}")}"
 
 ARCHIVE="${PACKAGE_DIR}/openFPGALoader-windows-x86_64-${VERSION}.zip"
 
 rm -f "${ARCHIVE}" "${ARCHIVE}.sha256"
 
+log_step "create portable ZIP ${ARCHIVE}"
 (
   cd "${PREFIX_DIR}"
   zip -r "${ARCHIVE}" .

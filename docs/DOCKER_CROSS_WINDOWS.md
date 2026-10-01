@@ -125,3 +125,17 @@ When `act` runs on Windows, the workflow probes both daemon-visible host paths:
 The optional `windows-cross-driver` service is enabled. Build its input first with
 `bash externals/xilinx-usb-driver/docker-build.sh`; the resulting driver ZIP is
 baked at `/opt/xpcu` and copied next to the portable package for installer builds.
+
+### Docker Desktop / act performance and diagnostics
+
+The cross-build keeps the write-heavy CMake/Ninja build tree and install staging
+tree in the named `openfpgaloader-cross-work` Docker volume at `/work`. Only the
+source tree and final package output use the Windows host bind mount. This avoids
+large numbers of small writes through Docker Desktop's Windows/WSL filesystem
+bridge.
+
+CI and `act` invoke `docker compose run` with `--no-TTY`. The wrapper prints
+`[windows-cross]` checkpoints before directory setup, dependency validation, CMake
+configuration, compilation, installation, version resolution, and ZIP creation.
+If a local run stops making progress, the last checkpoint identifies the blocked
+stage.

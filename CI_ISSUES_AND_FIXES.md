@@ -109,3 +109,13 @@ resent during status polling, and USER4 being accepted as an SPI fallback.
 - Re-enabled the documented `cross-with-driver` Docker stage and fixed `.dockerignore`.
 - Pinned deployment images and restricted GitHub workflow write permission to release publishing.
 - Made missing upload artifacts fatal and made Debian udev maintainer scripts preserve user overrides.
+
+## 2026-10-01: act cross-build runtime stall after container creation
+
+After the Alpine image build completed, `docker compose run` could appear to hang
+immediately after creating the run container on Docker Desktop for Windows. The
+write-heavy CMake build and install trees were on the Windows bind mount. They are
+now stored in a named `/work` Docker volume, Compose TTY allocation is disabled in
+CI/act, the redundant `pull_policy: build` was removed, and the wrapper emits
+explicit stage checkpoints. Final packages still land in
+`dist/docker-windows` on the host.

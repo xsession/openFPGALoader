@@ -276,7 +276,7 @@ jobs:
           fi
           echo "Mounting repository from daemon-side path: ${CROSS_HOST_SRC}"
           export CROSS_HOST_SRC
-          docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
+          docker compose -f docker-compose.cross-windows.yml run --rm --no-TTY windows-cross
           if (( HOST_REMAPPED == 1 )); then
             mkdir -p dist/docker-windows
             docker run --rm -v "${CROSS_HOST_SRC}:/host_repo:ro" alpine:3.24.2 \
