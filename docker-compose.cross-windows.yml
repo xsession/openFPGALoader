@@ -18,6 +18,7 @@ services:
       # act on Docker Desktop may override CROSS_HOST_SRC with a daemon-visible
       # /host_mnt/<drive>/... or /run/desktop/mnt/host/<drive>/... path.
       - ${CROSS_HOST_SRC:-.}:/src
+      - ${XPCU_HOST_DIR:-./externals/xilinx-usb-driver/dist}:/opt/xpcu:ro
       - openfpgaloader-cross-cache:/root/.cache
       - openfpgaloader-cross-work:/work
     environment:
@@ -28,18 +29,6 @@ services:
       TMPDIR: /work/tmp
       CMAKE_BUILD_TYPE: Release
       CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF -DENABLE_OPTIM=OFF"
-
-  windows-cross-driver:
-    extends: windows-cross
-    image: openfpgaloader-windows-cross-driver:alpine-3.24.2
-    build:
-      context: .
-      dockerfile: deploy/docker/cross/windows/alpine.Dockerfile
-      args:
-        ALPINE_VERSION: "3.24.2"
-        TARGET_TRIPLE: x86_64-w64-mingw32
-        XPCU_DRIVER_ARCHIVE: externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-      target: cross-with-driver
 
 volumes:
   openfpgaloader-cross-cache:

@@ -95,13 +95,33 @@ if [[ ! -f "${PREFIX_DIR}/share/openFPGALoader/xusb_emb.hex" ]]; then
   echo "         xilinxPlatformCableUsb_alt may fail unless OPENFPGALOADER_XUSB_FIRMWARE is set." >&2
 fi
 
-# If the cross-with-driver stage is used, make its XPCU package available to
-# downstream installer packaging without requiring the submodule checkout.
-BAKED_XPCU_ARCHIVE="/opt/xpcu/xilinx-platform-cable-windows.zip"
-if [[ -f "${BAKED_XPCU_ARCHIVE}" ]]; then
-  cp -f "${BAKED_XPCU_ARCHIVE}" "${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
-  echo "Copied baked XPCU driver archive: ${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
+# The Windows driver package is a required part of the portable distribution.
+# It is built once from libwdi/XPCU, mounted at /opt/xpcu by Compose, verified,
+# then embedded unchanged so the portable ZIP and installer consume identical
+# driver bytes.
+XPCU_DRIVER_ARCHIVE="${XPCU_DRIVER_ARCHIVE:-/opt/xpcu/xilinx-platform-cable-windows.zip}"
+XPCU_DRIVER_CHECKSUM="${XPCU_DRIVER_CHECKSUM:-${XPCU_DRIVER_ARCHIVE}.sha256}"
+DRIVER_DIR="${PREFIX_DIR}/share/openFPGALoader/drivers"
+
+log_step "verify Xilinx Platform Cable driver package"
+if [[ ! -s "${XPCU_DRIVER_ARCHIVE}" ]]; then
+  echo "ERROR: required Xilinx Platform Cable driver package is missing: ${XPCU_DRIVER_ARCHIVE}" >&2
+  echo "       Build it first with externals/xilinx-usb-driver/docker-build.sh." >&2
+  exit 1
 fi
+if [[ ! -s "${XPCU_DRIVER_CHECKSUM}" ]]; then
+  echo "ERROR: driver checksum is missing: ${XPCU_DRIVER_CHECKSUM}" >&2
+  exit 1
+fi
+(
+  cd "$(dirname "${XPCU_DRIVER_ARCHIVE}")"
+  sha256sum -c "$(basename "${XPCU_DRIVER_CHECKSUM}")"
+)
+
+mkdir -p "${DRIVER_DIR}"
+cp -f "${XPCU_DRIVER_ARCHIVE}" "${DRIVER_DIR}/xilinx-platform-cable-windows.zip"
+cp -f "${XPCU_DRIVER_CHECKSUM}" "${DRIVER_DIR}/xilinx-platform-cable-windows.zip.sha256"
+log_step "embedded XPCU driver ZIP in portable staging tree"
 
 EXE="${PREFIX_DIR}/bin/openFPGALoader.exe"
 

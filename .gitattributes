@@ -1,0 +1,15 @@
+# Keep scripts used by Linux/Docker/CI executable by POSIX shells even when
+# the repository is checked out on Windows with core.autocrlf=true.
+*.sh text eol=lf
+
+# Files parsed by Linux build/container tooling should also remain LF-stable.
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf
+
+# Native Windows launchers may keep conventional CRLF endings.
+*.bat text eol=crlf
+*.cmd text eol=crlf

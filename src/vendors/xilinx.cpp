@@ -2278,9 +2278,13 @@ int Xilinx::spi_put_v2(uint8_t cmd, const uint8_t *tx, uint8_t *rx,
 			printf("\n");
 		}
 		idx = (mode == 0 ? 3 : 2);
-				for (uint32_t i = 0; i < len; i++) {
-			rx[i] = McsParser::reverseByte(jrx[i + idx]);
-		}
+		/* JTAG scan data is shifted by the number of bypass bits in the
+		 * chain. SOJ v1 and the version probe already compensate for this
+		 * cross-byte alignment; v2 must do the same. Without it, a valid
+		 * MT25QL256 RDID stream 20 BA 19 is decoded as 90 5D 0C 88 on a
+		 * one-device chain (raw bytes 09 BA 30 11). */
+		decode_shifted_jtag_stream(jrx.data(), rx, len,
+			_jtag_chain_len, idx);
 
 		if (_verbose) {
 			for (uint32_t i = 0; i < len; i++)

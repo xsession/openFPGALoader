@@ -6,14 +6,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="${DIST_DIR:-${ROOT_DIR}/dist/docker-windows}"
 INSTALL_DIR="${INSTALL_DIR:-${DIST_DIR}/install}"
 OUTPUT_DIR="${OUTPUT_DIR:-${DIST_DIR}}"
-XPCU_DRIVER_ARCHIVE="${XPCU_DRIVER_ARCHIVE:-${ROOT_DIR}/externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip}"
+XPCU_DRIVER_ARCHIVE="${XPCU_DRIVER_ARCHIVE:-${INSTALL_DIR}/share/openFPGALoader/drivers/xilinx-platform-cable-windows.zip}"
+XPCU_DRIVER_CHECKSUM="${XPCU_DRIVER_CHECKSUM:-${XPCU_DRIVER_ARCHIVE}.sha256}"
 INNOSETUP_IMAGE="${INNOSETUP_IMAGE:-amake/innosetup@sha256:e003376ba818547275fe10c95e2a29be0f2d12d45e9eb8f205b6672dc5685bb1}"
 
 source "${SCRIPT_DIR}/package-common.sh"
 
 EXE="${INSTALL_DIR}/bin/openFPGALoader.exe"
 require_file "${EXE}" "openFPGALoader.exe"
-require_file "${XPCU_DRIVER_ARCHIVE}" "Xilinx Platform Cable Windows driver archive"
+require_file "${XPCU_DRIVER_ARCHIVE}" "embedded Xilinx Platform Cable Windows driver archive"
+require_file "${XPCU_DRIVER_CHECKSUM}" "embedded Xilinx Platform Cable Windows driver checksum"
+(
+  cd "$(dirname "${XPCU_DRIVER_ARCHIVE}")"
+  sha256sum -c "$(basename "${XPCU_DRIVER_CHECKSUM}")"
+)
 
 VERSION="${VERSION:-$(package_version_from_executable "${EXE}" "${ROOT_DIR}")}"
 INSTALLER_INPUT_DIR="${DIST_DIR}/installer"

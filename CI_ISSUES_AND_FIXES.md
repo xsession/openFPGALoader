@@ -119,3 +119,29 @@ now stored in a named `/work` Docker volume, Compose TTY allocation is disabled 
 CI/act, the redundant `pull_policy: build` was removed, and the wrapper emits
 explicit stage checkpoints. Final packages still land in
 `dist/docker-windows` on the host.
+
+### Windows checkout CRLF broke Docker runtime shell scripts
+
+Symptom:
+
+```text
+: invalid option nameocker-cross-windows.sh: line 2: set: pipefail
+```
+
+Cause: Git for Windows converted `deploy/scripts/docker-cross-windows.sh` to CRLF, so Linux Bash parsed `pipefail\r` as the option name. The repository previously had no `.gitattributes`.
+
+Fix: add `.gitattributes` with `*.sh text eol=lf` and LF rules for Linux build metadata. Existing Windows worktrees require a one-time line-ending normalization.
+
+## 2026-10-01: integrated XPCU driver packaging
+
+The Windows release now treats the compiled Xilinx Platform Cable driver bundle as
+one canonical package. The libwdi/XPCU build runs inside `windows-cross`, verifies
+`xilinx-platform-cable-windows.zip`, and mounts it into the cross-build container.
+The portable openFPGALoader ZIP embeds the archive and checksum under
+`share/openFPGALoader/drivers/`. The installer consumes that embedded archive, so
+there is no second driver build and no stale `windows-xpcu-drivers` dependency.
+
+The XPCU Compose runtime mounts are parameterized with daemon-visible host paths.
+This fixes the local `act` failure where the images built successfully but both
+libwdi runtime services exited 127 because `/src` was mounted from the runner-only
+`/mnt/<drive>/...` path instead of Docker Desktop's host-visible path.

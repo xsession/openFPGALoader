@@ -122,9 +122,6 @@ When `act` runs on Windows, the workflow probes both daemon-visible host paths:
 `/host_mnt/<drive>/...` and `/run/desktop/mnt/host/<drive>/...`, then exports
 `CROSS_HOST_SRC`. The probe uses `alpine:3.24.2`.
 
-The optional `windows-cross-driver` service is enabled. Build its input first with
-`bash externals/xilinx-usb-driver/docker-build.sh`; the resulting driver ZIP is
-baked at `/opt/xpcu` and copied next to the portable package for installer builds.
 
 ### Docker Desktop / act performance and diagnostics
 
@@ -139,3 +136,41 @@ CI and `act` invoke `docker compose run` with `--no-TTY`. The wrapper prints
 configuration, compilation, installation, version resolution, and ZIP creation.
 If a local run stops making progress, the last checkpoint identifies the blocked
 stage.
+
+## Windows line endings (CRLF)
+
+All repository shell scripts must use LF line endings. `.gitattributes` enforces
+`*.sh text eol=lf` for new checkouts, including Git for Windows with
+`core.autocrlf=true`.
+
+If an existing Windows worktree fails at startup with an error similar to:
+
+```text
+: invalid option nameocker-cross-windows.sh: line 2: set: pipefail
+```
+
+then the script was already materialized as CRLF. Normalize the shell scripts
+once before rerunning Compose. The Docker image itself does not need rebuilding
+for a bind-mounted script line-ending correction.
+
+### Embedded Xilinx Platform Cable driver package
+
+The Windows cross job first builds the canonical
+`xilinx-platform-cable-windows.zip` from the pinned libwdi/XPCU sources. Compose
+mounts its output directory read-only at `/opt/xpcu`. The cross-packaging wrapper
+verifies the accompanying SHA-256 file and embeds both files unchanged at:
+
+```text
+share/openFPGALoader/drivers/
+  xilinx-platform-cable-windows.zip
+  xilinx-platform-cable-windows.zip.sha256
+```
+
+The portable Windows ZIP is not considered valid unless those files are present.
+The installer job consumes the embedded archive from the portable ZIP; it does not
+build or download a second independent XPCU package.
+
+For `act` on Docker Desktop, both the XPCU build and the main cross-build probe the
+daemon-visible Windows checkout (`/host_mnt/<drive>/...` or
+`/run/desktop/mnt/host/<drive>/...`) before creating runtime bind mounts. This
+prevents empty libwdi `/src` mounts and the characteristic exit-127 failure.
