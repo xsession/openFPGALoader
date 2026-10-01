@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 # Keep source archives buildable without Git, but use the nearest semantic
 # release tag in a checkout so binary/package versions do not drift from the
 # release being built. An explicit -DOPENFPGALOADER_VERSION=... always wins.
-set(OPENFPGALOADER_VERSION "1.1.3")
-set(_openfpgaloader_fallback_version "1.1.3")
+set(_openfpgaloader_fallback_version "1.1.6")
 if(NOT DEFINED OPENFPGALOADER_VERSION)
 	set(OPENFPGALOADER_VERSION "${_openfpgaloader_fallback_version}")
 	find_program(GIT_EXECUTABLE git)
@@ -18,7 +17,7 @@ if(NOT DEFINED OPENFPGALOADER_VERSION)
 			RESULT_VARIABLE _openfpgaloader_git_result
 		)
 		if(_openfpgaloader_git_result EQUAL 0 AND
-			_openfpgaloader_git_tag MATCHES "^v([0-9]+(\\.[0-9]+){1,3})$")
+			_openfpgaloader_git_tag MATCHES "^v([0-9]+\\.[0-9]+(\\.[0-9]+)?(\\.[0-9]+)?)$")
 			set(OPENFPGALOADER_VERSION "${CMAKE_MATCH_1}")
 		endif()
 	endif()

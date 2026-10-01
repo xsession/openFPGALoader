@@ -68,7 +68,7 @@ sha256sum "${PACKAGE_FILE}" > "${PACKAGE_FILE}.sha256"
 
 echo "Built Debian package: ${PACKAGE_FILE}"
 echo "Package contents:"
-dpkg-deb --contents "${PACKAGE_FILE}" | head -40
+dpkg-deb --contents "${PACKAGE_FILE}" | sed -n '1,40p'
 
 # Clean up
 rm -rf "${BUILD_DIR}"

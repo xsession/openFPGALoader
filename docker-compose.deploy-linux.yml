@@ -4,18 +4,17 @@ services:
       context: .
       dockerfile: deploy/docker/deploy/linux/alpine.Dockerfile
       args:
-        ALPINE_VERSION: "3.20"
-    image: openfpgaloader-linux-deploy:alpine
+        ALPINE_VERSION: "3.24.2"
+    image: openfpgaloader-linux-deploy:alpine-3.24.2
     pull_policy: build
     working_dir: /src
     volumes:
       - .:/src
-      - ./dist/docker-linux:/out
       - openfpgaloader-linux-cache:/root/.cache
     environment:
       BUILD_DIR: /src/build-docker-linux
       PREFIX_DIR: /src/dist/docker-linux/install
-      PACKAGE_DIR: /out
+      PACKAGE_DIR: /src/dist/docker-linux
       CMAKE_BUILD_TYPE: Release
       CMAKE_EXTRA_ARGS: ""
     command: ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]

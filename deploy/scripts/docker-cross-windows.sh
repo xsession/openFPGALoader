@@ -2,6 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/package-common.sh"
+
 BUILD_DIR="${BUILD_DIR:-${ROOT_DIR}/build-docker-windows}"
 PREFIX_DIR="${PREFIX_DIR:-${ROOT_DIR}/dist/docker-windows/install}"
 PACKAGE_DIR="${PACKAGE_DIR:-${ROOT_DIR}/dist/docker-windows}"
@@ -81,12 +84,8 @@ if [[ ! -f "${PREFIX_DIR}/share/openFPGALoader/xusb_emb.hex" ]]; then
   echo "         xilinxPlatformCableUsb_alt may fail unless OPENFPGALOADER_XUSB_FIRMWARE is set." >&2
 fi
 
-# When the image was built with the `cross-with-driver` stage, the XPCU
-# driver archive is baked in at /opt/xpcu (see alpine.Dockerfile). Ship it
-# into the package output directory next to the portable ZIP so downstream
-# packaging (deploy/scripts/build-windows-installer.sh) can consume it with
-# XPCU_DRIVER_ARCHIVE="${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
-# without requiring the externals submodules on the build machine.
+# If the cross-with-driver stage is used, make its XPCU package available to
+# downstream installer packaging without requiring the submodule checkout.
 BAKED_XPCU_ARCHIVE="/opt/xpcu/xilinx-platform-cable-windows.zip"
 if [[ -f "${BAKED_XPCU_ARCHIVE}" ]]; then
   cp -f "${BAKED_XPCU_ARCHIVE}" "${PACKAGE_DIR}/xilinx-platform-cable-windows.zip"
@@ -155,11 +154,7 @@ if command -v "${TARGET_TRIPLE}-objdump" >/dev/null 2>&1; then
   done < <("${TARGET_TRIPLE}-objdump" -p "${EXE}" | sed -n 's/^\tDLL Name: //p')
 fi
 
-VERSION="$("${EXE}" --version 2>/dev/null | head -n1 | tr -cs 'A-Za-z0-9._-' '-' | sed 's/^-//;s/-$//' || true)"
-
-if [[ -z "${VERSION}" ]]; then
-  VERSION="local"
-fi
+VERSION="${VERSION:-$(package_version_from_executable "${EXE}" "${ROOT_DIR}")}"
 
 ARCHIVE="${PACKAGE_DIR}/openFPGALoader-windows-x86_64-${VERSION}.zip"
 
@@ -170,8 +165,6 @@ rm -f "${ARCHIVE}" "${ARCHIVE}.sha256"
   zip -r "${ARCHIVE}" .
 )
 
-# Record the checksum with a relative path so the .sha256 stays valid when
-# the package directory is relocated (e.g. between container and host).
 (
   cd "${PACKAGE_DIR}"
   sha256sum "$(basename "${ARCHIVE}")" > "$(basename "${ARCHIVE}").sha256"

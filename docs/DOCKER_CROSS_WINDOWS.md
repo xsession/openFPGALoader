@@ -7,7 +7,7 @@ The image installs Alpine's MinGW-w64 compiler and builds the Windows target dep
 ## Windows host prerequisite
 
 This is a **Linux-container** build. It cannot run while Docker Desktop is in
-Windows-container mode because `alpine:edge` has no Windows image manifest.
+Windows-container mode because `alpine:3.24.2` has no Windows image manifest.
 
 Use Docker Desktop with the WSL2 backend and Linux containers. From PowerShell,
 verify the engine before building:
@@ -46,80 +46,7 @@ Artifacts are written to:
 dist/docker-windows/
 ```
 
-### Baking the XPCU driver archive into the image
-
-The `externals/xilinx-usb-driver` and `externals/libwdi` submodules are not
-required to build the portable package, but if they are initialized and their
-driver archive is built first:
-
-```bash
-git submodule update --init --recursive
-bash externals/xilinx-usb-driver/docker-build.sh
-```
-
-a second Compose service can bake the resulting
-`externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip` into the
-image (Dockerfile stage `cross-with-driver`, stored at `/opt/xpcu`):
-
-```bash
-docker compose -f docker-compose.cross-windows.yml run --rm windows-cross-driver
-```
-
-The build container then copies that archive into `dist/docker-windows/` next
-to the portable ZIP, so a downstream
-`deploy/scripts/build-windows-installer.sh` run can consume it with
-`XPCU_DRIVER_ARCHIVE` pointing at `dist/docker-windows/xilinx-platform-cable-windows.zip`
-even on a machine without the submodules checked out. The plain
-`windows-cross` service is unchanged and does not require the archive to
-exist; it targets the base `alpine-cross` image stage.
-
 The package contains the install tree plus any non-system DLLs imported by the EXE. The wrapper also requests static linking for the GCC/libstdc++ runtime so the Windows package is as self-contained as possible.
-
-The `.sha256` file records the archive under its bare file name (relative
-path), so it can be verified from any directory with:
-
-```bash
-sha256sum -c dist/docker-windows/openFPGALoader-windows-x86_64-*.zip.sha256
-```
-
-## Host path overrides (`CROSS_HOST_SRC`, `CROSS_HOST_OUT`)
-
-The Compose service bind-mounts the repository into the container at `/src`
-and the package output directory at `/out`. The host-side source of those
-mounts is normally `.` (the repository) and `./dist/docker-windows`, but it
-can be overridden with two environment variables:
-
-```bash
-CROSS_HOST_SRC="$PWD" \
-CROSS_HOST_OUT="$PWD/dist/docker-windows" \
-  docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
-```
-
-This override exists for one specific failure mode: running the build with
-[`act`](https://github.com/nektos/act) on Docker Desktop for Windows. Inside
-the act job container the workspace lives at `/mnt/<drive>/...`, but the
-Docker daemon runs in the WSL2 virtual machine, where the host drive is
-mounted at `/host_mnt/<drive>/...`. The daemon cannot see `/mnt/<drive>`, so
-it silently creates an empty directory and the container fails with:
-
-```text
-exec: "/src/deploy/scripts/docker-cross-windows.sh": stat /src/deploy/scripts/docker-cross-windows.sh: no such file or directory
-```
-
-On GitHub Actions runners (Linux) the workspace never looks like
-`/mnt/<drive>/...`, so the defaults are correct there. The
-`windows-cross` job in `.github/workflows/build-binaries.yml` already handles
-the act case automatically: it detects a `/mnt/<drive>` workspace, probes the
-remapped `/host_mnt/<drive>` path through the Docker socket, and exports
-`CROSS_HOST_SRC`/`CROSS_HOST_OUT` to it when the probe succeeds. When running
-`act` manually, no extra environment variables are needed. To set the paths
-by hand, for example when the repository is checked out on a different drive:
-
-```bash
-CROSS_HOST_SRC=/host_mnt/d/openFPGALoader \
-CROSS_HOST_OUT=/host_mnt/d/openFPGALoader/dist/docker-windows \
-  docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
-```
 
 ## Clean rebuild
 
@@ -137,7 +64,7 @@ CMAKE_EXTRA_ARGS="-DENABLE_CMSISDAP=OFF -DENABLE_FTDIPP=OFF -DENABLE_UDEV=OFF -D
 ## Notes
 
 - This is for `x86_64-w64-mingw32` Windows binaries.
-- The Alpine image uses the `edge` package branch because current Alpine packaging exposes the MinGW-w64 compiler there.
+- The Alpine image uses the stable Alpine `3.24.2` release because current Alpine packaging exposes the MinGW-w64 compiler there.
 - Runtime tests cannot execute the Windows EXE inside this container unless Wine is added. The wrapper only checks that the EXE exists and then packages it.
 
 ### Notes
@@ -184,3 +111,17 @@ x86_64-w64-mingw32-objdump -p /src/dist/docker-windows/install/bin/openFPGALoade
 ```
 
 The wrapper copies all non-system DLL imports into `dist/docker-windows/install/bin`. Missing runtime DLLs can make a Windows command-line program appear silent because it exits before `main()` runs.
+
+## 2026-10 deploy layout
+
+The current Compose definition uses a **single repository bind mount** at `/src`.
+Portable output is written under `/src/dist/docker-windows`; there is no nested
+`/out` bind mount. This avoids Docker Desktop/WSL2 path-creation failures.
+
+When `act` runs on Windows, the workflow probes both daemon-visible host paths:
+`/host_mnt/<drive>/...` and `/run/desktop/mnt/host/<drive>/...`, then exports
+`CROSS_HOST_SRC`. The probe uses `alpine:3.24.2`.
+
+The optional `windows-cross-driver` service is enabled. Build its input first with
+`bash externals/xilinx-usb-driver/docker-build.sh`; the resulting driver ZIP is
+baked at `/opt/xpcu` and copied next to the portable package for installer builds.

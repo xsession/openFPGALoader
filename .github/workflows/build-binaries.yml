@@ -13,7 +13,7 @@ name: Build multi-platform binaries
         default: ''
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: build-binaries-${{ github.ref }}
@@ -101,6 +101,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-${{ matrix.name }}
+          if-no-files-found: error
           path: |
             openFPGALoader-${{ matrix.name }}.tar.gz
             openFPGALoader-${{ matrix.name }}.tar.gz.sha256
@@ -161,6 +162,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-${{ matrix.runner }}
+          if-no-files-found: error
           path: |
             openFPGALoader-${{ matrix.runner }}-*.tar.gz
             openFPGALoader-${{ matrix.runner }}-*.tar.gz.sha256
@@ -226,7 +228,6 @@ jobs:
           cmake --install build --prefix "$PWD/pkg"
           mkdir -p "$PWD/pkg/share/licenses/openFPGALoader"
           cp LICENSE "$PWD/pkg/share/licenses/openFPGALoader/LICENSE"
-          # Copy runtime DLLs for a portable zip. Ignore missing DLLs because fully static builds need none.
           ldd "$PWD/pkg/bin/openFPGALoader.exe" | awk '/\/mingw/ {print $3}' | while read -r dll; do cp -n "$dll" "$PWD/pkg/bin/" || true; done
           find pkg -maxdepth 3 -type f -print
 
@@ -240,6 +241,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-windows-${{ matrix.sys }}-x86_64
+          if-no-files-found: error
           path: |
             openFPGALoader-windows-${{ matrix.sys }}-x86_64.zip
             openFPGALoader-windows-${{ matrix.sys }}-x86_64.zip.sha256
@@ -258,15 +260,6 @@ jobs:
 
       - name: Build Windows package with Compose
         run: |
-          # When this job runs via `act` on Docker Desktop for Windows, the
-          # workspace lives at /mnt/<drive>/... but the inner `docker compose`
-          # command is resolved by the daemon inside the WSL2 VM, where the host
-          # drive is exposed under a path that differs between Desktop versions
-          # (e.g. /host_mnt/<drive> and /run/desktop/mnt/host/<drive>). The
-          # daemon transparently translates /mnt/<drive> to the real drive, so
-          # probe each convention through the Docker socket and use the first
-          # that actually shows the repository. On Linux CI runners the
-          # workspace never looks like /mnt/<drive>/..., so this is a no-op.
           CROSS_HOST_SRC="${GITHUB_WORKSPACE}"
           HOST_REMAPPED=0
           if [[ "${GITHUB_WORKSPACE}" =~ ^/mnt/([a-z])/(.*)$ ]]; then
@@ -274,7 +267,7 @@ jobs:
               "/host_mnt/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}" \
               "/run/desktop/mnt/host/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
             do
-              if docker run --rm -v "${probe}:/probe" alpine:edge test -f /probe/CMakeLists.txt >/dev/null 2>&1; then
+              if docker run --rm -v "${probe}:/probe:ro" alpine:3.24.2 test -f /probe/CMakeLists.txt >/dev/null 2>&1; then
                 CROSS_HOST_SRC="${probe}"
                 HOST_REMAPPED=1
                 break
@@ -284,29 +277,12 @@ jobs:
           echo "Mounting repository from daemon-side path: ${CROSS_HOST_SRC}"
           export CROSS_HOST_SRC
           docker compose -f docker-compose.cross-windows.yml run --rm windows-cross
-          # Under `act` on Docker Desktop the workspace is a throwaway named
-          # volume (a copy of the repo), but the compose build above reads and
-          # writes against the real drive (mounted at /src in the container,
-          # backed by CROSS_HOST_SRC). The package therefore lands on the host
-          # drive, not in this volume, so stream it back into the workspace
-          # before verifying/uploading it. On Linux CI runners nothing is
-          # remapped and this is a no-op.
           if (( HOST_REMAPPED == 1 )); then
             mkdir -p dist/docker-windows
-            # The portable package is always named
-            # openFPGALoader-windows-x86_64-<ver>.zip, so these globs never match
-            # the XPCU driver archive (xilinx-platform-cable-windows.zip) that
-            # may also sit in the directory. BusyBox tar (alpine) rejects
-            # --null/-print0, so use plain globs. || true keeps a missing-file
-            # case from aborting under set -e; the count check below reports it.
-            # Mount the repo root (read-only) rather than the output subdir to
-            # avoid a nested bind of a directory under the already-mounted /src.
-            docker run --rm -v "${CROSS_HOST_SRC}:/host_repo:ro" alpine:edge \
+            docker run --rm -v "${CROSS_HOST_SRC}:/host_repo:ro" alpine:3.24.2 \
               sh -c 'cd /host_repo/dist/docker-windows && tar -cf - openFPGALoader-windows-x86_64-*.zip openFPGALoader-windows-x86_64-*.zip.sha256 2>/dev/null' \
               > pkg.tar || true
             if [[ -s pkg.tar ]]; then
-              # Drop any stale copy from a previous run so exactly one package
-              # remains, then extract the freshly built one.
               rm -f dist/docker-windows/openFPGALoader-windows-x86_64-*.zip \
                     dist/docker-windows/openFPGALoader-windows-x86_64-*.zip.sha256
               tar -xf pkg.tar -C dist/docker-windows
@@ -324,16 +300,12 @@ jobs:
           sha256sum openFPGALoader-windows-cross-x86_64.zip > openFPGALoader-windows-cross-x86_64.zip.sha256
           unzip -l openFPGALoader-windows-cross-x86_64.zip
 
-      # Upload the package for the downstream windows-installer job. This only
-      # makes sense on GitHub, where the runner injects ACTIONS_RUNTIME_TOKEN
-      # (required by upload-artifact@v7). Under `act` there is no such token and
-      # the action aborts; ACT=true is set by `act` and never by GitHub, so skip
-      # the upload locally. The ZIP is still built and left on the host drive.
       - name: Upload artifact
         if: env.ACT != 'true'
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-windows-cross-x86_64
+          if-no-files-found: error
           path: |
             openFPGALoader-windows-cross-x86_64.zip
             openFPGALoader-windows-cross-x86_64.zip.sha256
@@ -360,6 +332,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: xilinx-platform-cable-windows
+          if-no-files-found: error
           path: |
             externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
             externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
@@ -418,6 +391,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-windows-installer
+          if-no-files-found: error
           path: |
             dist/docker-windows/*-win64-setup.exe
             dist/docker-windows/*-win64-setup.exe.sha256
@@ -426,6 +400,8 @@ jobs:
     name: Publish GitHub release
     needs: [ linux, macos, windows-msys2, windows-cross, windows-xpcu-drivers, windows-installer ]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     if: github.event_name != 'pull_request' && (startsWith(github.ref, 'refs/tags/') || github.event.inputs.release_tag != '')
     steps:
       - name: Download all artifacts

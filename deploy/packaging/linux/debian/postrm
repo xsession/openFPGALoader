@@ -2,16 +2,17 @@
 set -e
 
 case "$1" in
-    purge)
-        # Remove udev rules symlinks
-        rm -f /etc/udev/rules.d/70-openfpgaloader.rules
-        rm -f /etc/udev/rules.d/99-openfpgaloader.rules
-
-        # Reload udev rules if service is running
-        if command -v udevadm &> /dev/null; then
+    remove|purge)
+        for rule in 70-openfpgaloader.rules 99-openfpgaloader.rules; do
+            path="/etc/udev/rules.d/$rule"
+            target="/usr/lib/udev/rules.d/$rule"
+            if [ -L "$path" ] && [ "$(readlink "$path")" = "$target" ]; then
+                rm -f "$path"
+            fi
+        done
+        if command -v udevadm >/dev/null 2>&1; then
             udevadm control --reload-rules 2>/dev/null || true
         fi
         ;;
 esac
-
 exit 0

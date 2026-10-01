@@ -1,5 +1,5 @@
-# The cross-build image only needs its Dockerfile and toolchain file at image
-# build time. The complete repository is bind-mounted at runtime by Compose.
+# The cross-build image only needs its Dockerfile/toolchain plus the optional
+# prebuilt XPCU archive. The complete project is bind-mounted at runtime.
 **
 !deploy/
 !deploy/docker/
@@ -7,7 +7,7 @@
 !deploy/docker/cross/windows/
 !deploy/docker/cross/windows/alpine.Dockerfile
 !deploy/docker/cross/windows/toolchain-mingw64.cmake
-
-# Re-include the built XPCU driver archive so the optional
-# `cross-with-driver` stage can bake it in (see alpine.Dockerfile).
+!externals/
+!externals/xilinx-usb-driver/
+!externals/xilinx-usb-driver/dist/
 !externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip

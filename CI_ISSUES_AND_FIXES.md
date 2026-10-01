@@ -100,21 +100,12 @@ The SPI-over-JTAG review and source-level fixes are documented in
 with verbose logging, duplicated multi-device JTAG padding, command bytes being
 resent during status polling, and USER4 being accepted as an SPI fallback.
 
-## act on Docker Desktop for Windows: empty `/src` in the cross-build container
+## 2026-09-30 deploy hardening audit
 
-Running the `windows-cross` job with `act` on Docker Desktop for Windows failed
-after the image build with:
-
-```text
-exec: "/src/deploy/scripts/docker-cross-windows.sh": stat
-/src/deploy/scripts/docker-cross-windows.sh: no such file or directory
-```
-
-| Job | Failure | Root cause | Fix |
-| --- | --- | --- | --- |
-| Windows cross-compile (act, Windows host) | Container start failed: missing `/src/deploy/scripts/docker-cross-windows.sh` | Inside the act job container the workspace is `/mnt/<drive>/...`, but the Docker daemon runs in the WSL2 VM where the host drive is mounted at `/host_mnt/<drive>/...`. Compose resolved the `.` bind mount to a path the daemon could not see, so it created an empty directory and `/src` was empty. | `docker-compose.cross-windows.yml` now takes `CROSS_HOST_SRC`/`CROSS_HOST_OUT` (defaulting to the previous `.`/`./dist/docker-windows`). The `windows-cross` job detects a `/mnt/<drive>` workspace, probes the remapped `/host_mnt/<drive>` path through the Docker socket, and exports the variables when the probe succeeds. On Linux runners the check is a no-op, so CI behavior is unchanged. |
-
-The packaging wrapper was also made relocation-safe: `docker-cross-windows.sh`
-records the ZIP checksum with a relative file name, so the `.sha256` verifies
-both inside the container and on the host after the package directory is
-moved.
+- Fixed Linux `.deb` CI preview failure caused by `dpkg-deb --contents | head` under `pipefail`.
+- Made the Windows cross container invoke the bind-mounted build script through `bash`.
+- Removed nested output bind mounts from Windows and Linux Compose deployment paths.
+- Fixed CMake semantic-tag matching and synchronized the source fallback with v1.1.6.
+- Re-enabled the documented `cross-with-driver` Docker stage and fixed `.dockerignore`.
+- Pinned deployment images and restricted GitHub workflow write permission to release publishing.
+- Made missing upload artifacts fatal and made Debian udev maintainer scripts preserve user overrides.

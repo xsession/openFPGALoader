@@ -7,6 +7,7 @@ DIST_DIR="${DIST_DIR:-${ROOT_DIR}/dist/docker-windows}"
 INSTALL_DIR="${INSTALL_DIR:-${DIST_DIR}/install}"
 OUTPUT_DIR="${OUTPUT_DIR:-${DIST_DIR}}"
 XPCU_DRIVER_ARCHIVE="${XPCU_DRIVER_ARCHIVE:-${ROOT_DIR}/externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip}"
+INNOSETUP_IMAGE="${INNOSETUP_IMAGE:-amake/innosetup@sha256:e003376ba818547275fe10c95e2a29be0f2d12d45e9eb8f205b6672dc5685bb1}"
 
 source "${SCRIPT_DIR}/package-common.sh"
 
@@ -33,7 +34,7 @@ docker run --rm \
   -v "${DIST_DIR}:/dist" \
   -v "${ROOT_DIR}/LICENSE:/license:ro" \
   -e WINEDEBUG=-all \
-  amake/innosetup:latest \
+  "${INNOSETUP_IMAGE}" \
   /DMyAppVersion="${VERSION}" /script/openFPGALoader.iss
 
 # Generate checksum

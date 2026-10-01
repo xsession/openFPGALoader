@@ -3,22 +3,17 @@ set -e
 
 case "$1" in
     configure)
-        # Install udev rules
-        if [ -f /usr/lib/udev/rules.d/70-openfpgaloader.rules ] && \
-           [ ! -f /etc/udev/rules.d/70-openfpgaloader.rules ]; then
-            ln -sf /usr/lib/udev/rules.d/70-openfpgaloader.rules /etc/udev/rules.d/
-        fi
-        if [ -f /usr/lib/udev/rules.d/99-openfpgaloader.rules ] && \
-           [ ! -f /etc/udev/rules.d/99-openfpgaloader.rules ]; then
-            ln -sf /usr/lib/udev/rules.d/99-openfpgaloader.rules /etc/udev/rules.d/
-        fi
-
-        # Reload udev rules if service is running
-        if command -v udevadm &> /dev/null; then
+        for rule in 70-openfpgaloader.rules 99-openfpgaloader.rules; do
+            path="/etc/udev/rules.d/$rule"
+            target="/usr/lib/udev/rules.d/$rule"
+            if [ -L "$path" ] && [ "$(readlink "$path")" = "$target" ]; then
+                rm -f "$path"
+            fi
+        done
+        if command -v udevadm >/dev/null 2>&1; then
             udevadm control --reload-rules 2>/dev/null || true
             udevadm trigger 2>/dev/null || true
         fi
         ;;
 esac
-
 exit 0

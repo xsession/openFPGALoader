@@ -3,8 +3,8 @@
 # It builds the Windows-side dependencies into /opt/x86_64-w64-mingw32 so the
 # repository can be cross-compiled without relying on MSYS2 on the host.
 
-ARG ALPINE_VERSION=edge
-FROM alpine:${ALPINE_VERSION} AS alpine-cross
+ARG ALPINE_VERSION=3.24.2
+FROM alpine:${ALPINE_VERSION}
 
 ARG TARGET_TRIPLE=x86_64-w64-mingw32
 ARG CROSS_PREFIX=/opt/x86_64-w64-mingw32
@@ -121,19 +121,13 @@ RUN set -eux; \
 # image is being built, so /src/deploy/ise_programmer_bins cannot be read in a RUN
 # instruction here.
 
-# Optional second stage: the same toolchain image with the built Xilinx
-# Platform Cable (XPCU) Windows driver archive baked in, so the build
-# container can ship it inside the portable package without the submodule
-# checkout having to be present in the repository bind mount. The archive is
-# produced by `bash externals/xilinx-usb-driver/docker-build.sh`, which
-# requires the submodule to be initialized.
+# Optional second stage: bake the generated XPCU Windows driver archive into
+# the cross image. Build it first with:
+#   bash externals/xilinx-usb-driver/docker-build.sh
+FROM alpine-cross AS cross-with-driver
 
 # FROM alpine-cross AS cross-with-driver
 
-# ARG XPCU_DRIVER_ARCHIVE=externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-# COPY ${XPCU_DRIVER_ARCHIVE} /opt/xpcu/xilinx-platform-cable-windows.zip
-
 WORKDIR /src
 
-CMD ["/src/deploy/scripts/docker-cross-windows.sh"]
-
+CMD ["bash", "/src/deploy/scripts/docker-cross-windows.sh"]

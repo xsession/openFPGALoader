@@ -1,32 +1,20 @@
 services:
   windows-cross:
-    # The image is Alpine Linux with a MinGW cross-toolchain. Docker Desktop
-    # must therefore be running its Linux container engine.
     platform: linux/amd64
     build:
       context: .
       dockerfile: deploy/docker/cross/windows/alpine.Dockerfile
       args:
-        ALPINE_VERSION: edge
+        ALPINE_VERSION: "3.24.2"
         TARGET_TRIPLE: x86_64-w64-mingw32
       target: alpine-cross
-    image: openfpgaloader-windows-cross:alpine
+    image: openfpgaloader-windows-cross:alpine-3.24.2
     pull_policy: build
     working_dir: /src
     volumes:
-      # The repository is the single bind mount, at /src. The build script
-      # writes the portable package directly under /src/dist/docker-windows
-      # (PACKAGE_DIR below), so there is no second /out bind. Mounting the same
-      # host directory a second time as a *subdirectory* of /src made Docker
-      # auto-create the missing output directory, which crashes on the 9p-
-      # mounted Windows drive ("mkdir ...: file exists"). Writing into /src
-      # avoids that entirely.
-      #
-      # CROSS_HOST_SRC defaults to "." (the compose project dir), which works on
-      # Linux CI runners and when compose is invoked directly from the host.
-      # When the compose command itself runs inside a container (e.g. act on
-      # Docker Desktop for Windows), set CROSS_HOST_SRC to a path the Docker
-      # daemon can see, e.g. CROSS_HOST_SRC=/run/desktop/mnt/host/d/openFPGALoader.
+      # Mount the repository exactly once. Package output lives below /src/dist.
+      # act on Docker Desktop may override CROSS_HOST_SRC with a daemon-visible
+      # /host_mnt/<drive>/... or /run/desktop/mnt/host/<drive>/... path.
       - ${CROSS_HOST_SRC:-.}:/src
       - openfpgaloader-cross-cache:/root/.cache
     environment:
@@ -36,20 +24,14 @@ services:
       CMAKE_BUILD_TYPE: Release
       CMAKE_EXTRA_ARGS: "-DENABLE_UDEV=OFF -DENABLE_LIBGPIOD=OFF -DENABLE_OPTIM=OFF"
 
-  # Same as windows-cross, but the image is built with the
-  # `cross-with-driver` Dockerfile stage, which bakes the XPCU driver
-  # archive (externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip)
-  # into /opt/xpcu so it is shipped inside the portable package even when the
-  # submodule checkout is missing from the bind-mounted repository. Build the
-  # archive first:  bash externals/xilinx-usb-driver/docker-build.sh
   windows-cross-driver:
     extends: windows-cross
-    image: openfpgaloader-windows-cross-driver:alpine
+    image: openfpgaloader-windows-cross-driver:alpine-3.24.2
     build:
       context: .
       dockerfile: deploy/docker/cross/windows/alpine.Dockerfile
       args:
-        ALPINE_VERSION: edge
+        ALPINE_VERSION: "3.24.2"
         TARGET_TRIPLE: x86_64-w64-mingw32
         XPCU_DRIVER_ARCHIVE: externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
       target: cross-with-driver

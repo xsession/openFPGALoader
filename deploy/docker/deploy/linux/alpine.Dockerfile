@@ -1,4 +1,4 @@
-ARG ALPINE_VERSION=3.20
+ARG ALPINE_VERSION=3.24.2
 FROM alpine:${ALPINE_VERSION}
 
 RUN apk add --no-cache \

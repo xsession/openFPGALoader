@@ -45,10 +45,13 @@ CMAKE_EXTRA_ARGS="-DENABLE_CMSISDAP=OFF -DENABLE_LIBGPIOD=OFF" \
 
 ## Notes
 
-- The default image is Alpine 3.20.
+- The default image is Alpine 3.24.2.
 - The resulting binary is dynamically linked against the Alpine packages
   installed in the Docker image. Check
   `share/doc/openFPGALoader/docker-linux-build-manifest.txt` in the package for
   the exact runtime libraries.
 - This is a deploy/package helper, not a distro package. Install udev rules on
   the target machine if USB probes are not accessible to normal users.
+
+The Compose service uses a single repository bind mount. Build and package output
+remains under `/src/dist/docker-linux`, avoiding nested host bind mounts.
