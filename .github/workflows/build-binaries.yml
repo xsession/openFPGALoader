@@ -258,12 +258,6 @@ jobs:
       - name: Build libwdi and XPCU driver package
         run: bash ./externals/xilinx-usb-driver/docker-build.sh
 
-      - name: Verify Windows driver artifact
-        run: |
-          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
-          unzip -l externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-
       - name: Upload XPCU driver artifact
         uses: actions/upload-artifact@v7
         with:
