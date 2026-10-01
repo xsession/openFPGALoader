@@ -255,6 +255,24 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Build libwdi and XPCU driver package
+        run: bash ./externals/xilinx-usb-driver/docker-build.sh
+
+      - name: Verify Windows driver artifact
+        run: |
+          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
+          unzip -l externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+
+      - name: Upload XPCU driver artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: xilinx-platform-cable-windows
+          if-no-files-found: error
+          path: |
+            externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
+            externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
+
       - name: Build Linux cross-build image
         run: docker compose -f docker-compose.cross-windows.yml build windows-cross
 
@@ -309,33 +327,6 @@ jobs:
           path: |
             openFPGALoader-windows-cross-x86_64.zip
             openFPGALoader-windows-cross-x86_64.zip.sha256
-
-  windows-xpcu-drivers:
-    name: Build Xilinx Platform Cable driver package
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - name: Build libwdi and XPCU driver package
-        run: bash ./externals/xilinx-usb-driver/docker-build.sh
-
-      - name: Verify Windows driver artifact
-        run: |
-          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-          test -s externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
-          unzip -l externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-
-      - name: Upload XPCU driver artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: xilinx-platform-cable-windows
-          if-no-files-found: error
-          path: |
-            externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
-            externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip.sha256
 
   windows-installer:
     name: Build Windows installer
