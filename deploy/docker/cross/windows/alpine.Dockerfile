@@ -121,6 +121,12 @@ RUN set -eux; \
 # image is being built, so /src/deploy/ise_programmer_bins cannot be read in a RUN
 # instruction here.
 
+# The base cross image is directly runnable. Keep its default command on the
+# alpine-cross stage itself because docker-compose targets this stage. The
+# cross-with-driver stage below inherits both WORKDIR and CMD.
+WORKDIR /src
+CMD ["bash", "/src/deploy/scripts/docker-cross-windows.sh"]
+
 # Optional second stage: bake the generated XPCU Windows driver archive into
 # the cross image. Build it first with:
 #   bash externals/xilinx-usb-driver/docker-build.sh
@@ -128,7 +134,3 @@ FROM alpine-cross AS cross-with-driver
 
 ARG XPCU_DRIVER_ARCHIVE=externals/xilinx-usb-driver/dist/xilinx-platform-cable-windows.zip
 COPY ${XPCU_DRIVER_ARCHIVE} /opt/xpcu/xilinx-platform-cable-windows.zip
-
-WORKDIR /src
-
-CMD ["bash", "/src/deploy/scripts/docker-cross-windows.sh"]

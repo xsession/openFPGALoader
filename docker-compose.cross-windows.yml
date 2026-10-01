@@ -10,6 +10,9 @@ services:
       target: alpine-cross
     image: openfpgaloader-windows-cross:alpine-3.24.2
     working_dir: /src
+    # Explicit command makes Compose robust even if a future Dockerfile stage
+    # refactor accidentally drops CMD from the selected build target.
+    command: ["bash", "/src/deploy/scripts/docker-cross-windows.sh"]
     volumes:
       # Mount the repository exactly once. Package output lives below /src/dist.
       # act on Docker Desktop may override CROSS_HOST_SRC with a daemon-visible
