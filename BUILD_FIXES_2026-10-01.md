@@ -1,11 +1,11 @@
 # Windows release packaging fixes - 2026-10-01
 
 This source package was reconciled against `xsession/openFPGALoader` master
-`978ba76b6bad2774aa990530123586365a1568e4` and the submodule revisions pinned
+`106f6bb48a80249886e112164fdcd82648f2a112` and the submodule revisions pinned
 by that commit:
 
 - `xsession/libwdi`: `41992871403995fc53db3fa9dd9f068b676eb7fe`
-- `xsession/xilinx-usb-driver`: `f7ab7583fe02e04c8d8977a096ca38bb002f2b93`
+- `xsession/xilinx-usb-driver`: `c5c8a695ff048ac59680b5c82f62922be16e9873`
 
 The release pipeline is modified so the compiled Xilinx Platform Cable USB
 payload is built once and becomes part of both Windows deliverables.
@@ -44,3 +44,18 @@ the portable Windows artifact.
 - Workflow contains no `windows-xpcu-drivers` reference.
 - Static checks confirm the portable packaging and installer scripts use the
   same embedded XPCU driver path.
+
+## Inno Setup Docker output-permission fix
+
+The GitHub-hosted Ubuntu installer job successfully verified the portable ZIP and
+its embedded XPCU driver payload, but Inno Setup failed with Windows error 5 while
+copying `Setup.e32` to `Z:\dist\openFPGALoader-...-setup.e32.tmp`. The pinned
+`amake/innosetup` image intentionally runs Wine as the unprivileged `xclient` user;
+the GitHub workspace bind mount was readable but not writable by that user.
+
+The installer now compiles into a temporary Docker named volume mounted at `/out`
+(`Z:\out` inside Wine). The host `dist` tree is mounted read-only during compiler
+execution. After a successful compile, a root Alpine helper copies only the final
+installer EXE back to `dist/docker-windows`; the named volume is removed by a trap.
+This also avoids Inno/Wine temporary-file locking and permission differences across
+GitHub Actions, Linux hosts, WSL2 and Docker Desktop.

@@ -145,3 +145,19 @@ The XPCU Compose runtime mounts are parameterized with daemon-visible host paths
 This fixes the local `act` failure where the images built successfully but both
 libwdi runtime services exited 127 because `/src` was mounted from the runner-only
 `/mnt/<drive>/...` path instead of Docker Desktop's host-visible path.
+
+## 2026-10-01: Inno Setup bind-mount access denied
+
+The Windows installer job reached Inno Setup only after successfully verifying the
+portable Windows archive and its embedded XPCU/libwdi driver bundle. Inno Setup then
+failed with `Error 5: Access denied` while attempting to create its temporary
+`openFPGALoader-<version>-win64-setup.e32.tmp` under `Z:\dist`.
+
+The pinned `amake/innosetup` image runs Wine as the non-root `xclient` user, while
+the GitHub workspace is a host bind mount. Inputs were readable, but the compiler
+could not create its temporary executable in the mounted output directory.
+
+Fix: `build-windows-installer.sh` creates a short-lived Docker named volume, makes
+it writable, passes `MyOutputDir=Z:\out` to Inno Setup, mounts the host `dist` tree
+read-only for installer inputs, and copies only the completed setup EXE back to the
+host via an Alpine helper. The volume is always removed by a shell trap.

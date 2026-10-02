@@ -8,6 +8,9 @@
 #define MyAppPublisher "openFPGALoader"
 #define MyAppURL "https://github.com/xsession/openFPGALoader"
 #define MyAppExeName "openFPGALoader.exe"
+#ifndef MyOutputDir
+#define MyOutputDir "Z:\dist"
+#endif
 
 [Setup]
 AppId={{A8F5B2D1-3C94-4E7A-B6D2-1F8E3A5C7D90}
@@ -20,7 +23,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\openFPGALoader
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-OutputDir=Z:\dist
+OutputDir={#MyOutputDir}
 OutputBaseFilename=openFPGALoader-{#MyAppVersion}-win64-setup
 Compression=lzma2/max
 SolidCompression=yes

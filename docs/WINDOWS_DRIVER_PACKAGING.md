@@ -43,3 +43,13 @@ reuse paths such as `/mnt/d/openFPGALoader`.
 paths (`/host_mnt/<drive>/...` and `/run/desktop/mnt/host/<drive>/...`) and exports
 those locations to Compose. The same rule is used by the main Windows cross-build.
 This avoids empty `/src` mounts and the resulting libwdi `exit 127` failures.
+
+## Inno Setup container output
+
+The pinned Inno Setup Docker image runs Wine as an unprivileged user. For that
+reason the compiler does **not** write temporary `.e32.tmp` files directly into the
+host workspace bind mount. `build-windows-installer.sh` creates a temporary Docker
+named volume at `/out`, passes it to Inno Setup as `Z:\out`, and mounts
+`dist/docker-windows` read-only while compiling. After compilation a small Alpine
+container copies the finished `openFPGALoader-<version>-win64-setup.exe` back to the
+normal `dist/docker-windows` artifact directory and the temporary volume is removed.
