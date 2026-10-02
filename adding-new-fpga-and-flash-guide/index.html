@@ -1,0 +1,4892 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Universal utility for programming FPGAs">
+      
+      
+      
+        <link rel="canonical" href="https://xsession.github.io/openFPGALoader/adding-new-fpga-and-flash-guide/">
+      
+      
+        <link rel="prev" href="../adding-new-flash/">
+      
+      
+        <link rel="next" href="../DEPLOYMENT/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Adding FPGA and flash support - openFPGALoader</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adding-new-fpga-and-flash-support-to-openfpgaloader-comprehensive-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="openFPGALoader" class="md-header__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            openFPGALoader
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Adding FPGA and flash support
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guide/first-steps/" class="md-tabs__link">
+          
+  
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../compatibility/board/" class="md-tabs__link">
+          
+  
+  
+  Compatibility
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../vendors/anlogic/" class="md-tabs__link">
+          
+  
+  
+  Vendors
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../SOJ_REVIEW/" class="md-tabs__link">
+          
+  
+  
+  Hardware and debugging
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contributing/architecture-rules/" class="md-tabs__link">
+          
+  
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../DEVICE_SUPPORT_CHAT/" class="md-tabs__link">
+          
+  
+  
+  Project documentation
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="openFPGALoader" class="md-nav__button md-logo" aria-label="openFPGALoader" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    openFPGALoader
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xsession/openFPGALoader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xsession/openFPGALoader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/first-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compatibility
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compatibility
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/board/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/fpga/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FPGAs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../compatibility/cable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cables
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vendors
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vendors
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/anlogic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Anlogic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/colognechip/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cologne Chip
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/efinix/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Efinix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/gowin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gowin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/intel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intel/Altera
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/lattice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lattice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vendors/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware and debugging
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Hardware and debugging
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SOJ_REVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOJ review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../digilent-hs3-vs-xpcu-dump-flash-codepath/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Digilent HS3 vs XPCU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-xpcu-spi-debug-log/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 XPCU debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spartan6-hs3-m25p40-write-stall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spartan-6 HS3 write stall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-technical-reproduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Xilinx Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../xilinx-platform-cable-usb-windows-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows Platform Cable USB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../machxo3-recovery-after-bulk-erase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MachXO3 recovery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XCF_PLATFORM_FLASH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    XCF platform flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../XILINX_PLATFORM_CABLE_USB_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows cable notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/visual-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visual guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/source-map/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Source map
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/runtime-flows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runtime flows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/build-and-release/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and release
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture decisions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/containers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 containers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/c4/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C4 deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/architecture-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API and code reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project documentation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project documentation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEVICE_SUPPORT_CHAT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Device support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adding-new-flash/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding a flash
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding FPGA and flash support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key files:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-adding-a-new-fpga-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Adding a New FPGA Device
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Adding a New FPGA Device">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-find-the-jtag-idcode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Find the JTAG IDCODE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-add-to-fpga-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Add to FPGA Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-ir-length-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 IR Length Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-add-bridge-bitstream-if-needed-for-spi-flash-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Add Bridge Bitstream (if needed for SPI flash access)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-adding-a-new-fpga-family" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Adding a New FPGA Family
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Adding a New FPGA Family">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-create-vendor-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Create Vendor Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-header-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Header File Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-implementation-key-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Implementation Key Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-register-the-new-family" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Register the New Family
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-bitstream-parser-if-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Bitstream Parser (if needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-adding-a-new-spi-flash-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Adding a New SPI Flash Device
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Adding a New SPI Flash Device">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-find-the-jedec-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Find the JEDEC ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-spi-flash-database-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 SPI Flash Database Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-key-fields-explained" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Key Fields Explained
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-adding-multiple-keys-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Adding Multiple Keys (Aliases)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-adding-new-jedec-manufacturer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Adding New JEDEC Manufacturer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-adding-new-spi-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Adding New SPI Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-extended-id-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Extended ID Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-adding-a-new-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Adding a New Board
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Adding a New Board">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-board-definition-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Board Definition Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-board-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Board Macros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-example-board-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Example Board Additions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-pin-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Pin Constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-bpi-vs-spi-flash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 BPI vs SPI Flash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-adding-spi-over-jtag-bridge-bitstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Adding SPI-over-JTAG Bridge Bitstreams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Adding SPI-over-JTAG Bridge Bitstreams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-bridge-bitstream-naming-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Bridge Bitstream Naming Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-generating-bridge-bitstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Generating Bridge Bitstreams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-bridge-bitstream-loading-in-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Bridge Bitstream Loading in Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-custom-bridge-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Custom Bridge Path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-soj-version-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 SOJ Version Differences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-soj-v2-detection-fix-recent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 SOJ v2 Detection Fix (Recent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-adding-a-new-jtag-cable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Adding a New JTAG Cable
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Adding a New JTAG Cable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-cable-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Cable Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-cable-class-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Cable Class Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-register-the-cable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Register the Cable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-common-cable-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Common Cable Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-ir-code-maps-and-multi-byte-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. IR Code Maps and Multi-byte Instructions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. IR Code Maps and Multi-byte Instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-ir-code-map-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 IR Code Map Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-multi-byte-ir-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Multi-byte IR Instructions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-family-to-ir-map-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Family-to-IR-Map Selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-adding-new-ir-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Adding New IR Instructions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-soj-version-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. SOJ Version Detection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. SOJ Version Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-how-soj-version-detection-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 How SOJ Version Detection Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-common-soj-detection-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Common SOJ Detection Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-soj-v2-packet-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 SOJ v2 Packet Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-vendor-specific-implementation-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Vendor-specific Implementation Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Vendor-specific Implementation Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-xilinx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Xilinx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-lattice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Lattice
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-gowin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Gowin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-alteraintel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 Altera/Intel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#105-efinix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.5 Efinix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#106-anlogic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.6 Anlogic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-build-system-and-data-file-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Build System and Data File Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Build System and Data File Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-cmakeliststxt-modifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 CMakeLists.txt Modifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-data-file-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Data File Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-cross-compilation-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 Cross-compilation (Windows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-build-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.4 Build Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-testing-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Testing Checklist
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Testing Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-new-fpga-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 New FPGA Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-new-spi-flash-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 New SPI Flash Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-new-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 New Board
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124-common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.4 Common Pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-file-modification-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference: File Modification Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-jedec-id-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix: JEDEC ID Calculation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_CROSS_WINDOWS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker cross-Windows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOCKER_DEPLOY_LINUX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Docker Linux deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/ci-issues/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CI issue report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../todo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Todo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key files:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-adding-a-new-fpga-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Adding a New FPGA Device
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Adding a New FPGA Device">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-find-the-jtag-idcode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Find the JTAG IDCODE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-add-to-fpga-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Add to FPGA Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-ir-length-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 IR Length Reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-add-bridge-bitstream-if-needed-for-spi-flash-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Add Bridge Bitstream (if needed for SPI flash access)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-adding-a-new-fpga-family" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Adding a New FPGA Family
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Adding a New FPGA Family">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-create-vendor-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Create Vendor Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-header-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Header File Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-implementation-key-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Implementation Key Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-register-the-new-family" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Register the New Family
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-bitstream-parser-if-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Bitstream Parser (if needed)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-adding-a-new-spi-flash-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Adding a New SPI Flash Device
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Adding a New SPI Flash Device">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-find-the-jedec-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Find the JEDEC ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-spi-flash-database-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 SPI Flash Database Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-key-fields-explained" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Key Fields Explained
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-adding-multiple-keys-aliases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Adding Multiple Keys (Aliases)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-adding-new-jedec-manufacturer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Adding New JEDEC Manufacturer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-adding-new-spi-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Adding New SPI Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-extended-id-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Extended ID Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-adding-a-new-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Adding a New Board
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Adding a New Board">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-board-definition-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Board Definition Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-board-macros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Board Macros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-example-board-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Example Board Additions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-pin-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Pin Constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-bpi-vs-spi-flash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 BPI vs SPI Flash
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-adding-spi-over-jtag-bridge-bitstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Adding SPI-over-JTAG Bridge Bitstreams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Adding SPI-over-JTAG Bridge Bitstreams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-bridge-bitstream-naming-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Bridge Bitstream Naming Convention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-generating-bridge-bitstreams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Generating Bridge Bitstreams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-bridge-bitstream-loading-in-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Bridge Bitstream Loading in Code
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-custom-bridge-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Custom Bridge Path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-soj-version-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 SOJ Version Differences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-soj-v2-detection-fix-recent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 SOJ v2 Detection Fix (Recent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-adding-a-new-jtag-cable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Adding a New JTAG Cable
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Adding a New JTAG Cable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-cable-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Cable Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-cable-class-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Cable Class Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-register-the-cable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Register the Cable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-common-cable-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Common Cable Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-ir-code-maps-and-multi-byte-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. IR Code Maps and Multi-byte Instructions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. IR Code Maps and Multi-byte Instructions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-ir-code-map-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 IR Code Map Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-multi-byte-ir-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Multi-byte IR Instructions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-family-to-ir-map-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Family-to-IR-Map Selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-adding-new-ir-instructions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Adding New IR Instructions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-soj-version-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. SOJ Version Detection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. SOJ Version Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-how-soj-version-detection-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 How SOJ Version Detection Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-common-soj-detection-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Common SOJ Detection Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-soj-v2-packet-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 SOJ v2 Packet Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-vendor-specific-implementation-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Vendor-specific Implementation Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Vendor-specific Implementation Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-xilinx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Xilinx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-lattice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Lattice
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-gowin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Gowin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-alteraintel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 Altera/Intel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#105-efinix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.5 Efinix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#106-anlogic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.6 Anlogic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-build-system-and-data-file-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Build System and Data File Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Build System and Data File Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-cmakeliststxt-modifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 CMakeLists.txt Modifications
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-data-file-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Data File Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-cross-compilation-windows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 Cross-compilation (Windows)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-build-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.4 Build Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-testing-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Testing Checklist
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Testing Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-new-fpga-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 New FPGA Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-new-spi-flash-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 New SPI Flash Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-new-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 New Board
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124-common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.4 Common Pitfalls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-file-modification-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference: File Modification Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-jedec-id-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appendix: JEDEC ID Calculation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adding-new-fpga-and-flash-support-to-openfpgaloader-comprehensive-guide">Adding New FPGA and Flash Support to openFPGALoader - Comprehensive Guide<a class="headerlink" href="#adding-new-fpga-and-flash-support-to-openfpgaloader-comprehensive-guide" title="Permanent link">&para;</a></h1>
+<p>This document covers all modification points required to add support for a new FPGA family, device variant, or SPI flash chip to openFPGALoader.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
+<ol>
+<li><a href="#1-architecture-overview">Architecture Overview</a></li>
+<li><a href="#2-adding-a-new-fpga-device">Adding a New FPGA Device</a></li>
+<li><a href="#3-adding-a-new-fpga-family">Adding a New FPGA Family</a></li>
+<li><a href="#4-adding-a-new-spi-flash-device">Adding a New SPI Flash Device</a></li>
+<li><a href="#5-adding-a-new-board">Adding a New Board</a></li>
+<li><a href="#6-adding-spi-over-jtag-bridge-bitstreams">Adding SPI-over-JTAG Bridge Bitstreams</a></li>
+<li><a href="#7-adding-a-new-jtag-cable">Adding a New JTAG Cable</a></li>
+<li><a href="#8-ir-code-maps-and-multi-byte-instructions">IR Code Maps and Multi-byte Instructions</a></li>
+<li><a href="#9-soj-version-detection">SOJ (SPI-over-JTAG) Version Detection</a></li>
+<li><a href="#10-vendor-specific-implementation-patterns">Vendor-specific Implementation Patterns</a></li>
+<li><a href="#11-build-system-and-data-file-installation">Build System and Data File Installation</a></li>
+<li><a href="#12-testing-checklist">Testing Checklist</a></li>
+</ol>
+<hr />
+<h2 id="1-architecture-overview">1. Architecture Overview<a class="headerlink" href="#1-architecture-overview" title="Permanent link">&para;</a></h2>
+<p>openFPGALoader follows a layered architecture:</p>
+<div class="highlight"><pre><span></span><code>Command line (main.cpp)
+    |
+    v
+Device abstraction (Device class tree)
+    |-- Xilinx
+    |-- Lattice
+    |-- Gowin
+    |-- Altera/Intel
+    |-- Efinix
+    |-- Anlogic
+    |-- CologneChip/GateMate
+    |
+    v
+Flash Interface (FlashInterface abstract class)
+    |-- SPIFlash (SPI NOR flash)
+    |-- BPIFlash (BPI flash - Xilinx)
+    |
+    v
+JTAG/SPI transport (Cable classes)
+    |-- Digilent (HS-2, HS-3)
+    |-- FT2232/FT4232 (MPSSE)
+    |-- Xilinx Platform USB
+    |-- CMSIS-DAP
+    |-- ...
+</code></pre></div>
+<h3 id="key-files">Key files:<a class="headerlink" href="#key-files" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/part.hpp</code></td>
+<td>FPGA JTAG IDCODE database</td>
+</tr>
+<tr>
+<td><code>src/spiFlashdb.hpp</code></td>
+<td>SPI flash JEDEC ID database</td>
+</tr>
+<tr>
+<td><code>src/board.hpp</code></td>
+<td>Board definitions (cable + FPGA mapping)</td>
+</tr>
+<tr>
+<td><code>src/xilinx.cpp/hpp</code></td>
+<td>Xilinx family implementation</td>
+</tr>
+<tr>
+<td><code>src/lattice.cpp/hpp</code></td>
+<td>Lattice family implementation</td>
+</tr>
+<tr>
+<td><code>src/gowin.cpp/hpp</code></td>
+<td>Gowin family implementation</td>
+</tr>
+<tr>
+<td><code>src/altera.cpp/hpp</code></td>
+<td>Altera/Intel family implementation</td>
+</tr>
+<tr>
+<td><code>src/efinix.cpp/hpp</code></td>
+<td>Efinix family implementation</td>
+</tr>
+<tr>
+<td><code>src/anlogic.cpp/hpp</code></td>
+<td>Anlogic family implementation</td>
+</tr>
+<tr>
+<td><code>src/colognechip.cpp/hpp</code></td>
+<td>CologneChip/GateMate implementation</td>
+</tr>
+<tr>
+<td><code>src/spiFlash.cpp/hpp</code></td>
+<td>SPI flash operations</td>
+</tr>
+<tr>
+<td><code>src/flashInterface.cpp/hpp</code></td>
+<td>Flash abstraction layer</td>
+</tr>
+<tr>
+<td><code>src/bpiFlash.cpp/hpp</code></td>
+<td>BPI flash operations</td>
+</tr>
+<tr>
+<td><code>src/main.cpp</code></td>
+<td>CLI argument parsing and dispatch</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-adding-a-new-fpga-device">2. Adding a New FPGA Device<a class="headerlink" href="#2-adding-a-new-fpga-device" title="Permanent link">&para;</a></h2>
+<p>The simplest case: your FPGA family is already supported (e.g., Xilinx Artix-7, Lattice ECP5), but a specific device variant is missing from the database.</p>
+<h3 id="21-find-the-jtag-idcode">2.1 Find the JTAG IDCODE<a class="headerlink" href="#21-find-the-jtag-idcode" title="Permanent link">&para;</a></h3>
+<p>Connect the FPGA and run openFPGALoader with verbose output:</p>
+<div class="highlight"><pre><span></span><code>openFPGALoader<span class="w"> </span>-c<span class="w"> </span>&lt;cable&gt;<span class="w"> </span>-v
+</code></pre></div>
+<p>Look for the JTAG chain output:</p>
+<div class="highlight"><pre><span></span><code>found 1 devices
+JTAG chain: [0]=0x03636093
+</code></pre></div>
+<p>The 32-bit value (e.g., <code>0x03636093</code>) is the device IDCODE.</p>
+<p><strong>IDCODE structure (IEEE 1149.1):</strong>
+<div class="highlight"><pre><span></span><code>| Version (4 bits) | Part Number (16 bits) | Manufacturer (11 bits) | '1' (1 bit) |
+|         31:28    |          20:5             |         4:1         |     0      |
+</code></pre></div></p>
+<p>Manufacturer IDs:
+- <code>0x049</code> (bits 4:1 = <code>0x93</code>) = Xilinx
+- <code>0x021</code> (bits 4:1 = <code>0x43</code>) = Lattice
+- <code>0x06E</code> (bits 4:1 = <code>0x6E</code>) = Altera/Intel
+- <code>0x40D</code> (bits 4:1 = <code>0x1B</code>) = Gowin
+- <code>0x53C</code> (bits 4:1 = <code>0x35</code>) = Efinix
+- <code>0x61A</code> (bits 4:1 = <code>0x35</code>) = Anlogic
+- <code>0x000</code> (bits 4:1 = <code>0x01</code>) = CologneChip/Efinix Trion T4/T8</p>
+<h3 id="22-add-to-fpga-database">2.2 Add to FPGA Database<a class="headerlink" href="#22-add-to-fpga-database" title="Permanent link">&para;</a></h3>
+<p>File: <code>src/part.hpp</code></p>
+<p>Find the appropriate family section and add your device:</p>
+<div class="highlight"><pre><span></span><code><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">manufacturer</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">family</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">model</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">irlength</span><span class="p">;</span><span class="w">   </span><span class="c1">// IR (Instruction Register) length in bits</span>
+<span class="p">}</span><span class="w"> </span><span class="n">fpga_model</span><span class="p">;</span>
+
+<span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="w"> </span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="p">,</span><span class="w"> </span><span class="n">fpga_model</span><span class="o">&gt;</span><span class="w"> </span><span class="n">fpga_list</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Example: Add new Xilinx Artix-7 variant</span>
+<span class="w">    </span><span class="p">{</span><span class="mh">0x03637093</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">"xilinx"</span><span class="p">,</span><span class="w"> </span><span class="s">"artix a7 35t"</span><span class="p">,</span><span class="w"> </span><span class="s">"xc7a35t"</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">}},</span>
+
+<span class="w">    </span><span class="c1">// Example: Add new Lattice ECP5 variant</span>
+<span class="w">    </span><span class="p">{</span><span class="mh">0x41114043</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="s">"lattice"</span><span class="p">,</span><span class="w"> </span><span class="s">"ECP5"</span><span class="p">,</span><span class="w"> </span><span class="s">"LFE5U-85F"</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">}},</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="23-ir-length-reference">2.3 IR Length Reference<a class="headerlink" href="#23-ir-length-reference" title="Permanent link">&para;</a></h3>
+<p>Common IR lengths by family:</p>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Typical IR Length</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Xilinx 7-series (Artix, Kintex, Virtex, Zynq)</td>
+<td>6 bits</td>
+</tr>
+<tr>
+<td>Xilinx Spartan-6</td>
+<td>6 bits</td>
+</tr>
+<tr>
+<td>Xilinx Spartan-7</td>
+<td>6 bits</td>
+</tr>
+<tr>
+<td>Xilinx UltraScale/UltraScale+</td>
+<td>6 bits (up to 24 bits for large Virtex)</td>
+</tr>
+<tr>
+<td>Xilinx ZynqMP (PL side)</td>
+<td>6 bits</td>
+</tr>
+<tr>
+<td>Xilinx ZynqMP (PS/config side)</td>
+<td>4 bits</td>
+</tr>
+<tr>
+<td>Xilinx Spartan-3</td>
+<td>6 bits</td>
+</tr>
+<tr>
+<td>Xilinx XCF</td>
+<td>8 or 16 bits</td>
+</tr>
+<tr>
+<td>Lattice iCE40</td>
+<td>8 bits</td>
+</tr>
+<tr>
+<td>Lattice ECP5</td>
+<td>8 bits</td>
+</tr>
+<tr>
+<td>Lattice MachXO2/3</td>
+<td>8 bits</td>
+</tr>
+<tr>
+<td>Gowin GW1N/GW2A/GW5A</td>
+<td>8 bits</td>
+</tr>
+<tr>
+<td>Altera Cyclone/Max</td>
+<td>10 bits</td>
+</tr>
+<tr>
+<td>Efinix Trion/Titanium</td>
+<td>8 bits</td>
+</tr>
+<tr>
+<td>Anlogic</td>
+<td>8 bits</td>
+</tr>
+</tbody>
+</table>
+<h3 id="24-add-bridge-bitstream-if-needed-for-spi-flash-access">2.4 Add Bridge Bitstream (if needed for SPI flash access)<a class="headerlink" href="#24-add-bridge-bitstream-if-needed-for-spi-flash-access" title="Permanent link">&para;</a></h3>
+<p>If the device needs SPI flash access via JTAG, you need a corresponding SPI-over-JTAG bitstream. See <a href="#6-adding-spi-over-jtag-bridge-bitstreams">Section 6</a>.</p>
+<hr />
+<h2 id="3-adding-a-new-fpga-family">3. Adding a New FPGA Family<a class="headerlink" href="#3-adding-a-new-fpga-family" title="Permanent link">&para;</a></h2>
+<p>When an entirely new FPGA family needs support (e.g., a new vendor or fundamentally different architecture).</p>
+<h3 id="31-create-vendor-files">3.1 Create Vendor Files<a class="headerlink" href="#31-create-vendor-files" title="Permanent link">&para;</a></h3>
+<p>Create a new pair of files:
+- <code>src/&lt;vendor&gt;.cpp</code> - Implementation
+- <code>src/&lt;vendor&gt;.hpp</code> - Header</p>
+<h3 id="32-header-file-structure">3.2 Header File Structure<a class="headerlink" href="#32-header-file-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="cp">#ifndef SRC_VENDOR_HPP_</span>
+<span class="cp">#define SRC_VENDOR_HPP_</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">"device.hpp"</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Vendor</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Device</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">Vendor</span><span class="p">(</span><span class="n">Jtag</span><span class="w"> </span><span class="o">*</span><span class="n">jtag</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">file_type</span><span class="p">,</span>
+<span class="w">           </span><span class="kt">bool</span><span class="w"> </span><span class="n">verify</span><span class="p">,</span><span class="w"> </span><span class="kt">int8_t</span><span class="w"> </span><span class="n">verbose</span><span class="p">);</span>
+<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">Vendor</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">flash</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">dump</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">file_ext</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">verify</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">filename</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">reset</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+
+<span class="k">private</span><span class="o">:</span>
+<span class="w">    </span><span class="c1">// SPI flash interface (overrides FlashInterface)</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">spi_put</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">rx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="nf">spi_put</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">rx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">len</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="nf">spi_wait</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">mask</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">cond</span><span class="p">,</span>
+<span class="w">                 </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">timeout</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">prepare_flash_access</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">post_flash_access</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// JTAG instructions</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">shift_ir</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">ir</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">shift_dr</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">rx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">bits</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Configuration</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">program</span><span class="p">(</span><span class="n">ConfigBitstreamParser</span><span class="w"> </span><span class="o">*</span><span class="n">bitfile</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Member variables</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">_irlen</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">_user_instruction</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="cp">#endif</span>
+</code></pre></div>
+<h3 id="33-implementation-key-methods">3.3 Implementation Key Methods<a class="headerlink" href="#33-implementation-key-methods" title="Permanent link">&para;</a></h3>
+<p><strong>Constructor:</strong>
+<div class="highlight"><pre><span></span><code><span class="n">Vendor</span><span class="o">::</span><span class="n">Vendor</span><span class="p">(</span><span class="n">Jtag</span><span class="w"> </span><span class="o">*</span><span class="n">jtag</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="o">&amp;</span><span class="n">file_type</span><span class="p">,</span>
+<span class="w">               </span><span class="kt">bool</span><span class="w"> </span><span class="n">verify</span><span class="p">,</span><span class="w"> </span><span class="kt">int8_t</span><span class="w"> </span><span class="n">verbose</span><span class="p">)</span>
+<span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="n">Device</span><span class="p">(</span><span class="n">jtag</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">file_type</span><span class="p">,</span><span class="w"> </span><span class="n">verify</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="p">),</span>
+<span class="w">      </span><span class="n">_irlen</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="w">  </span><span class="c1">// default IR length</span>
+<span class="p">{</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>flash() - Program FPGA from file:</strong>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="nf">Vendor::flash</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ConfigBitstreamParser</span><span class="w"> </span><span class="o">*</span><span class="n">bitfile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">open_bitfile</span><span class="p">(</span><span class="n">_filename</span><span class="p">,</span><span class="w"> </span><span class="n">_file_extension</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">bitfile</span><span class="p">,</span><span class="w"> </span><span class="n">_reverse</span><span class="p">,</span><span class="w"> </span><span class="n">_verbose</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Family-specific programming sequence</span>
+<span class="w">    </span><span class="n">program</span><span class="p">(</span><span class="n">bitfile</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_verify</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">verify</span><span class="p">(</span><span class="n">_filename</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">bitfile</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>spi_put() - SPI command through JTAG:</strong>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="nf">Vendor::spi_put</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">cmd</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint8_t</span><span class="w"> </span><span class="o">*</span><span class="n">rx</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">len</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">jtx</span><span class="p">[</span><span class="n">len</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">jrx</span><span class="p">[</span><span class="n">len</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">];</span>
+
+<span class="w">    </span><span class="n">jtx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reverseByte</span><span class="p">(</span><span class="n">cmd</span><span class="p">);</span><span class="w">  </span><span class="c1">// SPI commands are bit-reversed over JTAG</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tx</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="n">jtx</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reverseByte</span><span class="p">(</span><span class="n">tx</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">_jtag</span><span class="o">-&gt;</span><span class="n">shiftIR</span><span class="p">(</span><span class="n">get_ircode</span><span class="p">(</span><span class="s">"USER1"</span><span class="p">),</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">_irlen</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_jtag</span><span class="o">-&gt;</span><span class="n">shiftDR</span><span class="p">(</span><span class="n">jtx</span><span class="p">,</span><span class="w"> </span><span class="n">jrx</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">));</span>
+<span class="w">    </span><span class="n">_jtag</span><span class="o">-&gt;</span><span class="n">flush</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rx</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">len</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="n">rx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reverseByte</span><span class="p">(</span><span class="n">jrx</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h3 id="34-register-the-new-family">3.4 Register the New Family<a class="headerlink" href="#34-register-the-new-family" title="Permanent link">&para;</a></h3>
+<p><strong>In <code>src/main.cpp</code>, add the family to device detection:</strong></p>
+<p>Find the device creation section (search for <code>case XILINX:</code> or similar pattern):</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Add your vendor enum/constant</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">family</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">"vendor"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Vendor</span><span class="p">(</span><span class="n">_jtag</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">file_type</span><span class="p">,</span><span class="w"> </span><span class="n">verify</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="35-bitstream-parser-if-needed">3.5 Bitstream Parser (if needed)<a class="headerlink" href="#35-bitstream-parser-if-needed" title="Permanent link">&para;</a></h3>
+<p>If the FPGA uses a proprietary configuration format:
+- Create <code>src/&lt;vendor&gt;BitParser.cpp/hpp</code>
+- Inherit from <code>ConfigBitstreamParser</code>
+- Implement <code>parse()</code> method
+- Register in <code>open_bitfile()</code> function in the vendor's cpp file</p>
+<hr />
+<h2 id="4-adding-a-new-spi-flash-device">4. Adding a New SPI Flash Device<a class="headerlink" href="#4-adding-a-new-spi-flash-device" title="Permanent link">&para;</a></h2>
+<h3 id="41-find-the-jedec-id">4.1 Find the JEDEC ID<a class="headerlink" href="#41-find-the-jedec-id" title="Permanent link">&para;</a></h3>
+<p>When openFPGALoader encounters an unknown flash, it outputs:</p>
+<div class="highlight"><pre><span></span><code>SPI flash RDID succeeded, but this chip is not in openFPGALoader's SPI flash database
+JEDEC ID: 0x20ba18
+Manufacturer byte: 0x20 (ST/Micron)
+Memory type byte: 0xba
+Memory capacity byte: 0x18
+Common JEDEC capacity decode: 16 MiB (128 Mbit)
+</code></pre></div>
+<p>The program also generates a starter entry for <code>spiFlashdb.hpp</code>:
+<div class="highlight"><pre><span></span><code>{0x20ba18, {
+    .manufacturer = "ST/Micron",
+    .model = "&lt;exact part number&gt;",
+    .nr_sector = 256,
+    .sector_erase = true,      /* check datasheet */
+    .subsector_erase = true,   /* check 4 KiB erase support */
+    .has_extended = false,
+    .tb_otp = false,
+    .tb_offset = (1 &lt;&lt; 5),     /* check BP/TB bits */
+    .tb_register = STATR,
+    .bp_len = 3,
+    .bp_offset = {(1 &lt;&lt; 2), (1 &lt;&lt; 3), (1 &lt;&lt; 4), 0},
+    .quad_register = NONER,
+    .quad_mask = 0,
+    .global_lock = false,
+}},
+</code></pre></div></p>
+<h3 id="42-spi-flash-database-structure">4.2 SPI Flash Database Structure<a class="headerlink" href="#42-spi-flash-database-structure" title="Permanent link">&para;</a></h3>
+<p>File: <code>src/spiFlashdb.hpp</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">manufacturer</span><span class="p">;</span><span class="w">   </span><span class="cm">/**&lt; Manufacturer name */</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">model</span><span class="p">;</span><span class="w">          </span><span class="cm">/**&lt; Chip part number */</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">  </span><span class="n">nr_sector</span><span class="p">;</span><span class="w">        </span><span class="cm">/**&lt; Number of 64 KiB sectors */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">sector_erase</span><span class="p">;</span><span class="w">     </span><span class="cm">/**&lt; 64KB erase support (FLASH_BE64 = 0xD8) */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">subsector_erase</span><span class="p">;</span><span class="w">  </span><span class="cm">/**&lt; 4KB erase support (FLASH_SE = 0x20) */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">has_extended</span><span class="p">;</span><span class="w">     </span><span class="cm">/**&lt; Extended address mode (4-byte addresses) */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">tb_otp</span><span class="p">;</span><span class="w">          </span><span class="cm">/**&lt; TOP/BOTTOM is One-Time Programmable */</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">  </span><span class="n">tb_offset</span><span class="p">;</span><span class="w">        </span><span class="cm">/**&lt; TOP/BOTTOM bit position in status register */</span>
+<span class="w">    </span><span class="n">tb_loc_t</span><span class="w">  </span><span class="n">tb_register</span><span class="p">;</span><span class="w">      </span><span class="cm">/**&lt; Which register holds TB bit */</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w">   </span><span class="n">bp_len</span><span class="p">;</span><span class="w">           </span><span class="cm">/**&lt; Number of BP (Block Protect) bits */</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w">   </span><span class="n">bp_offset</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span><span class="w">     </span><span class="cm">/**&lt; Bit positions for BP[0:3] (0 = not present) */</span>
+<span class="w">    </span><span class="n">tb_loc_t</span><span class="w">  </span><span class="n">quad_register</span><span class="p">;</span><span class="w">    </span><span class="cm">/**&lt; Which register holds Quad Enable bit */</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">  </span><span class="n">quad_mask</span><span class="p">;</span><span class="w">        </span><span class="cm">/**&lt; Quad Enable bit position (0 = not applicable) */</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w">      </span><span class="n">global_lock</span><span class="p">;</span><span class="w">      </span><span class="cm">/**&lt; Has global lock/unlock mechanism */</span>
+<span class="p">}</span><span class="w"> </span><span class="n">flash_t</span><span class="p">;</span>
+
+<span class="c1">// tb_loc_t enum:</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">STATR</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">  </span><span class="cm">/**&lt; Status Register (0x05 read) */</span>
+<span class="w">    </span><span class="n">FUNCR</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">  </span><span class="cm">/**&lt; Function Register (0x48 read) - ISSI */</span>
+<span class="w">    </span><span class="n">CONFR</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w">  </span><span class="cm">/**&lt; Configuration Register (0x35 read) */</span>
+<span class="w">    </span><span class="n">NVCONFR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w">  </span><span class="cm">/**&lt; Non-volatile Configuration Register */</span>
+<span class="w">    </span><span class="n">NONER</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="mi">99</span><span class="p">,</span><span class="w"> </span><span class="cm">/**&lt; Not present / not applicable */</span>
+<span class="p">}</span><span class="w"> </span><span class="n">tb_loc_t</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="43-key-fields-explained">4.3 Key Fields Explained<a class="headerlink" href="#43-key-fields-explained" title="Permanent link">&para;</a></h3>
+<p><strong>nr_sector:</strong>
+- Number of 64 KiB sectors in the flash
+- Calculated from datasheet: <code>capacity_bytes / 0x10000</code>
+- Example: 16 MiB = 16 * 1024 * 1024 / 0x10000 = 256 sectors</p>
+<p><strong>sector_erase / subsector_erase:</strong>
+- Check the SPI flash command table in the datasheet
+- Most modern flashes support both 4KB (0x20) and 64KB (0xD8) erase
+- Some older flashes (like ST M25P series) only support 64KB erase
+- If <code>subsector_erase = false</code>, the tool falls back to 64KB-only erase</p>
+<p><strong>has_extended:</strong>
+- Set to <code>true</code> if the flash supports 4-byte address commands
+- Required for flashes &gt; 128 MiB (addresses &gt; 0xFFFFFF)
+- Check for FLASH_4READ (0x13), FLASH_4PP (0x12), FLASH_4SE (0x21) in datasheet</p>
+<p><strong>tb_otp:</strong>
+- Set to <code>true</code> if the TOP/BOTTOM bit is OTP (One-Time Programmable)
+- Example: ST M25P series has OTP TB bit
+- If OTP, the tool will warn about irreversible changes</p>
+<p><strong>tb_offset:</strong>
+- Bit position of the TOP/BOTTOM select bit in the register
+- <code>(1 &lt;&lt; 5)</code> means bit 5
+- Check status register bit map in datasheet</p>
+<p><strong>tb_register:</strong>
+- <code>STATR</code> = Status Register (most common)
+- <code>CONFR</code> = Configuration Register (Spansion/Macronix)
+- <code>FUNCR</code> = Function Register (ISSI)
+- <code>NVCONFR</code> = Non-volatile Configuration Register
+- <code>NONER</code> = No TB support</p>
+<p><strong>bp_len:</strong>
+- Number of Block Protect bits (typically 3 or 4)
+- Determines how many protection levels are available</p>
+<p><strong>bp_offset[4]:</strong>
+- Bit positions for BP0 through BP3 in the status register
+- <code>0</code> in any position means that BP bit doesn't exist
+- Example: <code>{(1 &lt;&lt; 2), (1 &lt;&lt; 3), (1 &lt;&lt; 4), 0}</code> = BP0=bit2, BP1=bit3, BP2=bit4</p>
+<p><strong>quad_register / quad_mask:</strong>
+- Where the Quad Enable (QE) bit lives
+- <code>quad_register = STATR, quad_mask = (1 &lt;&lt; 6)</code> = bit 6 of status register
+- <code>quad_register = NVCONFR, quad_mask = (1 &lt;&lt; 3)</code> = bit 3 of NV config register
+- <code>quad_register = NONER, quad_mask = 0</code> = no QE bit (always supports quad or not)</p>
+<p><strong>global_lock:</strong>
+- Set to <code>true</code> for Microchip SST26VF032B/BA family
+- These chips have a global unlock command (0x98) instead of per-sector protection</p>
+<h3 id="44-adding-multiple-keys-aliases">4.4 Adding Multiple Keys (Aliases)<a class="headerlink" href="#44-adding-multiple-keys-aliases" title="Permanent link">&para;</a></h3>
+<p>Some flashes need multiple entries for the same chip:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Standard JEDEC ID</span>
+<span class="p">{</span><span class="mh">0xba2119</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* MT25QL256ABA standard RDID */</span><span class="w"> </span><span class="p">}},</span>
+
+<span class="c1">// SOJ v1 bridge transforms RDID (0x9F) -&gt; RFP (0x5F), </span>
+<span class="c1">// so the flash returns different bytes</span>
+<span class="p">{</span><span class="mh">0x5ffb8c</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Same MT25QL256ABA but via SOJ v1 */</span><span class="w"> </span><span class="p">}},</span>
+
+<span class="c1">// Extended electronic signature (0xAB command)</span>
+<span class="p">{</span><span class="mh">0x4000190c</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* Same MT25QL256ABA via electronic signature */</span><span class="w"> </span><span class="p">}},</span>
+</code></pre></div>
+<p><strong>SOJ v1 Bridge RDID Transformation:</strong>
+When using Xilinx SPI-over-JTAG v1 bridge through certain FPGA families (Artix-7, Kintex-7), the JTAG-to-SPI bridge may transform the RDID command (0x9F) into Read Flash Parameters (0x5F). This causes the flash to return its RFP response instead of its JEDEC ID. You need to add an alias entry with the RFP-based ID.</p>
+<h3 id="45-adding-new-jedec-manufacturer">4.5 Adding New JEDEC Manufacturer<a class="headerlink" href="#45-adding-new-jedec-manufacturer" title="Permanent link">&para;</a></h3>
+<p>If you encounter a manufacturer not in the name lookup:</p>
+<p>File: <code>src/spiFlash.cpp</code> (line ~179)</p>
+<div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="nf">jedec_manufacturer_name</span><span class="p">(</span><span class="kt">uint8_t</span><span class="w"> </span><span class="n">id</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x01</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"Spansion/Cypress/AMD"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x1c</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"EON"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x1f</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"Atmel/Adesto"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x20</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"ST/Micron"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x85</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"Puya"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x9d</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"ISSI"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0xbf</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"Microchip/SST"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0xc2</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"Macronix"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0xc8</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"GigaDevice"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0xef</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"Winbond"</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Add new manufacturer:</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="mh">0x38</span><span class="p">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"ISSI (alternative)"</span><span class="p">;</span>
+<span class="w">    </span><span class="k">default</span><span class="o">:</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="s">"unknown"</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="46-adding-new-spi-commands">4.6 Adding New SPI Commands<a class="headerlink" href="#46-adding-new-spi-commands" title="Permanent link">&para;</a></h3>
+<p>If the flash uses non-standard SPI commands:</p>
+<p>File: <code>src/spiFlash.cpp</code> (top of file, ~line 27)</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Add your new command definition</span>
+<span class="cp">#define FLASH_VENDOR_ERASE 0x44  </span><span class="cm">/* Example: vendor-specific erase */</span>
+</code></pre></div>
+<p>Then modify the relevant methods (<code>sector_erase()</code>, <code>block64_erase()</code>, <code>write_page()</code>) to use the new command when appropriate. You may need to check <code>*_flash_model</code> properties to conditionally select commands.</p>
+<h3 id="47-extended-id-handling">4.7 Extended ID Handling<a class="headerlink" href="#47-extended-id-handling" title="Permanent link">&para;</a></h3>
+<p>Some flashes (like Xilinx XCF) use 4-byte IDs instead of 3-byte JEDEC IDs. The key in <code>flash_list</code> is the full ID value:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// XCF32P uses 4-byte electronic signature</span>
+<span class="p">{</span><span class="mh">0x05059093</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* XCF entry */</span><span class="w"> </span><span class="p">}},</span>
+</code></pre></div>
+<p>The <code>has_extended</code> field in <code>flash_t</code> controls whether the flash uses 4-byte address commands for read/write/erase operations.</p>
+<hr />
+<h2 id="5-adding-a-new-board">5. Adding a New Board<a class="headerlink" href="#5-adding-a-new-board" title="Permanent link">&para;</a></h2>
+<h3 id="51-board-definition-structure">5.1 Board Definition Structure<a class="headerlink" href="#51-board-definition-structure" title="Permanent link">&para;</a></h3>
+<p>File: <code>src/board.hpp</code></p>
+<div class="highlight"><pre><span></span><code><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">manufacturer</span><span class="p">;</span><span class="w">        </span><span class="c1">// Board manufacturer name</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">cable_name</span><span class="p">;</span><span class="w">          </span><span class="c1">// Reference to cable in cable_list</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">fpga_part</span><span class="p">;</span><span class="w">           </span><span class="c1">// FPGA part name (must match part.hpp model)</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">    </span><span class="n">reset_pin</span><span class="p">;</span><span class="w">           </span><span class="c1">// Reset pin (FT MPSSE pin or 0)</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">    </span><span class="n">done_pin</span><span class="p">;</span><span class="w">            </span><span class="c1">// DONE pin (FT MPSSE pin or 0)</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">    </span><span class="n">oe_pin</span><span class="p">;</span><span class="w">              </span><span class="c1">// Output Enable pin (SPI mode)</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">    </span><span class="n">mode</span><span class="p">;</span><span class="w">                </span><span class="c1">// COMM_JTAG, COMM_SPI, or COMM_DFU</span>
+<span class="w">    </span><span class="kt">uint8_t</span><span class="w">     </span><span class="n">spi_bpi</span><span class="p">;</span><span class="w">             </span><span class="c1">// SPI_FLASH (0) or BPI_FLASH (1)</span>
+<span class="w">    </span><span class="n">jtag_pins_conf_t</span><span class="w"> </span><span class="n">jtag_pins_config</span><span class="p">;</span><span class="w"> </span><span class="c1">// JTAG pin mapping (bitbang mode)</span>
+<span class="w">    </span><span class="n">spi_pins_conf_t</span><span class="w">  </span><span class="n">spi_pins_config</span><span class="p">;</span><span class="w">  </span><span class="c1">// SPI pin mapping (SPI mode)</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w">    </span><span class="n">default_freq</span><span class="p">;</span><span class="w">        </span><span class="c1">// Default clock (0 = cable default)</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">    </span><span class="n">vid</span><span class="p">;</span><span class="w">                 </span><span class="c1">// USB VID (DFU mode)</span>
+<span class="w">    </span><span class="kt">uint16_t</span><span class="w">    </span><span class="n">pid</span><span class="p">;</span><span class="w">                 </span><span class="c1">// USB PID (DFU mode)</span>
+<span class="w">    </span><span class="kt">int16_t</span><span class="w">     </span><span class="n">altsetting</span><span class="p">;</span><span class="w">          </span><span class="c1">// DFU altsetting</span>
+<span class="p">}</span><span class="w"> </span><span class="n">target_board_t</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="52-board-macros">5.2 Board Macros<a class="headerlink" href="#52-board-macros" title="Permanent link">&para;</a></h3>
+<p>Use the provided macros for convenience:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// JTAG board (simplest)</span>
+<span class="n">JTAG_BOARD</span><span class="p">(</span><span class="s">"board_name"</span><span class="p">,</span><span class="w"> </span><span class="s">"fpga_part"</span><span class="p">,</span><span class="w"> </span><span class="s">"cable_name"</span><span class="p">,</span><span class="w"> </span><span class="n">SPI_FLASH</span><span class="p">,</span><span class="w"> </span><span class="n">reset</span><span class="p">,</span><span class="w"> </span><span class="n">done</span><span class="p">,</span><span class="w"> </span><span class="n">freq</span><span class="p">)</span>
+
+<span class="c1">// JTAG board with bitbang pins (FT232R/FT2232)</span>
+<span class="n">JTAG_BITBANG_BOARD</span><span class="p">(</span><span class="s">"board_name"</span><span class="p">,</span><span class="w"> </span><span class="s">"fpga_part"</span><span class="p">,</span><span class="w"> </span><span class="s">"cable_name"</span><span class="p">,</span><span class="w"> </span><span class="n">SPI_FLASH</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">reset</span><span class="p">,</span><span class="w"> </span><span class="n">done</span><span class="p">,</span><span class="w"> </span><span class="n">tms_pin</span><span class="p">,</span><span class="w"> </span><span class="n">tck_pin</span><span class="p">,</span><span class="w"> </span><span class="n">tdi_pin</span><span class="p">,</span><span class="w"> </span><span class="n">tdo_pin</span><span class="p">,</span><span class="w"> </span><span class="n">freq</span><span class="p">)</span>
+
+<span class="c1">// Direct SPI board (no JTAG)</span>
+<span class="n">SPI_BOARD</span><span class="p">(</span><span class="s">"board_name"</span><span class="p">,</span><span class="w"> </span><span class="s">"manufacturer"</span><span class="p">,</span><span class="w"> </span><span class="s">"fpga_part"</span><span class="p">,</span><span class="w"> </span><span class="s">"cable_name"</span><span class="p">,</span>
+<span class="w">          </span><span class="n">reset</span><span class="p">,</span><span class="w"> </span><span class="n">done</span><span class="p">,</span><span class="w"> </span><span class="n">oe</span><span class="p">,</span>
+<span class="w">          </span><span class="n">cs_pin</span><span class="p">,</span><span class="w"> </span><span class="n">sck_pin</span><span class="p">,</span><span class="w"> </span><span class="n">mosi_pin</span><span class="p">,</span><span class="w"> </span><span class="n">miso_pin</span><span class="p">,</span><span class="w"> </span><span class="n">holdn_pin</span><span class="p">,</span><span class="w"> </span><span class="n">wpn_pin</span><span class="p">,</span><span class="w"> </span><span class="n">freq</span><span class="p">)</span>
+
+<span class="c1">// DFU board (USB DFU programming)</span>
+<span class="n">DFU_BOARD</span><span class="p">(</span><span class="s">"board_name"</span><span class="p">,</span><span class="w"> </span><span class="s">"fpga_part"</span><span class="p">,</span><span class="w"> </span><span class="s">"dfu"</span><span class="p">,</span><span class="w"> </span><span class="n">vid</span><span class="p">,</span><span class="w"> </span><span class="n">pid</span><span class="p">,</span><span class="w"> </span><span class="n">altsetting</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="53-example-board-additions">5.3 Example Board Additions<a class="headerlink" href="#53-example-board-additions" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Add a new Digilent-style JTAG board</span>
+<span class="n">JTAG_BOARD</span><span class="p">(</span><span class="s">"my_board"</span><span class="p">,</span><span class="w"> </span><span class="s">"xc7a35tcsg324"</span><span class="p">,</span><span class="w"> </span><span class="s">"digilent"</span><span class="p">,</span><span class="w"> </span><span class="n">SPI_FLASH</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">CABLE_DEFAULT</span><span class="p">),</span>
+
+<span class="c1">// Add a board with custom FT2232 bitbang JTAG</span>
+<span class="n">JTAG_BITBANG_BOARD</span><span class="p">(</span><span class="s">"my_ft_board"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="s">"ft2232"</span><span class="p">,</span><span class="w"> </span><span class="n">SPI_FLASH</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">FT232RL_RTS</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_TXD</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_DTR</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_RXD</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">CABLE_DEFAULT</span><span class="p">),</span>
+
+<span class="c1">// Add a direct SPI board</span>
+<span class="n">SPI_BOARD</span><span class="p">(</span><span class="s">"my_spi_board"</span><span class="p">,</span><span class="w"> </span><span class="s">"lattice"</span><span class="p">,</span><span class="w"> </span><span class="s">"ice40"</span><span class="p">,</span><span class="w"> </span><span class="s">"ft2232"</span><span class="p">,</span>
+<span class="w">          </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">          </span><span class="n">DBUS3</span><span class="p">,</span><span class="w"> </span><span class="n">DBUS0</span><span class="p">,</span><span class="w"> </span><span class="n">DBUS1</span><span class="p">,</span><span class="w"> </span><span class="n">DBUS2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">CABLE_DEFAULT</span><span class="p">),</span>
+</code></pre></div>
+<h3 id="54-pin-constants">5.4 Pin Constants<a class="headerlink" href="#54-pin-constants" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// FT232R bitbang pins</span>
+<span class="n">FT232RL_TXD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_RXD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_RTS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_CTS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span>
+<span class="n">FT232RL_DTR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_DSR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_DCD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="n">FT232RL_RI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span>
+
+<span class="c1">// FT2232 MPSSE pins</span>
+<span class="n">DBUS0</span><span class="o">-</span><span class="n">DBUS7</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="n">bus</span><span class="w"> </span><span class="n">pins</span><span class="w"> </span><span class="p">(</span><span class="n">bits</span><span class="w"> </span><span class="mi">0-7</span><span class="p">)</span>
+<span class="n">CBUS0</span><span class="o">-</span><span class="n">CBUS7</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CBUS</span><span class="w"> </span><span class="n">configurable</span><span class="w"> </span><span class="n">pins</span><span class="w"> </span><span class="p">(</span><span class="n">bits</span><span class="w"> </span><span class="mi">8-15</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="55-bpi-vs-spi-flash">5.5 BPI vs SPI Flash<a class="headerlink" href="#55-bpi-vs-spi-flash" title="Permanent link">&para;</a></h3>
+<p>Set <code>spi_bpi</code> to <code>BPI_FLASH</code> (1) for boards that use BPI (Bidirectional Parallel Interface) flash instead of SPI:</p>
+<div class="highlight"><pre><span></span><code><span class="n">JTAG_BOARD</span><span class="p">(</span><span class="s">"ypcb003381p1"</span><span class="p">,</span><span class="w"> </span><span class="s">"xc7k480tffg1156"</span><span class="p">,</span><span class="w"> </span><span class="s">""</span><span class="p">,</span><span class="w"> </span><span class="n">BPI_FLASH</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">CABLE_DEFAULT</span><span class="p">),</span>
+</code></pre></div>
+<p>BPI flash uses a different protocol entirely (parallel reads, one word per USB round-trip).</p>
+<hr />
+<h2 id="6-adding-spi-over-jtag-bridge-bitstreams">6. Adding SPI-over-JTAG Bridge Bitstreams<a class="headerlink" href="#6-adding-spi-over-jtag-bridge-bitstreams" title="Permanent link">&para;</a></h2>
+<h3 id="61-bridge-bitstream-naming-convention">6.1 Bridge Bitstream Naming Convention<a class="headerlink" href="#61-bridge-bitstream-naming-convention" title="Permanent link">&para;</a></h3>
+<p>Bridge bitstreams are stored in the installation share directory:</p>
+<div class="highlight"><pre><span></span><code>&lt;install_prefix&gt;/share/openFPGALoader/
+├── spiOverJtag_&lt;fpga_part&gt;.bit.gz      # SPI-over-JTAG bridge
+├── bpiOverJtag_&lt;fpga_part&gt;.bit.gz      # BPI-over-JTAG bridge (Xilinx)
+└── from_ise/spartan-6/                 # Spartan-6 COR files
+    └── &lt;model&gt;_spi.cor
+</code></pre></div>
+<p><strong>Naming:</strong> <code>&lt;type&gt;OverJtag_&lt;fpga_part&gt;.bit.gz</code></p>
+<p>Where <code>&lt;fpga_part&gt;</code> must match the <code>_device_package</code> string from <code>part.hpp</code>. For example:
+- <code>spiOverJtag_xc7a200tffg1156.bit.gz</code> for Artix-7 xc7a200tffg1156
+- <code>spiOverJtag_xc7a35tcsg324.bit.gz</code> for Artix-7 xc7a35tcsg324</p>
+<h3 id="62-generating-bridge-bitstreams">6.2 Generating Bridge Bitstreams<a class="headerlink" href="#62-generating-bridge-bitstreams" title="Permanent link">&para;</a></h3>
+<p><strong>For Xilinx devices:</strong>
+1. Open Vivado and create a new project targeting your FPGA
+2. Add the appropriate SPI-over-JTAG IP core (BSCAN_SPIM for 7-series/UltraScale)
+3. Generate the bitstream
+4. Compress: <code>gzip -9 spiOverJtag_&lt;part&gt;.bit</code></p>
+<p><strong>For Spartan-6:</strong>
+1. Use ISE to generate a .cor file with the SPI bridge
+2. Place in <code>share/openFPGALoader/from_ise/spartan-6/</code></p>
+<p><strong>For Lattice devices:</strong>
+1. Generate .rbf files from the Lattice programming environment
+2. Compress: <code>gzip -9 spiOverJtag_&lt;part&gt;.rbf</code></p>
+<h3 id="63-bridge-bitstream-loading-in-code">6.3 Bridge Bitstream Loading in Code<a class="headerlink" href="#63-bridge-bitstream-loading-in-code" title="Permanent link">&para;</a></h3>
+<p>The bridge loading logic in <code>Xilinx::load_bridge()</code> resolves the path:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Auto-resolution: bridge_dir + "/spiOverJtag_" + device_package + ".bit.gz"</span>
+<span class="c1">// Override: --spi-bridge /path/to/custom.bit</span>
+<span class="c1">// Environment: OPENFPGALOADER_SOJ_DIR overrides bridge_dir</span>
+</code></pre></div>
+<h3 id="64-custom-bridge-path">6.4 Custom Bridge Path<a class="headerlink" href="#64-custom-bridge-path" title="Permanent link">&para;</a></h3>
+<p>Users can specify a custom bridge:
+<div class="highlight"><pre><span></span><code>openFPGALoader<span class="w"> </span>--spi-bridge<span class="w"> </span>/path/to/my_bridge.bit.gz<span class="w"> </span>--dump-flash<span class="w"> </span>dump.bin
+</code></pre></div></p>
+<h3 id="65-soj-version-differences">6.5 SOJ Version Differences<a class="headerlink" href="#65-soj-version-differences" title="Permanent link">&para;</a></h3>
+<p><strong>SOJ v1 (7-series, Spartan-6, Spartan-7):</strong>
+- Uses USER1/USER2/USER3/USER4 JTAG instructions
+- SPI commands are bit-reversed
+- Version probe via USER4 instruction</p>
+<p><strong>SOJ v2 (UltraScale, UltraScale+, ZynqMP):</strong>
+- Uses packetized protocol over USER1
+- Packets have headers with length fields
+- Version probe returns ASCII version string (e.g., "02.00\0")</p>
+<p>The SOJ version is auto-detected during initialization. If detection fails, the tool tries both framings and selects the one that returns a valid JEDEC ID.</p>
+<h3 id="66-soj-v2-detection-fix-recent">6.6 SOJ v2 Detection Fix (Recent)<a class="headerlink" href="#66-soj-v2-detection-fix-recent" title="Permanent link">&para;</a></h3>
+<p>If your board returns a plain-ASCII version string in the raw JTAG response (e.g., <code>00 30 32 2e 30 30 00</code> = <code>"02.00\0"</code> at offset 1-5 in jrx), the code now detects this pattern before the shifted decode can corrupt it. This fix handles cases where <code>decode_shifted_jtag_stream()</code> with <code>shift &gt; 0</code> mangles the ASCII into garbage.</p>
+<hr />
+<h2 id="7-adding-a-new-jtag-cable">7. Adding a New JTAG Cable<a class="headerlink" href="#7-adding-a-new-jtag-cable" title="Permanent link">&para;</a></h2>
+<h3 id="71-cable-implementation">7.1 Cable Implementation<a class="headerlink" href="#71-cable-implementation" title="Permanent link">&para;</a></h3>
+<p>Create:
+- <code>src/&lt;cable&gt;.cpp</code>
+- <code>src/&lt;cable&gt;.hpp</code></p>
+<h3 id="72-cable-class-structure">7.2 Cable Class Structure<a class="headerlink" href="#72-cable-class-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">"cable.hpp"</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">MyCable</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Cable</span><span class="w"> </span><span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+<span class="w">    </span><span class="n">MyCable</span><span class="p">(</span><span class="kt">int8_t</span><span class="w"> </span><span class="n">verbose</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">freq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">MyCable</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// Required interface</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Jtag</span><span class="w"> </span><span class="o">*&gt;</span><span class="w"> </span><span class="n">scan_chain</span><span class="p">(</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">max_devices</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Jtag</span><span class="w"> </span><span class="o">*&gt;</span><span class="w"> </span><span class="o">*</span><span class="n">open_chains</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">close_chains</span><span class="p">()</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="73-register-the-cable">7.3 Register the Cable<a class="headerlink" href="#73-register-the-cable" title="Permanent link">&para;</a></h3>
+<p>In <code>src/main.cpp</code> (or wherever cable registration happens):</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Add to cable_list map or factory function</span>
+<span class="n">cable_list</span><span class="p">[</span><span class="s">"my_cable"</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[]()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">MyCable</span><span class="p">();</span><span class="w"> </span><span class="p">};</span>
+</code></pre></div>
+<h3 id="74-common-cable-types">7.4 Common Cable Types<a class="headerlink" href="#74-common-cable-types" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Cable Type</th>
+<th>Implementation</th>
+<th>Key Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Digilent HS-2</td>
+<td><code>digilent</code></td>
+<td>FT2232 MPSSE</td>
+</tr>
+<tr>
+<td>Digilent HS-3</td>
+<td><code>digilent_hs3</code></td>
+<td>FT4232 Hi-Speed MPSSE</td>
+</tr>
+<tr>
+<td>Xilinx Platform USB</td>
+<td><code>xilinxPlatformCableUsb</code></td>
+<td>Custom USB protocol</td>
+</tr>
+<tr>
+<td>FT2232 generic</td>
+<td><code>ft2232</code></td>
+<td>FT2232 MPSSE</td>
+</tr>
+<tr>
+<td>FT4232 generic</td>
+<td><code>ft4232</code></td>
+<td>FT4232 MPSSE</td>
+</tr>
+<tr>
+<td>CMSIS-DAP</td>
+<td><code>cmsisdap</code></td>
+<td>DAPLink protocol</td>
+</tr>
+<tr>
+<td>USB Blaster</td>
+<td><code>usb-blaster</code></td>
+<td>Altera USB-Blaster</td>
+</tr>
+<tr>
+<td>DFU</td>
+<td><code>dfu</code></td>
+<td>USB DFU protocol</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-ir-code-maps-and-multi-byte-instructions">8. IR Code Maps and Multi-byte Instructions<a class="headerlink" href="#8-ir-code-maps-and-multi-byte-instructions" title="Permanent link">&para;</a></h2>
+<h3 id="81-ir-code-map-structure">8.1 IR Code Map Structure<a class="headerlink" href="#81-ir-code-map-structure" title="Permanent link">&para;</a></h3>
+<p>File: <code>src/xilinx.cpp</code> (line ~272)</p>
+<div class="highlight"><pre><span></span><code><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;&gt;&gt;</span>
+<span class="n">ircode_mapping</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="s">"default"</span><span class="p">,</span><span class="w">  </span><span class="c1">// Key used by family selection</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"USER1"</span><span class="p">,</span><span class="w">       </span><span class="p">{</span><span class="mh">0x02</span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w">     </span><span class="c1">// 6-bit: 000010</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"USER2"</span><span class="p">,</span><span class="w">       </span><span class="p">{</span><span class="mh">0x03</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"USER3"</span><span class="p">,</span><span class="w">       </span><span class="p">{</span><span class="mh">0x22</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"USER4"</span><span class="p">,</span><span class="w">       </span><span class="p">{</span><span class="mh">0x23</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"CFG_OUT"</span><span class="p">,</span><span class="w">     </span><span class="p">{</span><span class="mh">0x04</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"CFG_IN"</span><span class="p">,</span><span class="w">      </span><span class="p">{</span><span class="mh">0x05</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"USERCODE"</span><span class="p">,</span><span class="w">    </span><span class="p">{</span><span class="mh">0x08</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"IDCODE"</span><span class="p">,</span><span class="w">      </span><span class="p">{</span><span class="mh">0x09</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"ISC_ENABLE"</span><span class="p">,</span><span class="w">  </span><span class="p">{</span><span class="mh">0x10</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"JPROGRAM"</span><span class="p">,</span><span class="w">    </span><span class="p">{</span><span class="mh">0x0B</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"JSTART"</span><span class="p">,</span><span class="w">      </span><span class="p">{</span><span class="mh">0x0C</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"JSHUTDOWN"</span><span class="p">,</span><span class="w">   </span><span class="p">{</span><span class="mh">0x0D</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"ISC_PROGRAM"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mh">0x11</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"ISC_DISABLE"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mh">0x16</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="s">"BYPASS"</span><span class="p">,</span><span class="w">      </span><span class="p">{</span><span class="mh">0xff</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">},</span>
+</code></pre></div>
+<h3 id="82-multi-byte-ir-instructions">8.2 Multi-byte IR Instructions<a class="headerlink" href="#82-multi-byte-ir-instructions" title="Permanent link">&para;</a></h3>
+<p>For FPGAs with IR &gt; 8 bits (like Virtex UltraScale+), the IR is stored as a vector of bytes (LSB first):</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="s">"virtexusp"</span><span class="p">,</span><span class="w">  </span><span class="c1">// 12-bit IR</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">"USER1"</span><span class="p">,</span><span class="w">   </span><span class="p">{</span><span class="mb">0b00100100</span><span class="p">,</span><span class="w"> </span><span class="mb">0b00101001</span><span class="p">,</span><span class="w"> </span><span class="mb">0b00</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">"IDCODE"</span><span class="p">,</span><span class="w">  </span><span class="p">{</span><span class="mb">0b01001001</span><span class="p">,</span><span class="w"> </span><span class="mb">0b10010010</span><span class="p">,</span><span class="w"> </span><span class="mb">0b00</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">"BYPASS"</span><span class="p">,</span><span class="w">  </span><span class="p">{</span><span class="mb">0b11111111</span><span class="p">,</span><span class="w"> </span><span class="mb">0b11111111</span><span class="p">,</span><span class="w"> </span><span class="mb">0b11</span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">},</span>
+</code></pre></div>
+<p>For Virtex-4 FX with 14-bit IR and two PowerPC blocks:
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="s">"virtex4_fx_dual_ppc"</span><span class="p">,</span><span class="w">  </span><span class="c1">// 14-bit IR</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">"USER1"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mh">0xc2</span><span class="p">,</span><span class="w"> </span><span class="mh">0x3f</span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w">  </span><span class="c1">// 0x3fc2 = 16128 decimal, 14 bits</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">"BYPASS"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="mh">0xff</span><span class="p">,</span><span class="w"> </span><span class="mh">0x3f</span><span class="p">}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// All ones: 0x3fff</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">},</span>
+</code></pre></div></p>
+<h3 id="83-family-to-ir-map-selection">8.3 Family-to-IR-Map Selection<a class="headerlink" href="#83-family-to-ir-map-selection" title="Permanent link">&para;</a></h3>
+<p>In <code>Xilinx::set_fpga()</code> (line ~539):</p>
+<div class="highlight"><pre><span></span><code><span class="n">_ircode_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ircode_mapping</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="s">"default"</span><span class="p">);</span><span class="w">  </span><span class="c1">// 7-series default</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_fpga_family</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SPARTAN6_FAMILY</span><span class="p">)</span>
+<span class="w">    </span><span class="n">_ircode_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ircode_mapping</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="s">"spartan6"</span><span class="p">);</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_fpga_family</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VIRTEXUSP_FAMILY</span><span class="p">)</span>
+<span class="w">    </span><span class="n">_ircode_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ircode_mapping</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="s">"virtexusp"</span><span class="p">);</span>
+</code></pre></div>
+<p>When adding a new family with different IR codes:
+1. Add a new entry to <code>ircode_mapping</code>
+2. Add the family-to-map selection in <code>set_fpga()</code></p>
+<h3 id="84-adding-new-ir-instructions">8.4 Adding New IR Instructions<a class="headerlink" href="#84-adding-new-ir-instructions" title="Permanent link">&para;</a></h3>
+<p>If your FPGA family needs additional JTAG instructions:</p>
+<ol>
+<li>Add the instruction to the appropriate <code>ircode_mapping</code> entry</li>
+<li>Use it via <code>get_ircode(_ircode_map, "NEW_INST")</code> in your code</li>
+</ol>
+<hr />
+<h2 id="9-soj-version-detection">9. SOJ Version Detection<a class="headerlink" href="#9-soj-version-detection" title="Permanent link">&para;</a></h2>
+<h3 id="91-how-soj-version-detection-works">9.1 How SOJ Version Detection Works<a class="headerlink" href="#91-how-soj-version-detection-works" title="Permanent link">&para;</a></h3>
+<p>File: <code>src/xilinx.cpp</code>, <code>get_spiOverJtag_version()</code></p>
+<p>The SOJ version detection process:</p>
+<ol>
+<li><strong>v1 probe:</strong> Send version query via USER4 instruction with 6 bytes</li>
+<li><strong>Decode:</strong> Apply <code>decode_shifted_jtag_stream()</code> to extract version</li>
+<li><strong>Parse:</strong> Use <code>atof()</code> on decoded string to get version number</li>
+<li><strong>Fallback:</strong> If v1 probe fails, try SOJ v2 packet format via USER1</li>
+</ol>
+<h3 id="92-common-soj-detection-issues">9.2 Common SOJ Detection Issues<a class="headerlink" href="#92-common-soj-detection-issues" title="Permanent link">&para;</a></h3>
+<p><strong>Issue: ASCII version string mangled by shift decode</strong></p>
+<p>When <code>jtag_chain_len &gt; 1</code> or certain bridge implementations return plain ASCII (e.g., <code>"02.00\0"</code>), the <code>decode_shifted_jtag_stream()</code> function with <code>shift &gt; 0</code> bit-reverses and shifts the bytes, producing garbage like <code>18 98 e8 18 18</code>.</p>
+<p><strong>Fix (already applied):</strong> After the shifted decode fails to produce a valid version, the code now scans the raw <code>jrx</code> buffer for a plain ASCII version pattern (<code>DD.DD\0</code>). This catches cases where the bridge returns unencoded ASCII.</p>
+<p><strong>Issue: SOJ v1 bridge transforms RDID command</strong></p>
+<p>On some Xilinx Artix-7/Kintex-7 boards, the SOJ v1 bridge converts RDID (0x9F) to Read Flash Parameters (0x5F), causing the flash to return RFP bytes instead of JEDEC ID.</p>
+<p><strong>Fix:</strong> Add alias entries in <code>spiFlashdb.hpp</code> with the RFP-based ID:
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="mh">0x5ffb8c</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* MT25QL256ABA via SOJ v1 RFP response */</span><span class="w"> </span><span class="p">}},</span>
+</code></pre></div></p>
+<p><strong>Issue: USER instruction mismatch</strong></p>
+<p>Some custom bridge bitstreams use different USER instructions (USER1-4) than expected.</p>
+<p><strong>Fix (built-in):</strong> The code automatically probes all USER instructions when the initial RDID fails:
+<div class="highlight"><pre><span></span><code>SPI RDID probe USER1: 00 00 00 00
+SPI RDID probe USER2: 00 00 00 00
+SPI RDID probe USER3: 00 00 00 00
+SPI RDID probe USER4: 20 ba 18
+SPI RDID selected USER4
+</code></pre></div></p>
+<h3 id="93-soj-v2-packet-format">9.3 SOJ v2 Packet Format<a class="headerlink" href="#93-soj-v2-packet-format" title="Permanent link">&para;</a></h3>
+<p>SOJ v2 uses a packetized protocol:
+- Byte 0: Header with length and start bit
+- Byte 1+: Command and data (bit-reversed per byte)</p>
+<p>Packet construction:
+<div class="highlight"><pre><span></span><code><span class="kt">uint32_t</span><span class="w"> </span><span class="n">v2_real_len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span><span class="w">  </span><span class="c1">// 1 cmd + 5 padding</span>
+<span class="kt">uint32_t</span><span class="w"> </span><span class="n">v2_kPktLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v2_real_len</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">  </span><span class="c1">// header + extra</span>
+<span class="n">v2_pkt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="mh">0x1f</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">v2_real_len</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">((</span><span class="mh">0x03</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x01</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="n">v2_pkt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reverseByte</span><span class="p">(</span><span class="mh">0x01</span><span class="p">);</span><span class="w">  </span><span class="c1">// version query cmd</span>
+</code></pre></div></p>
+<hr />
+<h2 id="10-vendor-specific-implementation-patterns">10. Vendor-specific Implementation Patterns<a class="headerlink" href="#10-vendor-specific-implementation-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="101-xilinx">10.1 Xilinx<a class="headerlink" href="#101-xilinx" title="Permanent link">&para;</a></h3>
+<p><strong>Key methods in <code>xilinx.cpp</code>:</strong>
+- <code>set_fpga()</code> - Detect family, set IR codes
+- <code>load_bridge()</code> - Load SPI-over-JTAG bitstream
+- <code>spi_put()</code> - SPI over JTAG (v1 and v2)
+- <code>spi_put_v2()</code> - SOJ v2 packetized SPI
+- <code>program_spi()</code> - Write to SPI flash
+- <code>dumpFlash()</code> - Read from SPI flash
+- <code>program_mem()</code> - SRAM programming via JTAG</p>
+<p><strong>Family detection:</strong> Based on <code>_fpga_family</code> enum matching <code>part.hpp</code> family strings:
+- <code>"artix a7 *"</code> → ARTIX7_FAMILY
+- <code>"spartan6"</code> → SPARTAN6_FAMILY
+- <code>"kintex7"</code> → KINTX7_FAMILY
+- <code>"zynq"</code> → ZYNQ_FAMILY
+- <code>"virtexusp"</code> → VIRTEXUSP_FAMILY</p>
+<p><strong>Special handling:</strong>
+- ZynqMP requires PL TAP activation (write 0x03 to JTAG_CTRL)
+- Spartan-6 has different USER3/USER4 IR codes
+- UltraScale+ has multi-byte IR instructions
+- XCF devices use 4-byte flash IDs</p>
+<h3 id="102-lattice">10.2 Lattice<a class="headerlink" href="#102-lattice" title="Permanent link">&para;</a></h3>
+<p><strong>Key methods in <code>lattice.cpp</code>:</strong>
+- <code>fpga_write()</code> - Configuration via SPI
+- <code>spi_put()</code> - SPI commands
+- <code>fpga_dump()</code> - Readback</p>
+<p><strong>Families:</strong>
+- iCE40: SPI programming, FUSE mode for configuration
+- ECP5: SRAM, FLASH, IAP modes
+- MachXO2/3: SPI programming
+- CrossLink-NX/Certus-NX/CertusPro-NX</p>
+<p><strong>Bridge files:</strong> <code>.rbf.gz</code> format instead of <code>.bit.gz</code></p>
+<h3 id="103-gowin">10.3 Gowin<a class="headerlink" href="#103-gowin" title="Permanent link">&para;</a></h3>
+<p><strong>Key methods in <code>gowin.cpp</code>:</strong>
+- <code>fpga_write()</code> - Configuration
+- <code>spi_put()</code> - SPI via JTAG
+- <code>fpga_dump()</code> - Readback</p>
+<p><strong>Families:</strong> GW1N, GW1NR, GW2A, GW5A</p>
+<h3 id="104-alteraintel">10.4 Altera/Intel<a class="headerlink" href="#104-alteraintel" title="Permanent link">&para;</a></h3>
+<p><strong>Key methods in <code>altera.cpp</code>:</strong>
+- <code>flash()</code> - Configuration via AS or passive serial
+- <code>spi_put()</code> - SPI commands</p>
+<p><strong>Flash types:</strong> EPCS, EPCQ (SPI QDR)</p>
+<h3 id="105-efinix">10.5 Efinix<a class="headerlink" href="#105-efinix" title="Permanent link">&para;</a></h3>
+<p><strong>Key methods in <code>efinix.cpp</code>:</strong>
+- <code>flash()</code> - Configuration
+- <code>fpga_dump()</code> - Readback</p>
+<p><strong>Families:</strong> Trion, Titanium</p>
+<h3 id="106-anlogic">10.6 Anlogic<a class="headerlink" href="#106-anlogic" title="Permanent link">&para;</a></h3>
+<p><strong>Key methods in <code>anlogic.cpp</code>:</strong>
+- <code>flash()</code> - Configuration
+- <code>fpga_dump()</code> - Readback</p>
+<p><strong>Families:</strong> Eagle, Elf2</p>
+<hr />
+<h2 id="11-build-system-and-data-file-installation">11. Build System and Data File Installation<a class="headerlink" href="#11-build-system-and-data-file-installation" title="Permanent link">&para;</a></h2>
+<h3 id="111-cmakeliststxt-modifications">11.1 CMakeLists.txt Modifications<a class="headerlink" href="#111-cmakeliststxt-modifications" title="Permanent link">&para;</a></h3>
+<p>When adding a new source file:</p>
+<div class="highlight"><pre><span></span><code><span class="c"># Add to the source list</span>
+<span class="nb">list</span><span class="p">(</span><span class="s">APPEND</span><span class="w"> </span><span class="s">SRC_FILES</span><span class="w"> </span><span class="s">src/myvendor.cpp</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="s">APPEND</span><span class="w"> </span><span class="s">HDR_FILES</span><span class="w"> </span><span class="s">src/myvendor.hpp</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="112-data-file-installation">11.2 Data File Installation<a class="headerlink" href="#112-data-file-installation" title="Permanent link">&para;</a></h3>
+<p>Bridge bitstreams are installed via CMake:</p>
+<div class="highlight"><pre><span></span><code><span class="c"># CMakeLists.txt - data files installation</span>
+<span class="nb">install</span><span class="p">(</span><span class="s">DIRECTORY</span><span class="w"> </span><span class="s">share/openFPGALoader</span>
+<span class="w">    </span><span class="s">DESTINATION</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_INSTALL_PREFIX</span><span class="o">}</span><span class="s">/share</span>
+<span class="w">    </span><span class="s">COMPONENT</span><span class="w"> </span><span class="s">runtime</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The share directory structure:
+<div class="highlight"><pre><span></span><code>share/openFPGALoader/
+├── spiOverJtag_xc7a*.bit.gz
+├── spiOverJtag_xc7k*.bit.gz
+├── bpiOverJtag_xc7k*.bit.gz
+└── from_ise/spartan-6/
+    └── *_spi.cor
+</code></pre></div></p>
+<h3 id="113-cross-compilation-windows">11.3 Cross-compilation (Windows)<a class="headerlink" href="#113-cross-compilation-windows" title="Permanent link">&para;</a></h3>
+<p>Windows builds use MinGW-w64 cross-compilation:
+- Toolchain: <code>cmake/Toolchain-x86_64-w64-mingw32.cmake</code>
+- Docker: <code>deploy/docker/cross/windows/alpine.Dockerfile</code></p>
+<p><strong>Compilation note:</strong> On Alpine with mingw-w64 GCC, <code>-O3</code> can cause ICE (Internal Compiler Error) on large static initializers. The CMake release flags use <code>-O2 -DNDEBUG</code>.</p>
+<h3 id="114-build-commands">11.4 Build Commands<a class="headerlink" href="#114-build-commands" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Standard Linux build</span>
+cmake<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release
+cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>-j<span class="k">$(</span>nproc<span class="k">)</span>
+
+<span class="c1"># Windows cross-compile</span>
+cmake<span class="w"> </span>-B<span class="w"> </span>build-win<span class="w"> </span>-DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>cmake/Toolchain-x86_64-w64-mingw32.cmake
+cmake<span class="w"> </span>--build<span class="w"> </span>build-win<span class="w"> </span>-j<span class="k">$(</span>nproc<span class="k">)</span>
+</code></pre></div>
+<hr />
+<h2 id="12-testing-checklist">12. Testing Checklist<a class="headerlink" href="#12-testing-checklist" title="Permanent link">&para;</a></h2>
+<h3 id="121-new-fpga-device">12.1 New FPGA Device<a class="headerlink" href="#121-new-fpga-device" title="Permanent link">&para;</a></h3>
+<ul class="task-list">
+<li class="task-list-item"><input type="checkbox" disabled/> JTAG chain detection: <code>openFPGALoader -c &lt;cable&gt; -v</code></li>
+<li class="task-list-item"><input type="checkbox" disabled/> IDCODE matches expected value</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Manufacturer and family displayed correctly</li>
+<li class="task-list-item"><input type="checkbox" disabled/> SRAM programming: <code>openFPGALoader -c &lt;cable&gt; --fpga-part &lt;part&gt; test.bit</code></li>
+<li class="task-list-item"><input type="checkbox" disabled/> DONE pin goes high after programming</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Verify mode: <code>openFPGALoader -c &lt;cable&gt; --fpga-part &lt;part&gt; --verify test.bit</code></li>
+</ul>
+<h3 id="122-new-spi-flash-device">12.2 New SPI Flash Device<a class="headerlink" href="#122-new-spi-flash-device" title="Permanent link">&para;</a></h3>
+<ul class="task-list">
+<li class="task-list-item"><input type="checkbox" disabled/> RDID returns expected JEDEC ID</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Flash capacity detected correctly</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Dump works: <code>openFPGALoader -c &lt;cable&gt; --fpga-part &lt;part&gt; --dump-flash dump.bin</code></li>
+<li class="task-list-item"><input type="checkbox" disabled/> Program works: <code>openFPGALoader -c &lt;cable&gt; --fpga-part &lt;part&gt; --program-flash file.mcs</code></li>
+<li class="task-list-item"><input type="checkbox" disabled/> Bulk erase works</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Sector erase works (if supported)</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Subsector erase works (if supported)</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Block protection/unprotection works</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Quad mode works (if applicable)</li>
+<li class="task-list-item"><input type="checkbox" disabled/> MCS format works (for Xilinx)</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Intel HEX format works (for non-Xilinx families): <code>--dump-flash dump.hex</code></li>
+</ul>
+<h3 id="123-new-board">12.3 New Board<a class="headerlink" href="#123-new-board" title="Permanent link">&para;</a></h3>
+<ul class="task-list">
+<li class="task-list-item"><input type="checkbox" disabled/> Board name recognized: <code>openFPGALoader -b &lt;board_name&gt; -v</code></li>
+<li class="task-list-item"><input type="checkbox" disabled/> Correct cable detected</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Correct FPGA part loaded</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Correct bridge bitstream found (if applicable)</li>
+<li class="task-list-item"><input type="checkbox" disabled/> Full flash cycle works</li>
+</ul>
+<h3 id="124-common-pitfalls">12.4 Common Pitfalls<a class="headerlink" href="#124-common-pitfalls" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>SOJ version detection:</strong> If <code>SOJ version raw</code> shows garbage or <code>atof</code> returns 0, check if the raw jrx contains an ASCII version string that needs plain-text detection.</p>
+</li>
+<li>
+<p><strong>USER instruction mismatch:</strong> If RDID returns all zeros, the tool auto-probes USER1-USER4. If none work, check the bridge bitstream configuration.</p>
+</li>
+<li>
+<p><strong>RDID command transformation:</strong> On SOJ v1 through Xilinx 7-series, RDID (0x9F) may become RFP (0x5F). Add alias entries in <code>spiFlashdb.hpp</code>.</p>
+</li>
+<li>
+<p><strong>IR length mismatch:</strong> If JTAG operations hang, verify the IR length matches the FPGA datasheet.</p>
+</li>
+<li>
+<p><strong>Bridge bitstream missing:</strong> If flash operations fail with "Can't program SPI flash", ensure the bridge bitstream exists and matches the FPGA package exactly.</p>
+</li>
+<li>
+<p><strong>Large static initializers cause ICE:</strong> When cross-compiling for Windows on Alpine, large <code>fpga_list</code> or <code>flash_list</code> entries may trigger GCC ICE at <code>-O3</code>. Use <code>-O2</code> for release builds.</p>
+</li>
+<li>
+<p><strong>Multi-device JTAG chains:</strong> When multiple devices are in the JTAG chain, use <code>--index-chain</code> to select the correct device for flash operations.</p>
+</li>
+<li>
+<p><strong>Extended address mode:</strong> For flashes &gt; 128 MiB, ensure <code>has_extended = true</code> is set; otherwise read/write operations will wrap at 128 MiB boundary.</p>
+</li>
+</ol>
+<hr />
+<h2 id="quick-reference-file-modification-summary">Quick Reference: File Modification Summary<a class="headerlink" href="#quick-reference-file-modification-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Files to Modify</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add new FPGA device variant</td>
+<td><code>src/part.hpp</code></td>
+</tr>
+<tr>
+<td>Add new FPGA family</td>
+<td><code>src/&lt;vendor&gt;.cpp/hpp</code>, <code>src/main.cpp</code>, <code>CMakeLists.txt</code></td>
+</tr>
+<tr>
+<td>Add new SPI flash</td>
+<td><code>src/spiFlashdb.hpp</code></td>
+</tr>
+<tr>
+<td>Add new flash manufacturer name</td>
+<td><code>src/spiFlash.cpp</code></td>
+</tr>
+<tr>
+<td>Add new SPI command</td>
+<td><code>src/spiFlash.cpp</code></td>
+</tr>
+<tr>
+<td>Add new board</td>
+<td><code>src/board.hpp</code></td>
+</tr>
+<tr>
+<td>Add new JTAG cable</td>
+<td><code>src/&lt;cable&gt;.cpp/hpp</code>, <code>src/main.cpp</code>, <code>CMakeLists.txt</code></td>
+</tr>
+<tr>
+<td>Add bridge bitstream</td>
+<td><code>share/openFPGALoader/spiOverJtag_&lt;part&gt;.bit.gz</code></td>
+</tr>
+<tr>
+<td>Add new IR code map</td>
+<td><code>src/xilinx.cpp</code> (ircode_mapping)</td>
+</tr>
+<tr>
+<td>Fix SOJ version detection</td>
+<td><code>src/xilinx.cpp</code> (get_spiOverJtag_version)</td>
+</tr>
+<tr>
+<td>Add custom bitstream parser</td>
+<td><code>src/&lt;vendor&gt;BitParser.cpp/hpp</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="appendix-jedec-id-calculation">Appendix: JEDEC ID Calculation<a class="headerlink" href="#appendix-jedec-id-calculation" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>JEDEC ID = (manufacturer &lt;&lt; 16) | (memory_type &lt;&lt; 8) | capacity
+
+Example: Micron N25Q128 (0x20ba18)
+  Manufacturer: 0x20 (Micron/ST)
+  Memory type:  0xba (Serial NOR, Quad)
+  Capacity:     0x18 (2^(0x18) = 2^24 = 16 MiB = 128 Mbit)
+
+Capacity byte reference:
+  0x13 = 4 Mbit  (512 KiB)
+  0x14 = 8 Mbit  (1 MiB)
+  0x15 = 16 Mbit (2 MiB)
+  0x16 = 32 Mbit (4 MiB)
+  0x17 = 64 Mbit (8 MiB)
+  0x18 = 128 Mbit (16 MiB)
+  0x19 = 256 Mbit (32 MiB)
+  0x20 = 512 Mbit (64 MiB)
+  0x21 = 1 Gbit  (128 MiB)
+  0x22 = 2 Gbit  (256 MiB)
+</code></pre></div>
+<hr />
+<p><em>Last updated: 2025</em>
+<em>Based on openFPGALoader source code analysis</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../javascripts/mermaid.js"></script>
+      
+    
+  </body>
+</html>
