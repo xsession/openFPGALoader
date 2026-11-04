@@ -19,5 +19,26 @@ services:
       CMAKE_EXTRA_ARGS: ""
     command: ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]
 
+  linux-deploy-arch:
+    build:
+      context: .
+      dockerfile: deploy/docker/deploy/linux/arch.Dockerfile
+    image: openfpgaloader-linux-deploy:arch-latest
+    pull_policy: build
+    working_dir: /src
+    volumes:
+      - .:/src
+      - openfpgaloader-linux-arch-cache:/root/.cache
+    environment:
+      BUILD_DIR: /src/build-docker-linux-arch
+      PREFIX_DIR: /src/dist/docker-linux-arch/install
+      PACKAGE_DIR: /src/dist/docker-linux-arch
+      CMAKE_BUILD_TYPE: Release
+      CMAKE_EXTRA_ARGS: ""
+      ARCH_LABEL: arch-linux
+      SMOKE_TEST: "1"
+    command: ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]
+
 volumes:
   openfpgaloader-linux-cache:
+  openfpgaloader-linux-arch-cache:

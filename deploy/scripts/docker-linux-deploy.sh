@@ -7,6 +7,9 @@ PREFIX_DIR="${PREFIX_DIR:-${ROOT_DIR}/dist/docker-linux/install}"
 PACKAGE_DIR="${PACKAGE_DIR:-${ROOT_DIR}/dist/docker-linux}"
 BUILD_TYPE="${CMAKE_BUILD_TYPE:-Release}"
 CMAKE_EXTRA_ARGS="${CMAKE_EXTRA_ARGS:-}"
+# Labels the package per libc base: "linux" (Alpine/musl) by default,
+# "arch-linux" for the Arch/glibc image.
+ARCH_LABEL="${ARCH_LABEL:-linux}"
 
 if [[ "${1:-}" == "--clean" ]]; then
   rm -rf "${BUILD_DIR}" "${PREFIX_DIR}"
@@ -32,6 +35,15 @@ if [[ ! -f "${EXE}" ]]; then
   exit 1
 fi
 
+# Optional in-container smoke test (set SMOKE_TEST=1 from CI or locally)
+if [[ -n "${SMOKE_TEST:-}" ]]; then
+  echo "Smoke test (in container):"
+  "${EXE}" --version
+  "${EXE}" --help >/dev/null
+  "${EXE}" --list-boards >/dev/null
+  "${EXE}" --list-cables >/dev/null
+fi
+
 mkdir -p "${PREFIX_DIR}/share/openFPGALoader"
 
 LOCAL_FIRMWARE_DIR="${ROOT_DIR}/deploy/ise_programmer_bins"
@@ -51,7 +63,7 @@ done
 
 mkdir -p "${PREFIX_DIR}/share/doc/openFPGALoader"
 {
-  echo "openFPGALoader Linux Docker deployment"
+  echo "openFPGALoader ${ARCH_LABEL} Docker deployment"
   echo
   echo "Built on: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   echo "Build type: ${BUILD_TYPE}"
@@ -70,7 +82,7 @@ if [[ -z "${VERSION}" ]]; then
 fi
 
 ARCH="$(uname -m)"
-ARCHIVE="${PACKAGE_DIR}/openFPGALoader-linux-${ARCH}-${VERSION}.tar.gz"
+ARCHIVE="${PACKAGE_DIR}/openFPGALoader-${ARCH_LABEL}-${ARCH}-${VERSION}.tar.gz"
 
 rm -f "${ARCHIVE}" "${ARCHIVE}.sha256"
 

@@ -108,6 +108,48 @@ jobs:
             dist/openFPGALoader-${{ matrix.name }}_*.deb
             dist/openFPGALoader-${{ matrix.name }}_*.deb.sha256
 
+  linux-arch:
+    name: Linux Arch glibc (Docker)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Build Arch Linux package
+        run: |
+          docker compose -f docker-compose.deploy-linux.yml build linux-deploy-arch
+          docker compose -f docker-compose.deploy-linux.yml run --rm --no-TTY linux-deploy-arch
+
+      - name: Verify glibc package
+        run: |
+          shopt -s nullglob
+          packages=(dist/docker-linux-arch/openFPGALoader-arch-linux-x86_64-*.tar.gz)
+          if (( ${#packages[@]} != 1 )); then
+            echo "Expected exactly one Arch Linux package, found ${#packages[@]}" >&2
+            printf '%s\n' "${packages[@]}" >&2
+            exit 1
+          fi
+          pkg="${packages[0]}"
+          (cd dist/docker-linux-arch && sha256sum -c "$(basename "${pkg}").sha256")
+          cp "${pkg}" "${pkg}.sha256" .
+          mkdir -p dist/docker-linux-arch/verify
+          tar -C dist/docker-linux-arch/verify -xzf "${pkg}"
+          file dist/docker-linux-arch/verify/bin/openFPGALoader
+          # Must be a glibc build (Arch target), not musl:
+          file dist/docker-linux-arch/verify/bin/openFPGALoader | grep -F '/lib64/ld-linux-x86-64.so.2'
+          tar -tzf "${pkg}" | sort
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: openFPGALoader-arch-linux-x86_64
+          if-no-files-found: error
+          path: |
+            openFPGALoader-arch-linux-x86_64-*.tar.gz
+            openFPGALoader-arch-linux-x86_64-*.tar.gz.sha256
+
   macos:
     name: macOS universal-ish ${{ matrix.runner }}
     runs-on: ${{ matrix.runner }}
@@ -396,7 +438,7 @@ jobs:
 
   release:
     name: Publish GitHub release
-    needs: [ linux, macos, windows-msys2, windows-cross, windows-installer ]
+    needs: [ linux, linux-arch, macos, windows-msys2, windows-cross, windows-installer ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
