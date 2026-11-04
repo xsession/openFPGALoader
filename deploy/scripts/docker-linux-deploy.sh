@@ -18,6 +18,10 @@ fi
 
 mkdir -p "${BUILD_DIR}" "${PREFIX_DIR}" "${PACKAGE_DIR}"
 
+# Drop stale archives from earlier runs so the "exactly one package" check
+# in CI (and locally) can't see leftovers from a previous version.
+rm -f "${PACKAGE_DIR}"/openFPGALoader-"${ARCH_LABEL}-"*.tar.gz{,.sha256}
+
 # shellcheck disable=SC2086
 cmake -S "${ROOT_DIR}" -B "${BUILD_DIR}" -G Ninja \
   -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
@@ -75,7 +79,9 @@ mkdir -p "${PREFIX_DIR}/share/doc/openFPGALoader"
   ldd "${EXE}" || true
 } > "${PREFIX_DIR}/share/doc/openFPGALoader/docker-linux-build-manifest.txt"
 
-VERSION="$("${EXE}" --version 2>/dev/null | head -n1 | tr -cs 'A-Za-z0-9._-' '-' | sed 's/^-//;s/-$//' || true)"
+# --version prints "openFPGALoader v1.1.7"; keep only the version token so
+# the archive is openFPGALoader-<label>-<arch>-v1.1.7.tar.gz (no doubled name).
+VERSION="$("${EXE}" --version 2>/dev/null | head -n1 | awk '{print $NF}' | tr -cs 'A-Za-z0-9._-' '-' | sed 's/^-//;s/-$//' || true)"
 
 if [[ -z "${VERSION}" ]]; then
   VERSION="local"
@@ -91,7 +97,9 @@ rm -f "${ARCHIVE}" "${ARCHIVE}.sha256"
   tar -czf "${ARCHIVE}" .
 )
 
-sha256sum "${ARCHIVE}" > "${ARCHIVE}.sha256"
+# Record the basename so the checksum file verifies from any directory
+# (CI checks it on the host, where the /src container paths do not exist).
+(cd "${PACKAGE_DIR}" && sha256sum "$(basename "${ARCHIVE}")" > "${ARCHIVE}.sha256")
 
 echo "Built ${EXE}"
 echo "Package: ${ARCHIVE}"
