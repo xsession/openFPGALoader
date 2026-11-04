@@ -117,6 +117,12 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Prepare package directory
+        # Host-owned: the container (root) writes the tarball into this bind
+        # mount, and the verify step below must be able to write into it as
+        # the runner user (a root-created dir would be unwritable).
+        run: mkdir -p dist/docker-linux-arch
+
       - name: Build Arch Linux package
         run: |
           docker compose -f docker-compose.deploy-linux.yml build linux-deploy-arch
