@@ -56,8 +56,9 @@ CMAKE_EXTRA_ARGS="-DENABLE_CMSISDAP=OFF -DENABLE_LIBGPIOD=OFF" \
 
 ## Notes
 
-- The default image is Alpine 3.24.2 (musl); the Arch service uses
-  `archlinux/base:latest` (glibc, rolling release — no stable tag exists).
+- The default image is Alpine 3.24.2 (musl); the Arch service uses the
+  official `archlinux:latest` image (glibc, weekly build; `pacman -Syu` in the
+  Dockerfile refreshes it to the current rolling state).
 - The resulting binary is dynamically linked against the packages installed
   in the Docker image. Check
   `share/doc/openFPGALoader/docker-linux-build-manifest.txt` in the package for

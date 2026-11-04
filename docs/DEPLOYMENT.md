@@ -118,7 +118,7 @@ XPCU_DRIVER_ARCHIVE="$PWD/externals/xilinx-usb-driver/dist/xilinx-platform-cable
 The workflow builds:
 
 - Ubuntu 22.04 and 24.04 tarballs with udev rules and Debian `.deb` installers.
-- Arch Linux glibc tarball built in Docker from `archlinux/base`
+- Arch Linux glibc tarball built in Docker from the official `archlinux` image
   (usable on Arch and other glibc distros with an equal or newer glibc).
 - macOS Intel and Apple Silicon runner tarballs.
 - Windows native MSYS2 UCRT64/MINGW64 portable zip files.
