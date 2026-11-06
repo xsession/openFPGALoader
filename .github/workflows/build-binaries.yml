@@ -156,65 +156,6 @@ jobs:
             openFPGALoader-arch-linux-x86_64-*.tar.gz
             openFPGALoader-arch-linux-x86_64-*.tar.gz.sha256
 
-  macos:
-    name: macOS universal-ish ${{ matrix.runner }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [ macos-14 ]
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - name: Install dependencies
-        run: |
-          brew update
-          brew install cmake pkg-config libftdi libusb hidapi zlib gzip
-
-      - name: Configure
-        run: |
-          cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr/local \
-            -DENABLE_UDEV=OFF \
-            -DENABLE_LIBGPIOD=OFF \
-            -DENABLE_OPTIM=ON
-
-      - name: Build
-        run: cmake --build build --parallel 2
-
-      - name: Smoke test
-        run: |
-          ./build/openFPGALoader --version
-          ./build/openFPGALoader --help >/dev/null
-          ./build/openFPGALoader --list-boards >/dev/null
-          ./build/openFPGALoader --list-cables >/dev/null
-
-      - name: Install into staging directory
-        run: |
-          cmake --install build --prefix "$PWD/pkg/usr/local"
-          mkdir -p "$PWD/pkg/usr/local/share/licenses/openFPGALoader"
-          cp LICENSE "$PWD/pkg/usr/local/share/licenses/openFPGALoader/LICENSE"
-
-      - name: Create archive
-        run: |
-          arch="$(uname -m)"
-          name="openFPGALoader-${{ matrix.runner }}-${arch}"
-          tar -C pkg -czf "${name}.tar.gz" .
-          shasum -a 256 "${name}.tar.gz" > "${name}.tar.gz.sha256"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: openFPGALoader-${{ matrix.runner }}
-          if-no-files-found: error
-          path: |
-            openFPGALoader-${{ matrix.runner }}-*.tar.gz
-            openFPGALoader-${{ matrix.runner }}-*.tar.gz.sha256
-
   windows-msys2:
     name: Windows MSYS2 ${{ matrix.sys }}
     runs-on: windows-latest
@@ -464,7 +405,7 @@ jobs:
 
   release:
     name: Publish GitHub release
-    needs: [ linux, linux-arch, macos, windows-msys2, windows-cross, windows-installer ]
+    needs: [ linux, linux-arch, windows-msys2, windows-cross, windows-installer ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
