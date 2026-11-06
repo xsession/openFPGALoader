@@ -224,8 +224,12 @@ jobs:
         include:
           - sys: UCRT64
             env: ucrt-x86_64
-          - sys: MINGW64
-            env: x86_64
+            compiler: g++
+            compiler_package: mingw-w64-ucrt-x86_64-gcc
+          - sys: CLANG64
+            env: clang-x86_64
+            compiler: clang++
+            compiler_package: mingw-w64-clang-x86_64-clang
     defaults:
       run:
         shell: msys2 {0}
@@ -242,7 +246,7 @@ jobs:
           install: >-
             git
             base-devel
-            mingw-w64-${{ matrix.env }}-gcc
+            ${{ matrix.compiler_package }}
             mingw-w64-${{ matrix.env }}-cmake
             mingw-w64-${{ matrix.env }}-ninja
             mingw-w64-${{ matrix.env }}-pkgconf
@@ -256,6 +260,7 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
             -DCMAKE_INSTALL_PREFIX=/opt/openFPGALoader \
             -DENABLE_OPTIM=ON \
             -DENABLE_UDEV=OFF \
@@ -276,7 +281,22 @@ jobs:
           cmake --install build --prefix "$PWD/pkg"
           mkdir -p "$PWD/pkg/share/licenses/openFPGALoader"
           cp LICENSE "$PWD/pkg/share/licenses/openFPGALoader/LICENSE"
-          ldd "$PWD/pkg/bin/openFPGALoader.exe" | awk '/\/mingw/ {print $3}' | while read -r dll; do cp -n "$dll" "$PWD/pkg/bin/" || true; done
+          ldd "$PWD/pkg/bin/openFPGALoader.exe" |
+            awk '$2 == "=>" && $3 ~ /^\/(mingw64|ucrt64|clang64)\// { print $3 }' |
+            sort -u |
+            while IFS= read -r dll; do
+              if [[ ! -f "$dll" ]]; then
+                echo "Runtime DLL does not exist: $dll" >&2
+                exit 1
+              fi
+              cp -n "$dll" "$PWD/pkg/bin/"
+            done
+
+          if ! compgen -G "$PWD/pkg/bin/*.dll" >/dev/null; then
+            echo "No MSYS2 runtime DLLs were staged for the portable Windows package" >&2
+            ldd "$PWD/pkg/bin/openFPGALoader.exe" >&2
+            exit 1
+          fi
           find pkg -maxdepth 3 -type f -print
 
       - name: Create zip

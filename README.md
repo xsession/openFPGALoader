@@ -1,36 +1,26 @@
 # openFPGALoader
 
-<p align="right">
-  <a title="Documentation" href="https://xsession.github.io/openFPGALoader"><img src="https://img.shields.io/website.svg?label=xsession.github.io%2FopenFPGALoader&longCache=true&style=flat-square&url=https%3A%2F%2Fxsession.github.io%2FopenFPGALoader%2F&logo=GitHub"></a><!--
-  -->
-  <a title="'Test' workflow Status" href="https://github.com/xsession/openFPGALoader/actions/workflows/Test.yml"><img alt="'Test' workflow Status" src="https://img.shields.io/github/actions/workflow/status/xsession/openFPGALoader/Test.yml?branch=master&longCache=true&style=flat-square&label=Test&logo=github%20actions&logoColor=fff"></a><!--
-  -->
-  <a title="Releases" href="https://github.com/xsession/openFPGALoader/releases"><img src="https://img.shields.io/github/commits-since/xsession/openFPGALoader/latest.svg?longCache=true&style=flat-square&logo=git&logoColor=fff"></a>
-</p>
+[![](https://img.shields.io/website.svg?label=xsession.github.io%2FopenFPGALoader&longCache=true&style=flat-square&url=https%3A%2F%2Fxsession.github.io%2FopenFPGALoader%2F&logo=GitHub)](https://xsession.github.io/openFPGALoader) [!['Test' workflow Status](https://img.shields.io/github/actions/workflow/status/xsession/openFPGALoader/Test.yml?branch=master&longCache=true&style=flat-square&label=Test&logo=github%20actions&logoColor=fff)](https://github.com/xsession/openFPGALoader/actions/workflows/Test.yml) [![](https://img.shields.io/github/commits-since/xsession/openFPGALoader/latest.svg?longCache=true&style=flat-square&logo=git&logoColor=fff)](https://github.com/xsession/openFPGALoader/releases)
 
-<p align="center">
-  <strong><a href="https://xsession.github.io/openFPGALoader/guide/first-steps/">First steps</a> • <a href="https://xsession.github.io/openFPGALoader/guide/install/">Install</a> • <a href="https://xsession.github.io/openFPGALoader/guide/troubleshooting/">Troubleshooting</a></strong> • <a href="https://xsession.github.io/openFPGALoader/guide/advanced/">Advanced usage</a>
-</p>
+[**First steps**](https://xsession.github.io/openFPGALoader/guide/first-steps/) **•** [**Install**](https://xsession.github.io/openFPGALoader/guide/install/) **•** [**Troubleshooting**](https://xsession.github.io/openFPGALoader/guide/troubleshooting/) • [Advanced usage](https://xsession.github.io/openFPGALoader/guide/advanced/)
 
-<p align="center">
-  <a href="https://xsession.github.io/openFPGALoader/architecture/">Architecture</a> • <a href="https://xsession.github.io/openFPGALoader/architecture/c4/context/">C4 model</a> • <a href="https://xsession.github.io/openFPGALoader/contributing/architecture-rules/">Contributor architecture rules</a>
-</p>
+[Architecture](https://xsession.github.io/openFPGALoader/architecture/) • [C4 model](https://xsession.github.io/openFPGALoader/architecture/c4/context/) • [Contributor architecture rules](https://xsession.github.io/openFPGALoader/contributing/architecture-rules/)
 
 Universal utility for programming FPGAs. Compatible with many boards, cables and FPGA from major manufacturers (Xilinx, Altera/Intel, Lattice, Gowin, Efinix, Anlogic, Cologne Chip). openFPGALoader works on Linux, Windows, macOS and OpenBSD.
 
 Not sure if your hardware is supported? Check the hardware compatibility lists:
 
- * [FPGA compatibility list](https://xsession.github.io/openFPGALoader/compatibility/fpga/)
- * [Board compatibility list](https://xsession.github.io/openFPGALoader/compatibility/board/)
- * [Cable compatibility list](https://xsession.github.io/openFPGALoader/compatibility/cable/)
+- [FPGA compatibility list](https://xsession.github.io/openFPGALoader/compatibility/fpga/)
+- [Board compatibility list](https://xsession.github.io/openFPGALoader/compatibility/board/)
+- [Cable compatibility list](https://xsession.github.io/openFPGALoader/compatibility/cable/)
 
-Also checkout the vendor-specific documentation:
-[Anlogic](https://xsession.github.io/openFPGALoader/vendors/anlogic/),
-[Cologne Chip](https://xsession.github.io/openFPGALoader/vendors/colognechip/),
-[Efinix](https://xsession.github.io/openFPGALoader/vendors/efinix/),
-[Gowin](https://xsession.github.io/openFPGALoader/vendors/gowin/),
-[Intel/Altera](https://xsession.github.io/openFPGALoader/vendors/intel/),
-[Lattice](https://xsession.github.io/openFPGALoader/vendors/lattice/),
+Also checkout the vendor-specific documentation:  
+[Anlogic](https://xsession.github.io/openFPGALoader/vendors/anlogic/),  
+[Cologne Chip](https://xsession.github.io/openFPGALoader/vendors/colognechip/),  
+[Efinix](https://xsession.github.io/openFPGALoader/vendors/efinix/),  
+[Gowin](https://xsession.github.io/openFPGALoader/vendors/gowin/),  
+[Intel/Altera](https://xsession.github.io/openFPGALoader/vendors/intel/),  
+[Lattice](https://xsession.github.io/openFPGALoader/vendors/lattice/),  
 [Xilinx](https://xsession.github.io/openFPGALoader/vendors/xilinx/).
 
 OpenFPGALoader has a dedicated channel: [#openFPGALoader at libera.chat](https://web.libera.chat/#openFPGALoader).
@@ -39,14 +29,14 @@ OpenFPGALoader has a dedicated channel: [#openFPGALoader at libera.chat](https:/
 
 `arty` in the example below is one of the many FPGA board configurations listed [here](https://xsession.github.io/openFPGALoader/compatibility/board/).
 
-```bash
+```
 openFPGALoader -b arty arty_bitstream.bit # Loading in SRAM
 openFPGALoader -b arty -f arty_bitstream.bit # Writing in flash
 ```
 
 You can also specify a JTAG cable model (complete list [here](https://xsession.github.io/openFPGALoader/compatibility/cable/)) instead of the board model:
 
-```bash
+```
 openFPGALoader -c cmsisdap fpga_bitstream.bit
 ```
 
@@ -160,11 +150,11 @@ for any corresponding short options.
 Report bugs to <gwenhael.goavec-merou@trabucayre.com>.
 ```
 
-By default **spiOverJtag** are search into `${CMAKE_INSTALL_FULL_DATAROOTDIR}`
-(*/usr/local/share/* by default). It's possible to change this behaviour by
+By default **spiOverJtag** are search into `${CMAKE_INSTALL_FULL_DATAROOTDIR}`  
+(_/usr/local/share/_ by default). It's possible to change this behaviour by  
 using an environment variable:
 
-```bash
+```
 export OPENFPGALOADER_SOJ_DIR=/somewhere
 openFPGALoader xxxx
 ```
@@ -175,9 +165,28 @@ or
 OPENFPGALOADER_SOJ_DIR=/somewhere openFPGALoader xxxx
 ```
 
-`OPENFPGALOADER_SOJ_DIR` must point to directory containing **spiOverJtag**
-bitstreams.
+`OPENFPGALOADER_SOJ_DIR` must point to directory containing **spiOverJtag**  
+bitstreams.openFPGALoader MSYS2 CLANG64 workflow fix
 
-## Sponsors/Partners
+This bundle prepares the Windows MSYS2 CI update for the openFPGALoader repository.
 
-![Sponsors](https://github.com/user-attachments/assets/cb4efce1-ed0c-461c-bd05-9caeb440870d)
+## Changes
+
+- Replaces the deprecated MINGW64 build leg with CLANG64 while retaining UCRT64.
+- Selects the compiler package and C++ compiler for each environment.
+- Stages DLL dependencies from MINGW64, UCRT64, and CLANG64 runtime paths.
+- Fails packaging if no runtime DLLs were staged, instead of silently creating a non-portable ZIP.
+
+## Apply
+
+From the repository root, run:  
+git apply /path/to/openFPGALoader-MSYS2-CLANG64-fix/patches/openFPGALoader-msys2-clang64.patch
+
+The complete replacement workflow is included at:  
+openFPGALoader-MSYS2-CLANG64-fix/.github/workflows/build-binaries.yml
+
+## Source and status
+
+- Repository: xsession/openFPGALoader
+- Source workflow blob SHA: ad69349990d3e281a80603ae49846b37092aafea
+- The change has not been pushed or run through CI yet.
