@@ -8,7 +8,7 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parent
-DATA = ROOT / "doc"
+DATA = ROOT / "data"
 OUT = ROOT / "compatibility"
 
 
@@ -51,7 +51,7 @@ def main() -> None:
             cell(item.get("Flash")),
             cell(constraints),
         ])
-    write_table(OUT / "board.md", "Boards", ["Board name", "Description", "FPGA", "Memory", "Flash", "Constraints"], board_rows)
+    write_table(OUT / "boards.md", "Boards", ["Board name", "Description", "FPGA", "Memory", "Flash", "Constraints"], board_rows)
 
     fpgas = yaml.safe_load((DATA / "FPGAs.yml").read_text(encoding="utf-8"))
     fpga_rows = []
@@ -64,7 +64,7 @@ def main() -> None:
                 cell(item.get("Memory")),
                 cell(item.get("Flash")),
             ])
-    write_table(OUT / "fpga.md", "FPGAs", ["Vendor", "Description", "Model", "Memory", "Flash"], fpga_rows)
+    write_table(OUT / "fpgas.md", "FPGAs", ["Vendor", "Description", "Model", "Memory", "Flash"], fpga_rows)
 
     cables = yaml.safe_load((DATA / "cable.yml").read_text(encoding="utf-8"))
     cable_rows = []
@@ -76,7 +76,7 @@ def main() -> None:
                 cell(item.get("Description")),
                 cell(item.get("Note")),
             ])
-    write_table(OUT / "cable.md", "Cables", ["Keyword", "Name", "Description", "Notes"], cable_rows)
+    write_table(OUT / "cables.md", "Cables", ["Keyword", "Name", "Description", "Notes"], cable_rows)
 
 
 if __name__ == "__main__":

@@ -2,39 +2,39 @@
 
 [![](https://img.shields.io/website.svg?label=xsession.github.io%2FopenFPGALoader&longCache=true&style=flat-square&url=https%3A%2F%2Fxsession.github.io%2FopenFPGALoader%2F&logo=GitHub)](https://xsession.github.io/openFPGALoader) [!['Test' workflow Status](https://img.shields.io/github/actions/workflow/status/xsession/openFPGALoader/Test.yml?branch=master&longCache=true&style=flat-square&label=Test&logo=github%20actions&logoColor=fff)](https://github.com/xsession/openFPGALoader/actions/workflows/Test.yml) [![](https://img.shields.io/github/commits-since/xsession/openFPGALoader/latest.svg?longCache=true&style=flat-square&logo=git&logoColor=fff)](https://github.com/xsession/openFPGALoader/releases)
 
-[**First steps**](https://xsession.github.io/openFPGALoader/guide/first-steps/) **•** [**Install**](https://xsession.github.io/openFPGALoader/guide/install/) **•** [**Troubleshooting**](https://xsession.github.io/openFPGALoader/guide/troubleshooting/) • [Advanced usage](https://xsession.github.io/openFPGALoader/guide/advanced/)
+[**First steps**](https://xsession.github.io/openFPGALoader/guide/quickstart/) **•** [**Install**](https://xsession.github.io/openFPGALoader/guide/install/) **•** [**Troubleshooting**](https://xsession.github.io/openFPGALoader/guide/troubleshooting/) • [Advanced usage](https://xsession.github.io/openFPGALoader/guide/advanced-usage/)
 
-[Architecture](https://xsession.github.io/openFPGALoader/architecture/) • [C4 model](https://xsession.github.io/openFPGALoader/architecture/c4/context/) • [Contributor architecture rules](https://xsession.github.io/openFPGALoader/contributing/architecture-rules/)
+[Architecture](https://xsession.github.io/openFPGALoader/development/architecture/overview/) • [C4 model](https://xsession.github.io/openFPGALoader/development/architecture/c4/context/) • [Contributor architecture rules](https://xsession.github.io/openFPGALoader/development/contributing/)
 
 Universal utility for programming FPGAs. Compatible with many boards, cables and FPGA from major manufacturers (Xilinx, Altera/Intel, Lattice, Gowin, Efinix, Anlogic, Cologne Chip). openFPGALoader works on Linux, Windows, macOS and OpenBSD.
 
 Not sure if your hardware is supported? Check the hardware compatibility lists:
 
-- [FPGA compatibility list](https://xsession.github.io/openFPGALoader/compatibility/fpga/)
-- [Board compatibility list](https://xsession.github.io/openFPGALoader/compatibility/board/)
-- [Cable compatibility list](https://xsession.github.io/openFPGALoader/compatibility/cable/)
+- [FPGA compatibility list](https://xsession.github.io/openFPGALoader/compatibility/fpgas/)
+- [Board compatibility list](https://xsession.github.io/openFPGALoader/compatibility/boards/)
+- [Cable compatibility list](https://xsession.github.io/openFPGALoader/compatibility/cables/)
 
 Also checkout the vendor-specific documentation:  
-[Anlogic](https://xsession.github.io/openFPGALoader/vendors/anlogic/),  
-[Cologne Chip](https://xsession.github.io/openFPGALoader/vendors/colognechip/),  
-[Efinix](https://xsession.github.io/openFPGALoader/vendors/efinix/),  
-[Gowin](https://xsession.github.io/openFPGALoader/vendors/gowin/),  
-[Intel/Altera](https://xsession.github.io/openFPGALoader/vendors/intel/),  
-[Lattice](https://xsession.github.io/openFPGALoader/vendors/lattice/),  
-[Xilinx](https://xsession.github.io/openFPGALoader/vendors/xilinx/).
+[Anlogic](https://xsession.github.io/openFPGALoader/hardware/anlogic/),  
+[Cologne Chip](https://xsession.github.io/openFPGALoader/hardware/colognechip/),  
+[Efinix](https://xsession.github.io/openFPGALoader/hardware/efinix/),  
+[Gowin](https://xsession.github.io/openFPGALoader/hardware/gowin/),  
+[Intel/Altera](https://xsession.github.io/openFPGALoader/hardware/intel-altera/),  
+[Lattice](https://xsession.github.io/openFPGALoader/hardware/lattice/),  
+[Xilinx](https://xsession.github.io/openFPGALoader/hardware/xilinx/).
 
 OpenFPGALoader has a dedicated channel: [#openFPGALoader at libera.chat](https://web.libera.chat/#openFPGALoader).
 
 ## Quick Usage
 
-`arty` in the example below is one of the many FPGA board configurations listed [here](https://xsession.github.io/openFPGALoader/compatibility/board/).
+`arty` in the example below is one of the many FPGA board configurations listed [here](https://xsession.github.io/openFPGALoader/compatibility/boards/).
 
 ```
 openFPGALoader -b arty arty_bitstream.bit # Loading in SRAM
 openFPGALoader -b arty -f arty_bitstream.bit # Writing in flash
 ```
 
-You can also specify a JTAG cable model (complete list [here](https://xsession.github.io/openFPGALoader/compatibility/cable/)) instead of the board model:
+You can also specify a JTAG cable model (complete list [here](https://xsession.github.io/openFPGALoader/compatibility/cables/)) instead of the board model:
 
 ```
 openFPGALoader -c cmsisdap fpga_bitstream.bit

@@ -48,53 +48,74 @@ extra_javascript:
   - javascripts/mermaid.js
 nav:
   - Home: index.md
-  - User guide:
-      - First steps: guide/first-steps.md
+  - Getting started:
+      - Quick start: guide/quickstart.md
       - Installation: guide/install.md
-      - Advanced usage: guide/advanced.md
+      - Usage tutorial: guide/usage.md
+      - Advanced usage: guide/advanced-usage.md
+      - CLI reference: guide/cli-reference.md
       - Troubleshooting: guide/troubleshooting.md
+  - How it works:
+      - Overview: how-it-works/overview.md
+      - JTAG transport: how-it-works/jtag-transport.md
+      - Flash programming: how-it-works/flash-programming.md
+      - SPI-over-JTAG bridges: how-it-works/spi-over-jtag.md
+      - Direct SPI, DFU, and XVC: how-it-works/alternate-paths.md
+  - Hardware:
+      - Xilinx / AMD: hardware/xilinx.md
+      - Lattice: hardware/lattice.md
+      - Intel / Altera: hardware/intel-altera.md
+      - Gowin: hardware/gowin.md
+      - Efinix: hardware/efinix.md
+      - Anlogic: hardware/anlogic.md
+      - Cologne Chip: hardware/colognechip.md
+      - XCF Platform Flash PROMs: hardware/xcf-platform-flash.md
   - Compatibility:
-      - Boards: compatibility/board.md
-      - FPGAs: compatibility/fpga.md
-      - Cables: compatibility/cable.md
-  - Vendors:
-      - Anlogic: vendors/anlogic.md
-      - Cologne Chip: vendors/colognechip.md
-      - Efinix: vendors/efinix.md
-      - Gowin: vendors/gowin.md
-      - Intel/Altera: vendors/intel.md
-      - Lattice: vendors/lattice.md
-      - Xilinx: vendors/xilinx.md
-  - Hardware and debugging:
-      - SOJ review: SOJ_REVIEW.md
-      - Digilent HS3 vs XPCU: digilent-hs3-vs-xpcu-dump-flash-codepath.md
-      - Spartan-6 XPCU debug: spartan6-xpcu-spi-debug-log.md
-      - Spartan-6 HS3 write stall: spartan6-hs3-m25p40-write-stall.md
-      - Xilinx Platform Cable USB: xilinx-platform-cable-usb-technical-reproduction.md
-      - Windows Platform Cable USB: xilinx-platform-cable-usb-windows-debug.md
-      - MachXO3 recovery: machxo3-recovery-after-bulk-erase.md
-      - XCF platform flash: XCF_PLATFORM_FLASH.md
-      - Windows cable notes: XILINX_PLATFORM_CABLE_USB_WINDOWS.md
-  - Architecture:
-      - Overview: architecture/index.md
-      - Visual guide: architecture/visual-guide.md
-      - Source map: architecture/source-map.md
-      - Runtime flows: architecture/runtime-flows.md
-      - Build and release: architecture/build-and-release.md
-      - Architecture decisions: architecture/decisions.md
-      - C4 context: architecture/c4/context.md
-      - C4 containers: architecture/c4/containers.md
-      - C4 components: architecture/c4/components.md
-      - C4 deployment: architecture/c4/deployment.md
-  - Contributing:
-      - Architecture rules: contributing/architecture-rules.md
-      - API and code reference: development/api-reference.md
-  - Project documentation:
-      - Device support: DEVICE_SUPPORT_CHAT.md
-      - Adding a flash: adding-new-flash.md
-      - Adding FPGA and flash support: adding-new-fpga-and-flash-guide.md
-      - Deployment: DEPLOYMENT.md
-      - Docker cross-Windows: DOCKER_CROSS_WINDOWS.md
-      - Docker Linux deployment: DOCKER_DEPLOY_LINUX.md
-      - CI issue report: development/ci-issues.md
-      - Todo: todo.md
+      - Boards: compatibility/boards.md
+      - FPGAs: compatibility/fpgas.md
+      - Cables: compatibility/cables.md
+  - Field notes:
+      - SPI-over-JTAG source review: debug/soj-review.md
+      - SOJ v2 RDID alignment: debug/soj-v2-rdid-alignment.md
+      - Xilinx Platform Cable USB:
+          - Technical reproduction: debug/xpcu/technical-reproduction.md
+          - Windows debug report: debug/xpcu/windows-debug-report.md
+          - Windows setup: debug/xpcu/windows-setup.md
+          - Cable driver deployment: debug/xpcu/cable-driver-deployment.md
+          - Cable driver troubleshooting: debug/xpcu/cable-driver-troubleshooting.md
+      - Spartan-6 XPCU SPI investigation: debug/spartan6-xpcu-spi-investigation.md
+      - Spartan-6 HS3 M25P40 write stall: debug/spartan6-hs3-m25p40-write-stall.md
+      - Digilent HS3 vs XPCU dump path: debug/digilent-hs3-vs-xpcu-dump-flash.md
+      - MachXO3 recovery after bulk erase: debug/machxo3-recovery-after-bulk-erase.md
+  - Development:
+      - Architecture:
+          - Overview: development/architecture/overview.md
+          - Visual guide: development/architecture/visual-guide.md
+          - Source map: development/architecture/source-map.md
+          - Runtime flows: development/architecture/runtime-flows.md
+          - Build and release: development/architecture/build-and-release.md
+          - Decisions: development/architecture/decisions.md
+          - C4 context: development/architecture/c4/context.md
+          - C4 containers: development/architecture/c4/containers.md
+          - C4 components: development/architecture/c4/components.md
+          - C4 deployment: development/architecture/c4/deployment.md
+      - Contributing: development/contributing.md
+      - API reference: development/api-reference.md
+      - Adding support:
+          - FPGA, flash, and boards: development/adding-support/fpga-and-flash.md
+          - SPI flash chips: development/adding-support/spi-flash-chips.md
+          - SPI-over-JTAG bridges: development/adding-support/spi-over-jtag-bridges.md
+      - CI:
+          - Issues and fixes log: development/ci/issues-and-fixes.md
+          - Build fixes (2026-10-01): development/ci/build-fixes-2026-10-01.md
+          - Local Windows CI with act: development/ci/local-windows-ci-with-act.md
+      - Deployment:
+          - Overview: development/deployment/overview.md
+          - Docker Linux deployment: development/deployment/docker-linux.md
+          - Docker cross Windows build: development/deployment/docker-cross-windows.md
+          - Windows driver packaging: development/deployment/windows-driver-packaging.md
+  - Project:
+      - Release notes: release-notes.md
+      - Device support log: project/device-support-log.md
+      - To do: project/todo.md
+

@@ -71,17 +71,8 @@ sudo apt install \
   g++
 ```
 
-<div class="hint">
-
-<div class="title">
-
-Hint
-
-</div>
-
-`libudev-dev` is optional, may be replaced by `eudev-dev` or just not installed.
-
-</div>
+!!! hint
+    `libudev-dev` is optional, may be replaced by `eudev-dev` or just not installed.
 
 By default, `(e)udev` support is enabled (used to open a device by his `/dev/xx` node). If you don't want this option, use:
 
@@ -174,19 +165,10 @@ sudo usermod -a $USER -G dialout # add user to dialout group
 
 After that you need to unplug and replug your device.
 
-<div class="hint">
+!!! hint
+    `usermod` is used to add `$USER` as a member of `plugdev`, or `dialout` group. However this update is not taken into account immediately: it's required to logout from current session and login again. Check, by using `id $USER`, if `plugdev`, ord `dialout` is mentioned after `groups=`. An alternate (and temporary) solution is to use `sudo - $USER` to have your user seen as a member of the expected group (works only for the current terminal).
 
-<div class="title">
-
-Hint
-
-</div>
-
-`usermod` is used to add `$USER` as a member of `plugdev`, or `dialout` group. However this update is not taken into account immediately: it's required to logout from current session and login again. Check, by using `id $USER`, if `plugdev`, ord `dialout` is mentioned after `groups=`. An alternate (and temporary) solution is to use `sudo - $USER` to have your user seen as a member of the expected group (works only for the current terminal).
-
-If the converter still cannot be opened, check access rights on the device node (for example `ls -l /dev/ttyUSB* /dev/ttyACM*`) and verify the associated group (`plugdev` or `dialout`).
-
-</div>
+    If the converter still cannot be opened, check access rights on the device node (for example `ls -l /dev/ttyUSB* /dev/ttyACM*`) and verify the associated group (`plugdev` or `dialout`).
 
 ## macOS
 
@@ -276,17 +258,8 @@ cmake --build . --parallel
 
 The resulting `openFPGALoader.exe` will be a statically-linked executable that only depends on standard Windows system DLLs (KERNEL32, msvcrt, WS2_32).
 
-<div class="note">
-
-<div class="title">
-
-Note
-
-</div>
-
-`zlib` for the Windows target is required. Configuration fails if it is missing (install `libz-mingw-w64-dev` on Debian/Ubuntu or `mingw64-zlib` on Fedora/RHEL/Rocky). `zlib` is linked statically by default on Windows builds (`-DWINDOWS_STATIC_ZLIB=ON`).
-
-</div>
+!!! note
+    `zlib` for the Windows target is required. Configuration fails if it is missing (install `libz-mingw-w64-dev` on Debian/Ubuntu or `mingw64-zlib` on Fedora/RHEL/Rocky). `zlib` is linked statically by default on Windows builds (`-DWINDOWS_STATIC_ZLIB=ON`).
 
 **Optional: Strip debug symbols to reduce size:**
 
@@ -336,17 +309,8 @@ This produces an **openFPGALoader** binary with no cable/vendor support. Then re
 
 Each item in the following lists is a CMake option name. Use them with `-D<OPTION>=ON` to enable or `-D<OPTION>=OFF` to disable.
 
-<div class="note">
-
-<div class="title">
-
-Note
-
-</div>
-
-The default value for each option is provided by `ENABLE_CABLE_ALL` and `ENABLE_VENDORS_ALL`.
-
-</div>
+!!! note
+    The default value for each option is provided by `ENABLE_CABLE_ALL` and `ENABLE_VENDORS_ALL`.
 
 Example (enable FTDI-based cables and Xilinx devices only):
 
@@ -391,14 +355,5 @@ cmake \
 - `ENABLE_LATTICESSPI_SUPPORT`: Enable Lattice SSPI support (requires libftdi).
 - `ENABLE_XILINX_SUPPORT`: Enable Xilinx device family support.
 
-<div class="note">
-
-<div class="title">
-
-Note
-
-</div>
-
-SPI support is hardcoded to FTDI. When FTDI support is disabled, some vendor drivers are also disabled (*iCE40*, *Cologne Chip*, *Efinix*, and *Lattice SSPI*).
-
-</div>
+!!! note
+    SPI support is hardcoded to FTDI. When FTDI support is disabled, some vendor drivers are also disabled (*iCE40*, *Cologne Chip*, *Efinix*, and *Lattice SSPI*).

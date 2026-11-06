@@ -1,50 +1,55 @@
 # openFPGALoader
 
-openFPGALoader is a universal utility for programming FPGAs from Linux,
-Windows, macOS, and OpenBSD. It supports boards, cables, and devices from
-Xilinx/AMD, Intel/Altera, Lattice, Gowin, Efinix, Anlogic, and Cologne Chip.
-
-## Quick start
+openFPGALoader is a universal, cross-platform command-line utility for
+programming FPGAs (and some CPLDs) from Linux, Windows, macOS, and OpenBSD.
+It talks to the FPGA through a JTAG cable — or, where needed, directly over
+SPI, DFU, or a virtual JTAG link — and supports hardware from Xilinx/AMD,
+Intel/Altera, Lattice, Gowin, Efinix, Anlogic, and Cologne Chip.
 
 ```bash
-openFPGALoader -b arty arty_bitstream.bit       # load SRAM
-openFPGALoader -b arty -f arty_bitstream.bit     # write flash
-openFPGALoader -c cmsisdap fpga_bitstream.bit   # choose a cable directly
+openFPGALoader -b arty arty_bitstream.bit        # load the volatile SRAM
+openFPGALoader -b arty -f arty_bitstream.bit     # write the persistent flash
+openFPGALoader -c cmsisdap fpga_bitstream.bit    # select a cable directly
 ```
 
-Use `openFPGALoader --list-boards` and
-`openFPGALoader --list-cables` to inspect the locally supported hardware.
+New here? The [quick start](guide/quickstart.md) gets you flashing in
+minutes. Not sure whether your hardware is supported? Check the
+[boards](compatibility/boards.md), [FPGAs](compatibility/fpgas.md), and
+[cables](compatibility/cables.md) compatibility lists.
 
-## Find your hardware
+## How to read these docs
 
-- [FPGA compatibility](compatibility/fpga.md)
-- [Board compatibility](compatibility/board.md)
-- [Cable compatibility](compatibility/cable.md)
+| If you are... | Start here |
+|---|---|
+| Programming a board for the first time | [Quick start](guide/quickstart.md) → [Usage tutorial](guide/usage.md) |
+| Installing from a package or source | [Installation](guide/install.md) |
+| Looking for a command or option | [CLI reference](guide/cli-reference.md) |
+| Wondering *how* the tool actually works | [How it works](how-it-works/overview.md) |
+| Using a specific FPGA family | [Hardware guides](hardware/xilinx.md) (Xilinx, Lattice, Intel, Gowin, Efinix, Anlogic, Cologne Chip) |
+| Fighting a cable, flash, or bridge problem | [Troubleshooting](guide/troubleshooting.md) → [Field notes](debug/soj-review.md) |
+| Adding a device, flash, or cable to the source | [Contributing](development/contributing.md) → [Adding support](development/adding-support/fpga-and-flash.md) |
+| Maintaining the build, CI, or releases | [Architecture](development/architecture/overview.md) → [Deployment](development/deployment/overview.md) |
 
-## Continue
+## The short version
 
-- Start with the [first-steps guide](guide/first-steps.md).
-- Install from a package or [build from source](guide/install.md).
-- Use [troubleshooting](guide/troubleshooting.md) when detection or flashing
-  fails.
-- Read the [SOJ/JTAG review](SOJ_REVIEW.md) for SPI-over-JTAG diagnostics and
-  known hardware-dependent alignment cases.
+One command, four possible execution paths:
 
-## Understand the project
+1. **JTAG** (the default): detect the JTAG chain, identify the FPGA by its
+   IDCODE, dispatch to the vendor driver, and program SRAM or flash — using a
+   small *SPI-over-JTAG bridge* bitstream when the FPGA cannot reach its
+   configuration flash directly.
+2. **Direct SPI**: the cable is wired straight to the flash (iCE40, some
+   Efinix and GateMate setups). No JTAG chain is involved.
+3. **DFU**: USB Device Firmware Upgrade for boards with a USB bootloader
+   (ULX3S, OrbTrace).
+4. **XVC**: Xilinx Virtual Cable — remote JTAG over TCP/IP, as client or
+   server.
 
-The [architecture overview](architecture/index.md) explains how the command
-line application selects a transport, discovers a JTAG chain, delegates to a
-vendor driver, parses a configuration file, and programs SRAM or flash. The
-[visual architecture guide](architecture/visual-guide.md) adds a diagram-first
-walkthrough of the mode router, JTAG alignment, flash lifecycle, SOJ bridge,
-build gates, deployment, troubleshooting, and contributor change paths. The
-[C4 documentation](architecture/c4/context.md) turns that source map into
-context, container, component, and deployment views.
+The [How it works](how-it-works/overview.md) section explains each path from
+the operator's point of view down to the protocol, with diagrams.
 
-For maintainers, the [source map](architecture/source-map.md),
-[runtime flows](architecture/runtime-flows.md), and
-[architecture rules](contributing/architecture-rules.md) are the quickest way
-to find the right change point without treating the repository as a black box.
+## Community
 
 The project is maintained at
-[github.com/xsession/openFPGALoader](https://github.com/xsession/openFPGALoader).
+[github.com/xsession/openFPGALoader](https://github.com/xsession/openFPGALoader)
+and has a dedicated channel: [#openFPGALoader on libera.chat](https://web.libera.chat/#openFPGALoader).

@@ -1,6 +1,6 @@
 # Troubleshooting
 
-## I installed openFPGALoader but it says <span class="title-ref">command not found</span> when I try to launch it
+## I installed openFPGALoader but it says `command not found` when I try to launch it
 
 The correct spelling of the program is *openFPGALoader* with FPGA and the "L" of "Loader" in uppercase. Ensure the spelling of the program is correct.
 
@@ -70,11 +70,11 @@ This is a device issue, erase its Embedded Flash using Official GoWin Programmer
 
 ## Unable to open FTDI device: -4 (usb_open() failed) (issue [\#245](https://github.com/xsession/openFPGALoader/issues/245))
 
-Edit your <span class="title-ref">/etc/udev/rules.d/99-ftdi.rules</span> file exchanging your programming device permissions.
+Edit your `/etc/udev/rules.d/99-ftdi.rules` file exchanging your programming device permissions.
 
 For more information, check the udev section from [this guide](install.md)
 
-## Converter cannot be opened: <span class="title-ref">fails to open device</span> (issue [\#626](https://github.com/xsession/openFPGALoader/issues/626))
+## Converter cannot be opened: `fails to open device` (issue [\#626](https://github.com/xsession/openFPGALoader/issues/626))
 
 This is usually a permissions issue on Linux.
 
@@ -96,7 +96,7 @@ After changing groups or rules, reload udev rules, then unplug/replug the conver
 
 Reference: [install guide (udev rules section)](https://xsession.github.io/openFPGALoader/guide/install.html#udev-rules).
 
-## Unable to flash device on OpenBSD: <span class="title-ref">JTAG init failed with: DirtyJtag: fails to open device</span>
+## Unable to flash device on OpenBSD: `JTAG init failed with: DirtyJtag: fails to open device`
 
 Certain evaluation boards may show the following error message when running openFPGAloader on OpenBSD:
 
@@ -109,7 +109,7 @@ This issue is most likely caused by the uftdi(4) module, which has attached itse
 
 Unfortunately, due to the security concept of OpenBSD, it is not possible to detach it without modifying the kernel and rebooting the system. However, there are two ways to resolve the issue: Either by patching and recompiling the kernel; or by deactivating the uftdi(4) module.
 
-After COMMENTING OUT the problematic devices in <span class="title-ref">/usr/src/sys/dev/usb/uftdi.c</span>, the code would look like this:
+After COMMENTING OUT the problematic devices in `/usr/src/sys/dev/usb/uftdi.c`, the code would look like this:
 
 ``` c
 { USB_VENDOR_FTDI, USB_PRODUCT_FTDI_SEMC_DSS20 },
