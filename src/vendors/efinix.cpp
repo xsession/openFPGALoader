@@ -442,7 +442,7 @@ bool Efinix::prepare_flash_access()
 		}
 
 		bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR",
-			DATA_DIR "/openFPGALoader");
+			PathHelper::dataDir().c_str());
 		bitname += "/spiOverJtag_efinix_" + _device_package + ".bit.gz";
 	}
 

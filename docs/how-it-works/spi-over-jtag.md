@@ -33,8 +33,12 @@ treated as installed runtime data:
 ```
 
 The name must match the target's `device + package` string from the part
-catalog. The default data directory can be overridden with the
-`OPENFPGALOADER_SOJ_DIR` environment variable, and `--bridge` (CLI: `-B`
+catalog. The data directory is resolved at runtime: set
+`OPENFPGALOADER_DATA_DIR` to point at your `share/openFPGALoader` folder,
+or `OPENFPGALOADER_SOJ_DIR` to override the bridge-bitstream directory
+only; otherwise the executable looks beside itself (installed and
+portable layouts), then at the compiled-in install prefix.
+`--bridge` (CLI: `-B`
 also disables auto-detection of the bridge model) can force a specific file.
 
 > **Note**

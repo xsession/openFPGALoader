@@ -106,3 +106,5 @@ rem --fpga-part selects the packaged spiOverJtag_xc6slx45tfgg484.bit.gz bridge.
 docker compose -f docker-compose.cross-windows.yml run --rm windows-cross    
 
 act -j windows-cross -P ubuntu-24.04=ghcr.io/catthehacker/ubuntu:act-latest --container-architecture linux/amd64 -vv
+
+./openFPGALoader.exe -c digilent_hs3 -v --fpga-part xc7a200tfbg676 --index-chain 0 -f ./firmware_file.mcs 

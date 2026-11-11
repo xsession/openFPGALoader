@@ -206,7 +206,8 @@ bool Altera::load_bridge()
 			return false;
 		}
 
-		bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR", DATA_DIR "/openFPGALoader");
+		bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR",
+			PathHelper::dataDir().c_str());
 #ifdef HAS_ZLIB
 		bitname += "/spiOverJtag_" + _device_package + ".rbf.gz";
 #else

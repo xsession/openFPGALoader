@@ -6,9 +6,11 @@
 #include "utils/pathHelper.hpp"
 
 #include <algorithm>
+#include <cstdlib>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
+#include <vector>
 #if defined(_WIN64) || defined(_WIN32)
 #include <windows.h>
 #endif
@@ -70,7 +72,65 @@ std::string absoluteFilesystemPath(const std::filesystem::path &path)
     return absolute.lexically_normal().string();
 }
 
+bool directoryExists(const std::filesystem::path &path)
+{
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec);
+}
+
 } // namespace
+
+std::string PathHelper::dataDir()
+{
+    /*
+     * Resolved once per process: the environment and the install layout are
+     * fixed before openFPGALoader starts.
+     *
+     * The same cross-compiled executable ships in two different layouts, so
+     * the data directory cannot be a single compile-time path:
+     *
+     *   portable ZIP:   <root>/bin/openFPGALoader.exe + <root>/share/openFPGALoader
+     *   installed:      <app>/openFPGALoader.exe      + <app>/share/openFPGALoader
+     *   native (e.g. /usr/local): <prefix>/bin/...    + <prefix>/share/openFPGALoader
+     *
+     * Candidates are tried in order; the first existing directory wins. The
+     * last candidate (compiled-in DATA_DIR) is returned when nothing exists,
+     * so error messages still point at a concrete path.
+     */
+    static const std::string resolved = []() -> std::string {
+        std::vector<std::string> candidates;
+
+        const char *env = std::getenv("OPENFPGALOADER_DATA_DIR");
+        if (env != nullptr && env[0] != '\0') {
+            candidates.push_back(std::string(env));
+        }
+
+        try {
+            const std::filesystem::path exe_dir = executableDirectory();
+            candidates.push_back((exe_dir / "share" / "openFPGALoader").string());
+            candidates.push_back((exe_dir / ".." / "share" / "openFPGALoader").string());
+        } catch (...) {
+            /* fall through to cwd-based candidates */
+        }
+
+        const std::filesystem::path cwd = std::filesystem::current_path();
+        candidates.push_back((cwd / "share" / "openFPGALoader").string());
+        candidates.push_back((cwd / ".." / "share" / "openFPGALoader").string());
+
+        candidates.push_back(std::string(DATA_DIR) + "/openFPGALoader");
+
+        for (const auto &candidate : candidates) {
+            const std::string absolute = absoluteFilesystemPath(candidate);
+            if (directoryExists(absolute)) {
+                return absolute;
+            }
+        }
+
+        return absoluteFilesystemPath(candidates.back());
+    }();
+
+    return resolved;
+}
 
 std::string PathHelper::absolutePath(std::string input_path)
 {

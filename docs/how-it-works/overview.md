@@ -142,8 +142,13 @@ Two things about this product are easy to misunderstand:
 - **Runtime assets are installed data, not code.** SPI-over-JTAG and
   BPI-over-JTAG bridge bitstreams, Spartan-6 ISE `.cor` bridges, and Xilinx
   Platform Cable USB firmware are files installed beside the binary
-  (under `share/openFPGALoader/`). The binary finds them through a
-  configured data directory, overridable with `OPENFPGALOADER_SOJ_DIR`.
+  (under `share/openFPGALoader/`). The binary resolves the data directory
+  at runtime — first the `OPENFPGALOADER_DATA_DIR` environment variable,
+  then `share/openFPGALoader` beside the executable (installed layout),
+  then `../share/openFPGALoader` beside the executable (portable layout),
+  then the compiled-in install prefix — so the same executable works from
+  both the portable ZIP and the installed layout. `OPENFPGALOADER_SOJ_DIR`
+  narrows the override to bridge bitstreams only.
   An archive missing these files is an incomplete deployment.
 
 ## Where failures usually live

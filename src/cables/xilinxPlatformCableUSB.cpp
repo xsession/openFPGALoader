@@ -78,7 +78,7 @@ std::string findPackagedFirmware(uint16_t pid, bool direct_xp2_firmware)
 	const std::string leaf = (pid == 0x0013 && !direct_xp2_firmware) ?
 		"xusb_xp2_loader.hex" : firmwareLeafForPid(pid);
     const std::string candidate = PathHelper::absolutePath(
-        std::string(DATA_DIR) + "/openFPGALoader/" + leaf
+        PathHelper::dataDir() + "/" + leaf
     );
 
     if (fileExists(candidate)) {
@@ -91,7 +91,7 @@ std::string findPackagedFirmware(uint16_t pid, bool direct_xp2_firmware)
 std::string findPackagedFirmwareLeaf(const std::string &leaf)
 {
 	const std::string candidate = PathHelper::absolutePath(
-		std::string(DATA_DIR) + "/openFPGALoader/" + leaf);
+		PathHelper::dataDir() + "/" + leaf);
 	return fileExists(candidate) ? candidate : std::string();
 }
 
@@ -108,7 +108,7 @@ std::string findUpgradeFirmware(uint16_t pid)
 	}
 
 	const std::string packaged = PathHelper::absolutePath(
-		std::string(DATA_DIR) + "/openFPGALoader/" +
+		PathHelper::dataDir() + "/" +
 		(xp2 ? "xusb_xp2.hex" : "xusb_xlp.hex"));
 	return fileExists(packaged) ? packaged : std::string();
 }
@@ -157,10 +157,11 @@ std::string findXusbFirmwareFile(uint16_t pid, const std::string &firmware_path,
     } else if (strlen(ISE_DIR) > 0) {
         firmware_file = ISE_DIR "/ISE_DS/ISE/bin/lin64/";
     } else {
-        printError("missing FX2 firmware");
+        printError("missing FX2 firmware " + firmwareLeafForPid(pid));
         printError("use --probe-firmware with something");
         printError("or set OPENFPGALOADER_XUSB_FIRMWARE=C:/path/to/xusb_emb.hex");
-        printError("or place xusb_emb.hex in share/openFPGALoader beside the portable package");
+        printError("or set OPENFPGALOADER_DATA_DIR to your share/openFPGALoader directory");
+        printError("searched in: " + PathHelper::dataDir());
         throw std::runtime_error("xilinxPlatformCableUSB: missing firmware");
     }
 

@@ -1071,7 +1071,7 @@ bool Xilinx::load_bridge()
 		}
 
 		const std::string bridge_dir = get_shell_env_var("OPENFPGALOADER_SOJ_DIR",
-			DATA_DIR "/openFPGALoader");
+			PathHelper::dataDir().c_str());
 		if (_fpga_family == SPARTAN6_FAMILY) {
 			const std::string model = spartan6_bridge_model_from_package(
 				_device_package);
@@ -1135,7 +1135,8 @@ bool Xilinx::load_bpi_bridge()
 		return false;
 	}
 
-	bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR", DATA_DIR "/openFPGALoader");
+	bitname = get_shell_env_var("OPENFPGALOADER_SOJ_DIR",
+		PathHelper::dataDir().c_str());
 	bitname += "/bpiOverJtag_" + _device_package + ".bit.gz";
 
 #if defined (_WIN64) || defined (_WIN32)

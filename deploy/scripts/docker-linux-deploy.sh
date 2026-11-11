@@ -65,7 +65,7 @@ for rules in "${ROOT_DIR}/70-openfpgaloader.rules" "${ROOT_DIR}/99-openfpgaloade
   fi
 done
 
-mkdir -p "${PREFIX_DIR}/share/doc/openFPGALoader"
+mkdir -p "${PREFIX_DIR}/share/doc/openFPGALoader"   
 {
   echo "openFPGALoader ${ARCH_LABEL} Docker deployment"
   echo

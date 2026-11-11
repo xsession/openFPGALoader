@@ -120,7 +120,8 @@ see [How it works](../how-it-works/overview.md).
 
 | Variable | Effect |
 |---|---|
-| `OPENFPGALOADER_SOJ_DIR` | directory containing SPI-over-JTAG bridge bitstreams (default: the installed data root) |
+| `OPENFPGALOADER_DATA_DIR` | absolute path of the data directory (the `share/openFPGALoader` folder with bridge bitstreams and XPCU firmware). Overrides the automatic search, which tries in order: `<exe dir>\share\openFPGALoader`, `<exe dir>\..\share\openFPGALoader` (portable layout), the working-directory variants, then the compiled-in install prefix |
+| `OPENFPGALOADER_SOJ_DIR` | directory containing SPI-over-JTAG bridge bitstreams (default: the resolved data directory) |
 | `OPENFPGALOADER_XUSB_FIRMWARE` | explicit XPCU boot firmware HEX path |
 | `OPENFPGALOADER_XUSB_XLP_FIRMWARE` / `OPENFPGALOADER_XUSB_XP2_FIRMWARE` | explicit XPCU second-stage HEX paths |
 | `OPENFPGALOADER_XPCU_CONTROL_BITBANG=1` | force the safe XPCU control-transfer JTAG path |
