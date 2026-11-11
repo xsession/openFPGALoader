@@ -81,8 +81,6 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
-var
-  ResultCode: LongWord;
 begin
   if CurStep = ssPostInstall then
   begin
@@ -90,10 +88,10 @@ begin
     begin
       AddToPath(ExpandConstant('{app}'));
       /*
-       * Tell the shell and running processes that the environment changed,
-       * otherwise new terminals keep the old system PATH until logoff.
+       * The WM_SETTINGCHANGE broadcast that makes Explorer and new terminals
+       * pick up the updated PATH is handled natively by Inno at the end of
+       * the install, because [Setup] sets ChangesEnvironment=yes.
        */
-      SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment', ResultCode);
     end;
   end;
 end;

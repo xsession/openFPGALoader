@@ -29,7 +29,6 @@ RUN pacman -Syu --noconfirm --needed \
       libftdi \
       libgpiod \
       libusb \
-      makepkg \
       ninja \
       pkgconf \
       tar \
