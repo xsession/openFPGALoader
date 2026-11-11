@@ -1,0 +1,51 @@
+# Maintainer: openFPGALoader <https://github.com/xsession/openFPGALoader>
+#
+# Binary package for Arch Linux.
+#
+# This PKGBUILD does not compile anything: deploy/scripts/build-linux-pkg.sh
+# stages a prebuilt install tree (produced by the Docker deploy pipeline,
+# see docker-compose.deploy-linux.yml, service "linux-deploy-arch") and
+# exports these variables before invoking makepkg:
+#
+#   OPENFPGALOADER_STAGE_DIR  staged install tree (bin/, share/, lib/udev/rules.d/)
+#   OPENFPGALOADER_PKG_VER   numeric version (e.g. 1.1.11)
+#   OPENFPGALOADER_LICENSE   path to the repo LICENSE file
+
+pkgname=openfpgaloader
+pkgver="${OPENFPGALOADER_PKG_VER:-0.0.0}"
+pkgrel=1
+pkgdesc="openFPGALoader: universal utility for programming FPGA"
+arch=(x86_64)
+url="https://github.com/xsession/openFPGALoader"
+license=(Apache-2.0)
+depends=(libftdi1 hidapi libusb zlib)
+optdepends=(
+  'udev: USB device rules for non-root programming'
+)
+source=()
+sha256sums=()
+
+package() {
+  local stage="${OPENFPGALOADER_STAGE_DIR:?OPENFPGALOADER_STAGE_DIR must be set by build-linux-pkg.sh}"
+  local license="${OPENFPGALOADER_LICENSE:-}"
+
+  install -Dm755 "${stage}/bin/openFPGALoader" \
+    "${pkgdir}/usr/bin/openFPGALoader"
+
+  if [[ -d "${stage}/share/openFPGALoader" ]]; then
+    install -d "${pkgdir}/usr/share/openFPGALoader"
+    cp -a "${stage}/share/openFPGALoader/." \
+      "${pkgdir}/usr/share/openFPGALoader/"
+  fi
+
+  local rules
+  for rules in "${stage}/lib/udev/rules.d/"*.rules; do
+    [[ -f "${rules}" ]] || continue
+    install -Dm644 "${rules}" "${pkgdir}/usr/lib/udev/rules.d/$(basename "${rules}")"
+  done
+
+  if [[ -n "${license}" && -f "${license}" ]]; then
+    install -Dm644 "${license}" \
+      "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  fi
+}

@@ -101,6 +101,28 @@ rm -f "${ARCHIVE}" "${ARCHIVE}.sha256"
 # (CI checks it on the host, where the /src container paths do not exist).
 (cd "${PACKAGE_DIR}" && sha256sum "$(basename "${ARCHIVE}")" > "${ARCHIVE}.sha256")
 
+# Distro installer packages from the same staged install tree:
+#   .deb         where dpkg-deb is available (Alpine image: static binary)
+#   .pkg.tar.zst where makepkg/zstd is available (Arch image: glibc binary)
+# Staging happens on the container's native filesystem (mktemp under /tmp),
+# not on the repository bind mount: dpkg-deb validates the control directory
+# mode (0755..0775) and mount permission emulation is not portable.
+if command -v dpkg-deb >/dev/null 2>&1; then
+  echo "Building Debian package (.deb) for Ubuntu/Debian"
+  PKG_STAGING="$(mktemp -d /tmp/openfpgaloader-deb.XXXXXX)"
+  INSTALL_DIR="${PREFIX_DIR}" OUTPUT_DIR="${PACKAGE_DIR}" BUILD_DIR="${PKG_STAGING}" \
+    bash "${ROOT_DIR}/deploy/scripts/build-linux-deb.sh"
+  rm -rf "${PKG_STAGING}"
+fi
+
+if command -v makepkg >/dev/null 2>&1 || command -v zstd >/dev/null 2>&1; then
+  echo "Building Arch package (.pkg.tar.zst)"
+  PKG_STAGING="$(mktemp -d /tmp/openfpgaloader-pkg.XXXXXX)"
+  INSTALL_DIR="${PREFIX_DIR}" OUTPUT_DIR="${PACKAGE_DIR}" BUILD_DIR="${PKG_STAGING}" \
+    bash "${ROOT_DIR}/deploy/scripts/build-linux-pkg.sh"
+  rm -rf "${PKG_STAGING}"
+fi
+
 echo "Built ${EXE}"
 echo "Package: ${ARCHIVE}"
 echo "Checksum: ${ARCHIVE}.sha256"

@@ -52,6 +52,9 @@ fi
 
 # Copy Debian control files into dpkg's required DEBIAN directory.
 cp -a "${PACKAGING_DIR}/." "${BUILD_DIR}/DEBIAN/"
+# dpkg-deb rejects the control directory outside 0755..0775; the umask is
+# not portable across runners (CI is 022, local shells may be 077).
+chmod 755 "${BUILD_DIR}/DEBIAN"
 chmod 755 "${BUILD_DIR}/DEBIAN/postinst"
 chmod 755 "${BUILD_DIR}/DEBIAN/postrm"
 
@@ -62,9 +65,11 @@ sed -i "s/^Version:.*/Version: ${VERSION}/" "${BUILD_DIR}/DEBIAN/control"
 # 22.04 and Ubuntu 24.04 artifacts cannot overwrite one another at release.
 PACKAGE_FILE="${OUTPUT_DIR}/${PACKAGE_NAME}_${VERSION}_amd64.deb"
 dpkg-deb --build --root-owner-group "${BUILD_DIR}" "${PACKAGE_FILE}"
+chmod 644 "${PACKAGE_FILE}"
 
 # Generate checksum
 sha256sum "${PACKAGE_FILE}" > "${PACKAGE_FILE}.sha256"
+chmod 644 "${PACKAGE_FILE}.sha256"
 
 echo "Built Debian package: ${PACKAGE_FILE}"
 echo "Package contents:"

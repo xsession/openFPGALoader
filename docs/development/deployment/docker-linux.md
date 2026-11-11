@@ -1,12 +1,17 @@
 # Docker Linux deployment
 
-This builds a native Linux `openFPGALoader` binary inside a container and
-packages the install tree as a tarball. Two libc bases are available:
+This builds a native Linux `openFPGALoader` binary inside a container,
+packages the install tree as a tarball, and builds distro installer
+packages from the same staged install tree. Three services are available:
 
-- `linux-deploy` — Alpine 3.24.2 (musl). The resulting binary only runs on
-  musl systems.
-- `linux-deploy-arch` — Arch Linux (glibc, rolling). The resulting binary
-  runs on Arch Linux and other glibc distros with an equal or newer glibc.
+- `linux-deploy` — Alpine 3.24.2 (musl). Portable tarball; the binary runs
+  on musl systems.
+- `linux-deploy-ubuntu` — Ubuntu 24.04 (glibc). Builds the Ubuntu/Debian
+  `.deb` installer (the binary links the system glibc and libraries, so it
+  targets Ubuntu 24.04 and newer).
+- `linux-deploy-arch` — Arch Linux (glibc, rolling). Builds the Arch
+  `.pkg.tar.zst` installer; the binary runs on Arch and other glibc distros
+  with an equal or newer glibc.
 
 ## Build the images
 
@@ -18,15 +23,33 @@ docker compose -f docker-compose.deploy-linux.yml build
 
 ```bash
 docker compose -f docker-compose.deploy-linux.yml run --rm linux-deploy
+docker compose -f docker-compose.deploy-linux.yml run --rm linux-deploy-ubuntu
 docker compose -f docker-compose.deploy-linux.yml run --rm linux-deploy-arch
 ```
 
 Artifacts are written to:
 
 ```text
-dist/docker-linux/        (Alpine/musl, openFPGALoader-linux-*)
-dist/docker-linux-arch/   (Arch/glibc,  openFPGALoader-arch-linux-*)
+dist/docker-linux/        (Alpine/musl,  openFPGALoader-linux-*)
+dist/docker-linux-ubuntu/ (Ubuntu 24.04, openFPGALoader-ubuntu-24.04-*)
+dist/docker-linux-arch/   (Arch/glibc,   openFPGALoader-arch-linux-*)
 ```
+
+| Service | Artifacts |
+|---|---|
+| `linux-deploy` | `openFPGALoader-linux-<arch>-<ver>.tar.gz` |
+| `linux-deploy-ubuntu` | tar.gz + `openfpgaloader_<ver>_amd64.deb` (Ubuntu/Debian installer) |
+| `linux-deploy-arch` | tar.gz + `openfpgaloader-<ver>-1-x86_64.pkg.tar.zst` (Arch installer) |
+
+The `.deb` and `.pkg.tar.zst` are built from the same staged install tree
+as the tarball (executable, `share/openFPGALoader` assets, udev rules,
+license). The Debian `Depends` (libusb, libftdi1, libhidapi, zlib) and the
+Arch `depends` (libusb, libftdi1, hidapi, zlib) declare the runtime
+libraries the glibc binaries link against.
+
+Install on Ubuntu/Debian: `sudo dpkg -i openfpgaloader_*.deb`
+Install on Arch: `sudo pacman -U openfpgaloader-*.pkg.tar.zst`
+Both packages place the udev rules under `/usr/lib/udev/rules.d/`.
 
 The Arch service also runs an in-container smoke test (`SMOKE_TEST=1`):
 `--version`, `--help`, `--list-boards`, `--list-cables`.

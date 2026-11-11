@@ -40,7 +40,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "addpath"; Description: "Add openFPGALoader to system PATH"; GroupDescription: "Installation options:"; Flags: unchecked
+Name: "addpath"; Description: "Add openFPGALoader to system PATH"; GroupDescription: "Installation options:"
 Name: "installdrivers"; Description: "Install Xilinx Platform Cable USB drivers"; GroupDescription: "Driver installation:"; Flags: unchecked
 
 [Files]
@@ -81,12 +81,19 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ResultCode: LongWord;
 begin
   if CurStep = ssPostInstall then
   begin
     if IsTaskSelected('addpath') then
     begin
       AddToPath(ExpandConstant('{app}'));
+      /*
+       * Tell the shell and running processes that the environment changed,
+       * otherwise new terminals keep the old system PATH until logoff.
+       */
+      SendMessage(HWND_BROADCAST, WM_SETTINGCHANGE, 0, 'Environment', ResultCode);
     end;
   end;
 end;

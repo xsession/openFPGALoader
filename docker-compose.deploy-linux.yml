@@ -39,6 +39,27 @@ services:
       SMOKE_TEST: "1"
     command: ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]
 
+  linux-deploy-ubuntu:
+    build:
+      context: .
+      dockerfile: deploy/docker/deploy/linux/ubuntu.Dockerfile
+    image: openfpgaloader-linux-deploy:ubuntu-24.04
+    pull_policy: build
+    working_dir: /src
+    volumes:
+      - .:/src
+      - openfpgaloader-linux-ubuntu-cache:/root/.cache
+    environment:
+      BUILD_DIR: /src/build-docker-linux-ubuntu
+      PREFIX_DIR: /src/dist/docker-linux-ubuntu/install
+      PACKAGE_DIR: /src/dist/docker-linux-ubuntu
+      CMAKE_BUILD_TYPE: Release
+      CMAKE_EXTRA_ARGS: ""
+      ARCH_LABEL: ubuntu-24.04
+      SMOKE_TEST: "1"
+    command: ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]
+
 volumes:
   openfpgaloader-linux-cache:
   openfpgaloader-linux-arch-cache:
+  openfpgaloader-linux-ubuntu-cache:
