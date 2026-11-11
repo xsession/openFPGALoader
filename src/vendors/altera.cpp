@@ -17,9 +17,7 @@
 #include "protocols/jtag.hpp"
 #include "utils/progressBar.hpp"
 #include "parsers/rawParser.hpp"
-#if defined (_WIN64) || defined (_WIN32)
 #include "utils/pathHelper.hpp"
-#endif
 #include "parsers/pofParser.hpp"
 
 #define IDCODE 6

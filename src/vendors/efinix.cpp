@@ -23,9 +23,7 @@
 #include "utils/part.hpp"
 #include "utils/progressBar.hpp"
 #include "parsers/rawParser.hpp"
-#if defined (_WIN64) || defined (_WIN32)
 #include "utils/pathHelper.hpp"
-#endif
 #include "protocols/spiFlash.hpp"
 
 Efinix::Efinix(FtdiSpi* spi, const std::string &filename,

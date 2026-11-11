@@ -29,9 +29,7 @@
 #include "parsers/mcsParser.hpp"
 #include "utils/part.hpp"
 #include "utils/progressBar.hpp"
-#if defined (_WIN64) || defined (_WIN32)
 #include "utils/pathHelper.hpp"
-#endif
 #include "parsers/rawParser.hpp"
 #include "protocols/spiFlash.hpp"
 #include "protocols/flashInterface.hpp"

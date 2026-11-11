@@ -17,6 +17,7 @@
 
 namespace {
 
+#if defined(_WIN64) || defined(_WIN32)
 std::string normalizeSlashes(std::string path)
 {
     std::replace(path.begin(), path.end(), '\\', '/');
@@ -31,6 +32,7 @@ bool isPortableDataPath(const std::string &input_path)
            path.rfind("./share/openFPGALoader/", 0) == 0 ||
            path.rfind("share/openFPGALoader/", 0) == 0;
 }
+#endif
 
 std::filesystem::path executableDirectory()
 {
