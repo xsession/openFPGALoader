@@ -71,23 +71,49 @@ if command -v makepkg >/dev/null 2>&1; then
   # Use the plain `makepkg` invocation (no extra flags) to keep the CLI
   # surface minimal on a rolling distro, in a fresh directory so no
   # "package already exists" handling is needed.
-  rm -rf "${BUILD_DIR}/pkgbuild"
-  mkdir -p "${BUILD_DIR}/pkgbuild"
-  cp "${PACKAGING_DIR}/PKGBUILD" "${BUILD_DIR}/pkgbuild/"
-  (
-    cd "${BUILD_DIR}/pkgbuild"
-    OPENFPGALOADER_STAGE_DIR="${ROOT}" \
-    OPENFPGALOADER_PKG_VER="${VERSION}" \
-    OPENFPGALOADER_LICENSE="${ROOT_DIR}/LICENSE" \
-    makepkg < /dev/null
-  )
-  BUILT="$(find "${BUILD_DIR}/pkgbuild" -maxdepth 1 \
+  #
+  # makepkg refuses to run as root (error code 10), but the deploy
+  # container runs as root — so when we are root, drop to the
+  # unprivileged `builder` user provided by arch.Dockerfile (via su).
+  # The build dir is a fresh mktemp directory that user can own; the
+  # staged tree is world-readable, and root moves the result out.
+  if [[ "$(id -u)" == "0" ]] && ! id builder >/dev/null 2>&1; then
+    echo "ERROR: running as root but no 'builder' user exists (rebuild the image from arch.Dockerfile)" >&2
+    exit 1
+  fi
+  PKGBUILD_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ofl-pkgbuild.XXXXXX")"
+  cp "${PACKAGING_DIR}/PKGBUILD" "${PKGBUILD_DIR}/"
+  rc=0
+  if [[ "$(id -u)" == "0" ]]; then
+    chown builder "${PKGBUILD_DIR}"
+    su -s /bin/bash builder -c "cd '${PKGBUILD_DIR}' && \
+      OPENFPGALOADER_STAGE_DIR='${ROOT}' \
+      OPENFPGALOADER_PKG_VER='${VERSION}' \
+      OPENFPGALOADER_LICENSE='${ROOT_DIR}/LICENSE' \
+      makepkg < /dev/null" || rc=$?
+  else
+    (
+      cd "${PKGBUILD_DIR}"
+      OPENFPGALOADER_STAGE_DIR="${ROOT}" \
+      OPENFPGALOADER_PKG_VER="${VERSION}" \
+      OPENFPGALOADER_LICENSE="${ROOT_DIR}/LICENSE" \
+      makepkg < /dev/null
+    ) || rc=$?
+  fi
+  if [[ ${rc} -ne 0 ]]; then
+    echo "ERROR: makepkg failed (rc=${rc})" >&2
+    rm -rf "${PKGBUILD_DIR}"
+    exit 1
+  fi
+  BUILT="$(find "${PKGBUILD_DIR}" -maxdepth 1 \
     -name "${PACKAGE_NAME}-${VERSION}-${PKGREL}-x86_64.pkg.tar.*" | head -n 1)"
   if [[ -z "${BUILT}" ]]; then
     echo "ERROR: makepkg produced no package" >&2
+    rm -rf "${PKGBUILD_DIR}"
     exit 1
   fi
   mv "${BUILT}" "${PACKAGE_FILE}"
+  rm -rf "${PKGBUILD_DIR}"
 elif command -v zstd >/dev/null 2>&1; then
   # Fallback (hosts without makepkg, e.g. local dev on Debian/Ubuntu):
   # write .PKGINFO and build the tarball directly.

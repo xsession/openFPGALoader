@@ -36,6 +36,12 @@ RUN pacman -Syu --noconfirm --needed \
       zstd \
       zlib
 
+# makepkg refuses to run as root (error code 10: "Running makepkg as root
+# is not allowed"), but the deploy container runs as root. Provide the
+# unprivileged `builder` user that deploy/scripts/build-linux-pkg.sh drops
+# to (via su) when invoking makepkg.
+RUN useradd -m -s /bin/bash builder
+
 WORKDIR /src
 
 CMD ["bash", "/src/deploy/scripts/docker-linux-deploy.sh"]
