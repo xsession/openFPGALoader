@@ -4,10 +4,11 @@ set -euo pipefail
 # Build an Arch Linux package (.pkg.tar.zst) from a staged install tree,
 # the Linux counterpart of build-linux-deb.sh.
 #
-# Preferred path: makepkg with the committed PKGBUILD (used by the Arch
-# Docker deploy image). Fallback: construct the package format directly
-# (.PKGINFO tarball, zstd-compressed, root-owned) when makepkg is not
-# available (e.g. running from a host shell for a quick local package).
+# Primary path: construct the package format directly (.PKGINFO tarball,
+# zstd-compressed, root-owned). This is deterministic and immune to
+# makepkg CLI drift on a rolling distro (makepkg moved to libmakepkg and
+# dropped flags such as --nopackager). makepkg with the committed PKGBUILD
+# is kept as a fallback for hosts without zstd.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -58,28 +59,13 @@ done
 
 PACKAGE_FILE="${OUTPUT_DIR}/${PACKAGE_NAME}-${VERSION}-${PKGREL}-x86_64.pkg.tar.zst"
 
-if command -v makepkg >/dev/null 2>&1; then
-  # makepkg runs the committed PKGBUILD; the env vars hand it the staged tree.
-  mkdir -p "${BUILD_DIR}/pkgbuild"
-  cp "${PACKAGING_DIR}/PKGBUILD" "${BUILD_DIR}/pkgbuild/"
-  (
-    cd "${BUILD_DIR}/pkgbuild"
-    OPENFPGALOADER_STAGE_DIR="${ROOT}" \
-    OPENFPGALOADER_PKG_VER="${VERSION}" \
-    OPENFPGALOADER_LICENSE="${ROOT_DIR}/LICENSE" \
-    makepkg --nocolor --noconfirm --nodeps --nopackager -fC >/dev/null
-  )
-  BUILT="$(find "${BUILD_DIR}/pkgbuild" -maxdepth 1 \
-    -name "${PACKAGE_NAME}-${VERSION}-${PKGREL}-x86_64.pkg.tar.*" | head -n 1)"
-  if [[ -z "${BUILT}" ]]; then
-    echo "ERROR: makepkg produced no package" >&2
-    exit 1
-  fi
-  mv "${BUILT}" "${PACKAGE_FILE}"
-elif command -v zstd >/dev/null 2>&1; then
-  # Fallback: write .PKGINFO and build the tarball directly.
+if command -v zstd >/dev/null 2>&1; then
+  # Primary: write .PKGINFO and build the tarball directly (the format
+  # pacman consumes: root-owned tarball with a .PKGINFO metadata file).
   # The size field must equal the final compressed size, so iterate until
-  # it stabilizes (the digit count of the size can change the size).
+  # it stabilizes. Everything else is kept deterministic (fixed mtimes,
+  # one frozen timestamp, single-threaded zstd) so the loop converges.
+  TS="$(date +%s)"
   write_pkginfo() {
     {
       echo "pkgname=${PACKAGE_NAME}"
@@ -88,23 +74,53 @@ elif command -v zstd >/dev/null 2>&1; then
       echo "arch=x86_64"
       echo "url=https://github.com/xsession/openFPGALoader"
       echo "license=Apache-2.0"
-      echo "builddate=$(date +%s)"
+      echo "builddate=${TS}"
+      echo "mtime=${TS}"
       echo "size=$1"
     } > "${ROOT}/.PKGINFO"
   }
   write_pkginfo 0
-  for _ in 1 2 3 4 5; do
+  CONVERGED=0
+  for _ in 1 2 3 4 5 6 7 8; do
     (
       cd "${ROOT}"
-      tar --sort=name --owner=0 --group=0 --numeric-owner -cf - . \
-        | zstd -q -f -19 -T0 -o "${PACKAGE_FILE}"
+      tar --sort=name --owner=0 --group=0 --numeric-owner --mtime=@0 -cf - . \
+        | zstd -q -f -19 -o "${PACKAGE_FILE}"
     )
     SIZE="$(stat -c%s "${PACKAGE_FILE}")"
-    grep -q "^size=${SIZE}$" "${ROOT}/.PKGINFO" && break
+    grep -q "^size=${SIZE}$" "${ROOT}/.PKGINFO" && { CONVERGED=1; break; }
     write_pkginfo "${SIZE}"
   done
+  # Hard guard: never ship a package whose size field is wrong (pacman
+  # validates it on install).
+  DECLARED="$(tar -xOf "${PACKAGE_FILE}" ./.PKGINFO | sed -n 's/^size=//p')"
+  ACTUAL="$(stat -c%s "${PACKAGE_FILE}")"
+  if [[ "${CONVERGED}" != 1 || "${DECLARED}" != "${ACTUAL}" ]]; then
+    echo "ERROR: Arch package size field did not converge (declared=${DECLARED} actual=${ACTUAL})" >&2
+    exit 1
+  fi
+elif command -v makepkg >/dev/null 2>&1; then
+  # Fallback: makepkg runs the committed PKGBUILD; the env vars hand it the
+  # staged tree. Keep the flag set minimal (--force) because makepkg's CLI
+  # drifts on a rolling distro.
+  mkdir -p "${BUILD_DIR}/pkgbuild"
+  cp "${PACKAGING_DIR}/PKGBUILD" "${BUILD_DIR}/pkgbuild/"
+  (
+    cd "${BUILD_DIR}/pkgbuild"
+    OPENFPGALOADER_STAGE_DIR="${ROOT}" \
+    OPENFPGALOADER_PKG_VER="${VERSION}" \
+    OPENFPGALOADER_LICENSE="${ROOT_DIR}/LICENSE" \
+    makepkg -f
+  )
+  BUILT="$(find "${BUILD_DIR}/pkgbuild" -maxdepth 1 \
+    -name "${PACKAGE_NAME}-${VERSION}-${PKGREL}-x86_64.pkg.tar.*" | head -n 1)"
+  if [[ -z "${BUILT}" ]]; then
+    echo "ERROR: makepkg produced no package" >&2
+    exit 1
+  fi
+  mv "${BUILT}" "${PACKAGE_FILE}"
 else
-  echo "ERROR: neither makepkg nor zstd is available to build the Arch package" >&2
+  echo "ERROR: neither zstd nor makepkg is available to build the Arch package" >&2
   exit 1
 fi
 

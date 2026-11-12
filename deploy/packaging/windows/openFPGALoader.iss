@@ -87,11 +87,9 @@ begin
     if IsTaskSelected('addpath') then
     begin
       AddToPath(ExpandConstant('{app}'));
-      /*
-       * The WM_SETTINGCHANGE broadcast that makes Explorer and new terminals
-       * pick up the updated PATH is handled natively by Inno at the end of
-       * the install, because [Setup] sets ChangesEnvironment=yes.
-       */
+      // The WM_SETTINGCHANGE broadcast that makes Explorer and new terminals
+      // pick up the updated PATH is handled natively by Inno at the end of
+      // the install, because [Setup] sets ChangesEnvironment=yes.
     end;
   end;
 end;
