@@ -139,7 +139,6 @@ jobs:
           fi
           pkg="${packages[0]}"
           (cd dist/docker-linux-arch && sha256sum -c "$(basename "${pkg}").sha256")
-          cp "${pkg}" "${pkg}.sha256" .
           mkdir -p dist/docker-linux-arch/verify
           tar -C dist/docker-linux-arch/verify -xzf "${pkg}"
           file dist/docker-linux-arch/verify/bin/openFPGALoader
@@ -147,14 +146,29 @@ jobs:
           file dist/docker-linux-arch/verify/bin/openFPGALoader | grep -F '/lib64/ld-linux-x86-64.so.2'
           tar -tzf "${pkg}" | sort
 
+          # Distro package (.pkg.tar.zst): exactly one, checksum and
+          # integrity verified, contents listed.
+          distpkgs=(dist/docker-linux-arch/openfpgaloader-*.pkg.tar.zst)
+          if (( ${#distpkgs[@]} != 1 )); then
+            echo "Expected exactly one Arch .pkg.tar.zst, found ${#distpkgs[@]}" >&2
+            printf '%s\n' "${distpkgs[@]}" >&2
+            exit 1
+          fi
+          distpkg="${distpkgs[0]}"
+          (cd dist/docker-linux-arch && sha256sum -c "$(basename "${distpkg}").sha256")
+          zstd -t "${distpkg}"
+          tar -tf "${distpkg}" | sort | head -n 30
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: openFPGALoader-arch-linux-x86_64
           if-no-files-found: error
           path: |
-            openFPGALoader-arch-linux-x86_64-*.tar.gz
-            openFPGALoader-arch-linux-x86_64-*.tar.gz.sha256
+            dist/docker-linux-arch/openFPGALoader-arch-linux-x86_64-*.tar.gz
+            dist/docker-linux-arch/openFPGALoader-arch-linux-x86_64-*.tar.gz.sha256
+            dist/docker-linux-arch/openfpgaloader-*.pkg.tar.zst
+            dist/docker-linux-arch/openfpgaloader-*.pkg.tar.zst.sha256
 
   windows-msys2:
     name: Windows MSYS2 ${{ matrix.sys }}
